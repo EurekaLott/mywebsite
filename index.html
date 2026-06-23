@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>EurekaLott | Nơi Giấc Mơ Bắt Đầu</title>
+<title>EurekaLott | Where Dreams Begin</title>
 
 <style>
 
@@ -15,68 +15,124 @@
 }
 
 body{
-    background:#0a0f18;
+    background:
+    radial-gradient(circle at top,#13233f 0%,#08111f 40%,#04080f 100%);
     color:white;
-    font-family:Segoe UI, Arial, sans-serif;
+    font-family:Segoe UI,Arial,sans-serif;
     overflow-x:hidden;
 }
 
 /* HEADER */
 
 .header{
-    padding:30px 40px 10px 40px;
+    padding:35px 50px 20px 50px;
 }
 
 .brand{
     font-size:72px;
     font-weight:900;
     letter-spacing:-2px;
-    color:#f2f2f2;
-    text-align:left;
+    color:#f5f5f5;
 }
 
-.tagline{
+.brand-sub{
     margin-top:8px;
-    font-size:34px;
-    color:#e2c27a;
-    font-style:italic;
-    text-align:left;
+    color:#d9b66f;
+    font-size:24px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+}
+
+/* MENU */
+
+.nav{
+    margin-top:30px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:40px;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    padding-bottom:18px;
+}
+
+.nav a{
+    color:#dadada;
+    text-decoration:none;
+    font-size:24px;
+    transition:.25s;
+}
+
+.nav a:hover{
+    color:#f0c86d;
+}
+
+.nav .active{
+    color:#f0c86d;
+    border-bottom:2px solid #f0c86d;
+    padding-bottom:10px;
+}
+
+/* FEATURE BOXES */
+
+.feature-bar{
+    padding:25px 40px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+}
+
+.feature{
+    padding:12px 18px;
+    background:#0f1b2e;
+    border:1px solid rgba(255,215,0,.25);
+    border-radius:4px;
+    color:#ffd76d;
+    font-weight:700;
+    letter-spacing:1px;
+    box-shadow:
+    inset 0 0 10px rgba(255,215,0,.05);
 }
 
 /* LED BOARD */
 
 .led-wrap{
-    margin-top:20px;
-    border-top:3px solid #111;
-    border-bottom:3px solid #111;
+    margin-top:10px;
+    border-top:2px solid #3a2a00;
+    border-bottom:2px solid #3a2a00;
     background:#000;
     overflow:hidden;
+
     box-shadow:
-    0 0 25px #ffd700,
-    inset 0 0 25px rgba(255,215,0,.25);
+    0 0 20px rgba(255,215,0,.35),
+    inset 0 0 20px rgba(255,215,0,.12);
 }
 
 .led{
     white-space:nowrap;
     color:#ffe600;
-    font-size:52px;
+    font-size:42px;
     font-weight:700;
     padding:20px 0;
-    font-family:Consolas, monospace;
+    font-family:Consolas,monospace;
+
     text-shadow:
-    0 0 5px #ffe600,
-    0 0 15px #ffe600,
+    0 0 4px #ffe600,
+    0 0 12px #ffe600,
     0 0 25px #ffe600;
-    animation:scroll 120s linear infinite;
+
+    animation:scroll 42s linear infinite;
 }
 
 @keyframes scroll{
+
     from{
         transform:translateX(100%);
     }
+
     to{
         transform:translateX(-100%);
     }
+
 }
 
 /* HERO */
@@ -84,27 +140,64 @@ body{
 .hero{
     max-width:1200px;
     margin:auto;
-    padding:80px 30px;
+    padding:90px 30px;
 }
 
 .hero h2{
-    font-size:42px;
-    margin-bottom:20px;
-    color:#ffffff;
+    font-size:52px;
+    margin-bottom:25px;
 }
 
 .hero p{
     font-size:24px;
-    line-height:1.8;
-    color:#d8d8d8;
+    line-height:1.9;
+    color:#d9d9d9;
 }
 
+.highlight{
+    color:#f0c86d;
+    font-weight:bold;
+}
+
+/* FOOTER */
+
 .footer{
+    margin-top:80px;
     text-align:center;
     padding:40px;
+    border-top:1px solid rgba(255,255,255,.08);
     color:#888;
-    border-top:1px solid #222;
-    margin-top:80px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+    .brand{
+        font-size:46px;
+    }
+
+    .brand-sub{
+        font-size:16px;
+    }
+
+    .nav a{
+        font-size:18px;
+    }
+
+    .led{
+        font-size:24px;
+        animation:scroll 34s linear infinite;
+    }
+
+    .hero h2{
+        font-size:36px;
+    }
+
+    .hero p{
+        font-size:18px;
+    }
+
 }
 
 </style>
@@ -114,39 +207,68 @@ body{
 
 <div class="header">
 
-<div class="brand">
-EurekaLott
+    <div class="brand">
+        EurekaLott
+    </div>
+
+    <div class="brand-sub">
+        Where Dreams Begin
+    </div>
+
+    <div class="nav">
+        <a class="active">🏠 Trang Chủ</a>
+        <a>Chương Trình</a>
+        <a>AI Tools</a>
+        <a>Research</a>
+        <a>Analytics</a>
+        <a>Liên Hệ</a>
+    </div>
+
 </div>
 
-<div class="tagline">
-Nơi giấc mơ bắt đầu
-</div>
+<div class="feature-bar">
+
+    <div class="feature">AI TOOLS</div>
+    <div class="feature">BIG DATA</div>
+    <div class="feature">QUANT RESEARCH</div>
+    <div class="feature">FIBONACCI LAB</div>
+    <div class="feature">ANALYTICS</div>
+    <div class="feature">AUTOMATION</div>
+    <div class="feature">INNOVATION</div>
+    <div class="feature">MACHINE LEARNING</div>
+    <div class="feature">DATA SCIENCE</div>
+    <div class="feature">EUREKALOTT LABS</div>
 
 </div>
 
 <div class="led-wrap">
+
 <div class="led">
 
-★ NƠI GIẤC MƠ BẮT ĐẦU ★
+★ EUREKALOTT • WHERE DREAMS BEGIN ★
 
-Ngày đầu tiên chỉ là một tia sáng nhỏ giữa màn đêm chưa ai thấy con đường •
-Một ý tưởng mong manh như ngọn gió nhưng trong tim đã cháy một đại dương •
+&nbsp;&nbsp;&nbsp;&nbsp;
 
-Người ta cười khi đôi cánh còn dang dở •
-Người ta nghi ngờ khi bầu trời quá xa •
+MỌI HUYỀN THOẠI TỪNG LÀ MỘT GIẤC MỘNG •
 
-Đây là nơi giấc mơ bắt đầu •
-Nơi ngọn lửa đầu tiên bừng sáng •
+&nbsp;&nbsp;&nbsp;&nbsp;
 
-Mọi huyền thoại từng là một giấc mộng •
-Mọi đại dương từng bắt đầu từ giọt mưa •
+MỌI ĐẠI DƯƠNG TỪNG BẮT ĐẦU TỪ GIỌT MƯA •
 
-Đây là nơi giấc mơ bắt đầu •
-Và hành trình vẫn còn đang tiếp diễn •
+&nbsp;&nbsp;&nbsp;&nbsp;
 
-★ EUREKALOTT ★
+ĐÂY LÀ NƠI NHỮNG Ý TƯỞNG NHỎ BÉ HÔM NAY CÓ THỂ TRỞ THÀNH ĐIỀU KỲ DIỆU CỦA NGÀY MAI •
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+AI TOOLS • BIG DATA • QUANT RESEARCH • ANALYTICS • AUTOMATION • MACHINE LEARNING •
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+EUREKALOTT • WHERE DREAMS BEGIN •
 
 </div>
+
 </div>
 
 <div class="hero">
@@ -156,14 +278,32 @@ Welcome to EurekaLott
 </h2>
 
 <p>
-Nền tảng nghiên cứu, phát triển và triển khai các hệ thống dự đoán,
-công cụ phân tích dữ liệu và các chương trình trí tuệ số thế hệ mới.
+
+<span class="highlight">EurekaLott</span>
+là không gian nghiên cứu, sáng tạo và phát triển các hệ thống công nghệ thế hệ mới.
+
+<br><br>
+
+Từ trí tuệ nhân tạo, phân tích dữ liệu, tự động hóa quy trình đến các mô hình nghiên cứu định lượng,
+mỗi dự án đều bắt đầu từ một ý tưởng nhỏ nhưng mang theo khát vọng tạo nên giá trị lớn.
+
+<br><br>
+
+"Mọi huyền thoại từng là một giấc mộng.
+Mọi đại dương từng bắt đầu từ giọt mưa."
+
+<br><br>
+
+Đây là nơi những ý tưởng nhỏ bé hôm nay có thể trở thành điều kỳ diệu của ngày mai.
+
 </p>
 
 </div>
 
 <div class="footer">
-EurekaLott © 2026
+
+EurekaLott © 2026 • Where Dreams Begin
+
 </div>
 
 </body>
