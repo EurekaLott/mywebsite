@@ -4,79 +4,161 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>EurekaLott - Nơi Giấc Mơ Bắt Đầu</title>
+<title>EurekaLott | Nơi Giấc Mơ Bắt Đầu</title>
 
 <style>
-body{
+
+*{
     margin:0;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(to bottom,#0b132b,#1c2541,#3a506b);
-    color:white;
-    text-align:center;
+    padding:0;
+    box-sizing:border-box;
 }
+
+body{
+    background:#0a0f18;
+    color:white;
+    font-family:Segoe UI, Arial, sans-serif;
+    overflow-x:hidden;
+}
+
+/* HEADER */
+
+.header{
+    padding:30px 40px 10px 40px;
+}
+
+.brand{
+    font-size:72px;
+    font-weight:900;
+    letter-spacing:-2px;
+    color:#f2f2f2;
+    text-align:left;
+}
+
+.tagline{
+    margin-top:8px;
+    font-size:34px;
+    color:#e2c27a;
+    font-style:italic;
+    text-align:left;
+}
+
+/* LED BOARD */
+
+.led-wrap{
+    margin-top:20px;
+    border-top:3px solid #111;
+    border-bottom:3px solid #111;
+    background:#000;
+    overflow:hidden;
+    box-shadow:
+    0 0 25px #ffd700,
+    inset 0 0 25px rgba(255,215,0,.25);
+}
+
+.led{
+    white-space:nowrap;
+    color:#ffe600;
+    font-size:52px;
+    font-weight:700;
+    padding:20px 0;
+    font-family:Consolas, monospace;
+    text-shadow:
+    0 0 5px #ffe600,
+    0 0 15px #ffe600,
+    0 0 25px #ffe600;
+    animation:scroll 120s linear infinite;
+}
+
+@keyframes scroll{
+    from{
+        transform:translateX(100%);
+    }
+    to{
+        transform:translateX(-100%);
+    }
+}
+
+/* HERO */
 
 .hero{
-    padding:100px 20px;
-}
-
-h1{
-    font-size:60px;
-    color:#ffd700;
-    margin-bottom:10px;
-}
-
-h2{
-    font-size:30px;
-    margin-bottom:30px;
-}
-
-.quote{
-    max-width:800px;
+    max-width:1200px;
     margin:auto;
-    line-height:1.8;
-    font-size:20px;
-    color:#dbeafe;
+    padding:80px 30px;
 }
 
-.button{
-    display:inline-block;
-    margin-top:40px;
-    padding:15px 35px;
-    background:#ffd700;
-    color:black;
-    text-decoration:none;
-    border-radius:50px;
-    font-weight:bold;
-    font-size:20px;
+.hero h2{
+    font-size:42px;
+    margin-bottom:20px;
+    color:#ffffff;
+}
+
+.hero p{
+    font-size:24px;
+    line-height:1.8;
+    color:#d8d8d8;
 }
 
 .footer{
-    margin-top:100px;
-    padding:30px;
-    color:#cbd5e1;
+    text-align:center;
+    padding:40px;
+    color:#888;
+    border-top:1px solid #222;
+    margin-top:80px;
 }
+
 </style>
 </head>
 
 <body>
 
-<div class="hero">
+<div class="header">
 
-<h1>EurekaLott</h1>
-
-<h2>NƠI GIẤC MƠ BẮT ĐẦU</h2>
-
-<div class="quote">
-“Mọi huyền thoại từng là một giấc mộng,<br>
-mọi đại dương từng bắt đầu từ giọt mưa.”
-<br><br>
-Đây là nơi những ý tưởng nhỏ bé hôm nay
-có thể trở thành điều kỳ diệu của ngày mai.
+<div class="brand">
+EurekaLott
 </div>
 
-<a class="button" href="#">
-Khởi Hành
-</a>
+<div class="tagline">
+Nơi giấc mơ bắt đầu
+</div>
+
+</div>
+
+<div class="led-wrap">
+<div class="led">
+
+★ NƠI GIẤC MƠ BẮT ĐẦU ★
+
+Ngày đầu tiên chỉ là một tia sáng nhỏ giữa màn đêm chưa ai thấy con đường •
+Một ý tưởng mong manh như ngọn gió nhưng trong tim đã cháy một đại dương •
+
+Người ta cười khi đôi cánh còn dang dở •
+Người ta nghi ngờ khi bầu trời quá xa •
+
+Đây là nơi giấc mơ bắt đầu •
+Nơi ngọn lửa đầu tiên bừng sáng •
+
+Mọi huyền thoại từng là một giấc mộng •
+Mọi đại dương từng bắt đầu từ giọt mưa •
+
+Đây là nơi giấc mơ bắt đầu •
+Và hành trình vẫn còn đang tiếp diễn •
+
+★ EUREKALOTT ★
+
+</div>
+</div>
+
+<div class="hero">
+
+<h2>
+Welcome to EurekaLott
+</h2>
+
+<p>
+Nền tảng nghiên cứu, phát triển và triển khai các hệ thống dự đoán,
+công cụ phân tích dữ liệu và các chương trình trí tuệ số thế hệ mới.
+</p>
 
 </div>
 
