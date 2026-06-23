@@ -9,194 +9,168 @@
 <style>
 
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
 body{
-    background:
-    radial-gradient(circle at top,#13233f 0%,#08111f 40%,#04080f 100%);
-    color:white;
-    font-family:Segoe UI,Arial,sans-serif;
-    overflow-x:hidden;
+background:
+radial-gradient(circle at top,#13233f 0%,#08111f 40%,#04080f 100%);
+color:white;
+font-family:Segoe UI,Arial,sans-serif;
+overflow-x:hidden;
+min-height:100vh;
 }
 
 /* HEADER */
 
 .header{
-    padding:35px 50px 20px 50px;
+padding:35px 50px 20px 50px;
 }
 
 .brand{
-    font-size:72px;
-    font-weight:900;
-    letter-spacing:-2px;
-    color:#f5f5f5;
+font-size:72px;
+font-weight:900;
+letter-spacing:-2px;
+color:#f5f5f5;
 }
 
 .brand-sub{
-    margin-top:8px;
-    color:#d9b66f;
-    font-size:24px;
-    letter-spacing:3px;
-    text-transform:uppercase;
+margin-top:8px;
+font-size:24px;
+letter-spacing:3px;
+text-transform:uppercase;
+color:#d9b66f;
 }
 
 /* MENU */
 
 .nav{
-    margin-top:30px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:40px;
-    align-items:center;
-    border-bottom:1px solid rgba(255,255,255,.08);
-    padding-bottom:18px;
+margin-top:30px;
+display:flex;
+flex-wrap:wrap;
+gap:40px;
+align-items:center;
+border-bottom:1px solid rgba(255,255,255,.08);
+padding-bottom:18px;
 }
 
 .nav a{
-    color:#dadada;
-    text-decoration:none;
-    font-size:24px;
-    transition:.25s;
+text-decoration:none;
+color:#d9d9d9;
+font-size:24px;
+transition:.25s;
 }
 
 .nav a:hover{
-    color:#f0c86d;
+color:#f0c86d;
 }
 
 .nav .active{
-    color:#f0c86d;
-    border-bottom:2px solid #f0c86d;
-    padding-bottom:10px;
+color:#f0c86d;
+border-bottom:2px solid #f0c86d;
+padding-bottom:10px;
 }
 
 /* FEATURE BOXES */
 
 .feature-bar{
-    padding:25px 40px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:14px;
+padding:25px 40px;
+display:flex;
+flex-wrap:wrap;
+gap:14px;
 }
 
 .feature{
-    padding:12px 18px;
-    background:#0f1b2e;
-    border:1px solid rgba(255,215,0,.25);
-    border-radius:4px;
-    color:#ffd76d;
-    font-weight:700;
-    letter-spacing:1px;
-    box-shadow:
-    inset 0 0 10px rgba(255,215,0,.05);
+padding:12px 18px;
+background:#0f1b2e;
+border:1px solid rgba(255,215,0,.25);
+border-radius:4px;
+color:#ffd76d;
+font-weight:700;
+letter-spacing:1px;
+box-shadow:
+inset 0 0 10px rgba(255,215,0,.05);
 }
 
 /* LED BOARD */
 
 .led-wrap{
-    margin-top:10px;
-    border-top:2px solid #3a2a00;
-    border-bottom:2px solid #3a2a00;
-    background:#000;
-    overflow:hidden;
+margin-top:10px;
+background:#000;
+overflow:hidden;
 
-    box-shadow:
-    0 0 20px rgba(255,215,0,.35),
-    inset 0 0 20px rgba(255,215,0,.12);
+border-top:2px solid #3a2a00;
+border-bottom:2px solid #3a2a00;
+
+box-shadow:
+0 0 20px rgba(255,215,0,.35),
+inset 0 0 20px rgba(255,215,0,.12);
 }
 
 .led{
-    white-space:nowrap;
-    color:#ffe600;
-    font-size:42px;
-    font-weight:700;
-    padding:20px 0;
-    font-family:Consolas,monospace;
 
-    text-shadow:
-    0 0 4px #ffe600,
-    0 0 12px #ffe600,
-    0 0 25px #ffe600;
+white-space:nowrap;
 
-    animation:scroll 42s linear infinite;
+font-family:Consolas,monospace;
+font-size:42px;
+font-weight:700;
+
+padding:20px 0;
+
+color:#ffe600;
+
+text-shadow:
+0 0 4px #ffe600,
+0 0 12px #ffe600,
+0 0 25px #ffe600;
+
+animation:scroll 42s linear infinite;
 }
 
 @keyframes scroll{
 
-    from{
-        transform:translateX(100%);
-    }
-
-    to{
-        transform:translateX(-100%);
-    }
-
+from{
+transform:translateX(100%);
 }
 
-/* HERO */
-
-.hero{
-    max-width:1200px;
-    margin:auto;
-    padding:90px 30px;
+to{
+transform:translateX(-100%);
 }
 
-.hero h2{
-    font-size:52px;
-    margin-bottom:25px;
-}
-
-.hero p{
-    font-size:24px;
-    line-height:1.9;
-    color:#d9d9d9;
-}
-
-.highlight{
-    color:#f0c86d;
-    font-weight:bold;
 }
 
 /* FOOTER */
 
 .footer{
-    margin-top:80px;
-    text-align:center;
-    padding:40px;
-    border-top:1px solid rgba(255,255,255,.08);
-    color:#888;
+margin-top:120px;
+padding:40px;
+text-align:center;
+border-top:1px solid rgba(255,255,255,.08);
+color:#888;
 }
 
-/* RESPONSIVE */
+/* MOBILE */
 
 @media(max-width:768px){
 
-    .brand{
-        font-size:46px;
-    }
+.brand{
+font-size:46px;
+}
 
-    .brand-sub{
-        font-size:16px;
-    }
+.brand-sub{
+font-size:16px;
+}
 
-    .nav a{
-        font-size:18px;
-    }
+.nav a{
+font-size:18px;
+}
 
-    .led{
-        font-size:24px;
-        animation:scroll 34s linear infinite;
-    }
-
-    .hero h2{
-        font-size:36px;
-    }
-
-    .hero p{
-        font-size:18px;
-    }
+.led{
+font-size:24px;
+animation:scroll 34s linear infinite;
+}
 
 }
 
@@ -207,37 +181,37 @@ body{
 
 <div class="header">
 
-    <div class="brand">
-        EurekaLott
-    </div>
+<div class="brand">
+EurekaLott
+</div>
 
-    <div class="brand-sub">
-        Where Dreams Begin
-    </div>
+<div class="brand-sub">
+Where Dreams Begin
+</div>
 
-    <div class="nav">
-        <a class="active">🏠 Trang Chủ</a>
-        <a>Chương Trình</a>
-        <a>AI Tools</a>
-        <a>Research</a>
-        <a>Analytics</a>
-        <a>Liên Hệ</a>
-    </div>
+<div class="nav">
+<a class="active">🏠 Trang Chủ</a>
+<a>Chương Trình</a>
+<a>AI Tools</a>
+<a>Research</a>
+<a>Analytics</a>
+<a>Liên Hệ</a>
+</div>
 
 </div>
 
 <div class="feature-bar">
 
-    <div class="feature">AI TOOLS</div>
-    <div class="feature">BIG DATA</div>
-    <div class="feature">QUANT RESEARCH</div>
-    <div class="feature">FIBONACCI LAB</div>
-    <div class="feature">ANALYTICS</div>
-    <div class="feature">AUTOMATION</div>
-    <div class="feature">INNOVATION</div>
-    <div class="feature">MACHINE LEARNING</div>
-    <div class="feature">DATA SCIENCE</div>
-    <div class="feature">EUREKALOTT LABS</div>
+<div class="feature">AI TOOLS</div>
+<div class="feature">BIG DATA</div>
+<div class="feature">QUANT RESEARCH</div>
+<div class="feature">FIBONACCI LAB</div>
+<div class="feature">ANALYTICS</div>
+<div class="feature">AUTOMATION</div>
+<div class="feature">MACHINE LEARNING</div>
+<div class="feature">DATA SCIENCE</div>
+<div class="feature">INNOVATION</div>
+<div class="feature">EUREKALOTT LABS</div>
 
 </div>
 
@@ -271,39 +245,8 @@ EUREKALOTT • WHERE DREAMS BEGIN •
 
 </div>
 
-<div class="hero">
-
-<h2>
-Welcome to EurekaLott
-</h2>
-
-<p>
-
-<span class="highlight">EurekaLott</span>
-là không gian nghiên cứu, sáng tạo và phát triển các hệ thống công nghệ thế hệ mới.
-
-<br><br>
-
-Từ trí tuệ nhân tạo, phân tích dữ liệu, tự động hóa quy trình đến các mô hình nghiên cứu định lượng,
-mỗi dự án đều bắt đầu từ một ý tưởng nhỏ nhưng mang theo khát vọng tạo nên giá trị lớn.
-
-<br><br>
-
-"Mọi huyền thoại từng là một giấc mộng.
-Mọi đại dương từng bắt đầu từ giọt mưa."
-
-<br><br>
-
-Đây là nơi những ý tưởng nhỏ bé hôm nay có thể trở thành điều kỳ diệu của ngày mai.
-
-</p>
-
-</div>
-
 <div class="footer">
-
 EurekaLott © 2026 • Where Dreams Begin
-
 </div>
 
 </body>
