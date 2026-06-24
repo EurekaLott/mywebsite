@@ -16,6 +16,7 @@
 }
 
 body{
+
     background:
     linear-gradient(
         180deg,
@@ -32,28 +33,29 @@ body{
 
     overflow-x:hidden;
 
-    color:#fff;
+    color:white;
 }
 
-/* =======================
+/* ===========================
    HEADER
-======================= */
+=========================== */
 
 .header{
-    padding:
-        35px
-        50px
-        30px;
+    padding:40px 50px;
 }
 
-/* =======================
+/* ===========================
    LOGO
-======================= */
+=========================== */
 
 .brand{
+
     display:flex;
     align-items:center;
-    gap:15px;
+
+    gap:0;
+
+    line-height:1;
 }
 
 .eureka{
@@ -63,57 +65,60 @@ body{
 
     color:#ffffff;
 
-    letter-spacing:-1px;
+    letter-spacing:-2px;
 
     text-shadow:
-        0 2px 12px
+        0 2px 10px
         rgba(0,0,0,.20);
 }
 
 .lott-ball{
 
-    width:95px;
-    height:95px;
+    display:inline-flex;
 
-    border-radius:50%;
-
-    display:flex;
     justify-content:center;
     align-items:center;
+
+    width:145px;
+    height:74px;
+
+    margin-left:-6px;
+
+    border-radius:999px;
 
     background:
         radial-gradient(
             circle at 30% 30%,
-            #ff6666,
+            #ff6a6a,
             #d50000
         );
 
-    color:white;
+    color:#ffffff;
 
-    font-size:34px;
+    font-size:58px;
     font-weight:900;
 
+    letter-spacing:-2px;
+
     box-shadow:
-        0 8px 30px
+        0 8px 25px
         rgba(213,0,0,.35);
 }
 
 .brand-sub{
 
-    margin-top:12px;
+    margin-top:14px;
 
-    font-size:20px;
+    font-size:22px;
 
     color:#cfe0ff;
 
-    letter-spacing:2px;
-
-    text-transform:uppercase;
+    letter-spacing:3px;
 }
 
-/* =======================
+/* ===========================
    MENU
-======================= */
+=========================== */
 
 .nav{
 
@@ -135,7 +140,7 @@ body{
 
     padding:
         14px
-        24px;
+        22px;
 
     border-radius:12px;
 
@@ -145,7 +150,7 @@ body{
     transition:.25s;
 
     box-shadow:
-        0 5px 18px
+        0 5px 20px
         rgba(0,0,0,.15);
 }
 
@@ -155,8 +160,8 @@ body{
         translateY(-3px);
 
     box-shadow:
-        0 10px 25px
-        rgba(0,0,0,.22);
+        0 12px 30px
+        rgba(0,0,0,.25);
 }
 
 .nav .active{
@@ -166,9 +171,9 @@ body{
     color:#0a2e73;
 }
 
-/* =======================
+/* ===========================
    LED BOARD
-======================= */
+=========================== */
 
 .led-wrap{
 
@@ -176,15 +181,15 @@ body{
         40px
         50px;
 
-    background:#08182f;
+    background:#071528;
 
     overflow:hidden;
 
-    border-radius:15px;
+    border-radius:14px;
 
     box-shadow:
-        0 10px 40px
-        rgba(0,0,0,.30);
+        0 10px 35px
+        rgba(0,0,0,.35);
 }
 
 .led-track{
@@ -195,7 +200,7 @@ body{
 
     animation:
         ticker
-        35s
+        38s
         linear
         infinite;
 }
@@ -205,13 +210,12 @@ body{
     white-space:nowrap;
 
     padding:
-        22px
+        20px
         120px
-        22px
+        20px
         0;
 
-    font-size:26px;
-
+    font-size:24px;
     font-weight:800;
 
     color:#ffe600;
@@ -234,26 +238,24 @@ body{
     }
 }
 
-/* =======================
+/* ===========================
    FOOTER
-======================= */
+=========================== */
 
 .footer{
 
     margin-top:120px;
 
-    text-align:center;
-
     padding:40px;
 
-    color:#d5e2ff;
+    text-align:center;
 
-    font-size:16px;
+    color:#d7e4ff;
 }
 
-/* =======================
+/* ===========================
    MOBILE
-======================= */
+=========================== */
 
 @media(max-width:768px){
 
@@ -267,14 +269,17 @@ body{
 
     .lott-ball{
 
-        width:62px;
-        height:62px;
+        width:90px;
+        height:48px;
 
-        font-size:22px;
+        font-size:34px;
     }
 
     .brand-sub{
-        font-size:14px;
+
+        font-size:15px;
+
+        letter-spacing:2px;
     }
 
     .nav a{
@@ -306,16 +311,14 @@ body{
 
         <span class="eureka">
             Eureka
-        </span>
-
-        <span class="lott-ball">
+        </span><span class="lott-ball">
             Lott
         </span>
 
     </div>
 
     <div class="brand-sub">
-        AI Research Lab For Hidden Signals
+        Where Dreams Begin
     </div>
 
     <div class="nav">
