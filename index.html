@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0">
 
 <title>EurekaLott | Where Dreams Begin</title>
 
@@ -15,6 +16,7 @@
 }
 
 body{
+
     background:
     linear-gradient(
         180deg,
@@ -49,17 +51,16 @@ body{
 .brand{
     display:flex;
     align-items:center;
-    line-height:1;
     flex-wrap:nowrap;
-    user-select:none;
+    line-height:1;
 }
 
 .eureka{
 
-    color:#ffffff;
-
     font-size:72px;
     font-weight:900;
+
+    color:#ffffff;
 
     letter-spacing:-2px;
 
@@ -72,10 +73,10 @@ body{
 
 .lott{
 
-    color:#ff3b30;
-
     font-size:72px;
     font-weight:900;
+
+    color:#ff3b30;
 
     letter-spacing:-2px;
 
@@ -129,6 +130,8 @@ body{
 
     font-size:17px;
     font-weight:700;
+
+    cursor:pointer;
 
     transition:.25s;
 
@@ -285,7 +288,9 @@ body{
 <div class="header">
 
     <div class="brand">
+
         <span class="eureka">Eureka</span><span class="lott">Lott</span>
+
     </div>
 
     <div class="brand-sub">
@@ -299,27 +304,23 @@ body{
         </a>
 
         <a>
-            Powerball USA
+            🎯 Powerball USA
         </a>
 
         <a>
-            Mega Millions USA
-        </a>
-
-        <a>
-            Lotto America
-        </a>
-
-        <a>
-            Vietlott Power 6/55
-        </a>
-
-        <a>
-            Mega 6/45
+            📖 User Guide
         </a>
 
         <a>
             ✉ Contact
+        </a>
+
+        <a onclick="setLang('en')">
+            🇺🇸 English
+        </a>
+
+        <a onclick="setLang('vi')">
+            🇻🇳 Tiếng Việt
         </a>
 
     </div>
@@ -330,18 +331,22 @@ body{
 
     <div class="led-track">
 
-        <div class="led-item">
+        <div
+            class="led-item"
+            id="ledText">
+
             FROM TRACES TO SIGNALS •
             FROM SIGNALS TO HIDDEN STRUCTURES •
-            TỪ DẤU VẾT ĐẾN TÍN HIỆU •
-            TỪ TÍN HIỆU ĐẾN CẤU TRÚC ẨN •
+
         </div>
 
-        <div class="led-item">
+        <div
+            class="led-item"
+            id="ledText2">
+
             FROM TRACES TO SIGNALS •
             FROM SIGNALS TO HIDDEN STRUCTURES •
-            TỪ DẤU VẾT ĐẾN TÍN HIỆU •
-            TỪ TÍN HIỆU ĐẾN CẤU TRÚC ẨN •
+
         </div>
 
     </div>
@@ -351,6 +356,35 @@ body{
 <div class="footer">
     EurekaLott © 2026 • Where Dreams Begin
 </div>
+
+<script>
+
+function setLang(lang){
+
+    let text = "";
+
+    if(lang === "vi"){
+
+        text =
+        "TỪ DẤU VẾT ĐẾN TÍN HIỆU • TỪ TÍN HIỆU ĐẾN CẤU TRÚC ẨN • ";
+
+    }
+    else{
+
+        text =
+        "FROM TRACES TO SIGNALS • FROM SIGNALS TO HIDDEN STRUCTURES • ";
+    }
+
+    document.getElementById(
+        "ledText"
+    ).innerHTML = text;
+
+    document.getElementById(
+        "ledText2"
+    ).innerHTML = text;
+}
+
+</script>
 
 </body>
 </html>
