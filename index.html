@@ -1,69 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1.0">
-
-<title>EurekaLott | Where Dreams Begin</title>
-
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-
-    background:
-    linear-gradient(
-        180deg,
-        #0a2e73 0%,
-        #133f92 100%
-    );
-
-    min-height:100vh;
-
-    font-family:
-        "Segoe UI",
-        Arial,
-        sans-serif;
-
-    overflow-x:hidden;
-
-    color:white;
-}
-
-/* ===========================
-   HEADER
-=========================== */
-
-.header{
-    padding:40px 50px;
-}
-
 /* ===========================
    LOGO
 =========================== */
 
 .brand{
 
-    display:flex;
-    align-items:center;
-
-    gap:0;
+    white-space:nowrap;
 
     line-height:1;
+
+    font-weight:900;
+
+    user-select:none;
 }
 
 .eureka{
 
+    color:#ffffff;
+
     font-size:72px;
     font-weight:900;
-
-    color:#ffffff;
 
     letter-spacing:-2px;
 
@@ -74,35 +29,36 @@ body{
 
 .lott-ball{
 
-    display:inline-flex;
+    display:inline-block;
 
-    justify-content:center;
-    align-items:center;
+    /* đè nhẹ lên chữ a để đọc thành EurekaLott */
+    margin-left:-24px;
 
-    width:145px;
-    height:74px;
-
-    margin-left:-6px;
+    padding:
+        0px
+        16px
+        6px
+        16px;
 
     border-radius:999px;
 
     background:
         radial-gradient(
             circle at 30% 30%,
-            #ff6a6a,
+            #ff6666,
             #d50000
         );
 
     color:#ffffff;
 
-    font-size:58px;
+    font-size:72px;
     font-weight:900;
 
     letter-spacing:-2px;
 
     box-shadow:
         0 8px 25px
-        rgba(213,0,0,.35);
+        rgba(213,0,0,.30);
 }
 
 .brand-sub{
@@ -115,277 +71,3 @@ body{
 
     letter-spacing:3px;
 }
-
-/* ===========================
-   MENU
-=========================== */
-
-.nav{
-
-    margin-top:35px;
-
-    display:flex;
-    flex-wrap:wrap;
-
-    gap:14px;
-}
-
-.nav a{
-
-    text-decoration:none;
-
-    background:white;
-
-    color:#0a2e73;
-
-    padding:
-        14px
-        22px;
-
-    border-radius:12px;
-
-    font-size:17px;
-    font-weight:700;
-
-    transition:.25s;
-
-    box-shadow:
-        0 5px 20px
-        rgba(0,0,0,.15);
-}
-
-.nav a:hover{
-
-    transform:
-        translateY(-3px);
-
-    box-shadow:
-        0 12px 30px
-        rgba(0,0,0,.25);
-}
-
-.nav .active{
-
-    background:#ffd700;
-
-    color:#0a2e73;
-}
-
-/* ===========================
-   LED BOARD
-=========================== */
-
-.led-wrap{
-
-    margin:
-        40px
-        50px;
-
-    background:#071528;
-
-    overflow:hidden;
-
-    border-radius:14px;
-
-    box-shadow:
-        0 10px 35px
-        rgba(0,0,0,.35);
-}
-
-.led-track{
-
-    display:flex;
-
-    width:max-content;
-
-    animation:
-        ticker
-        38s
-        linear
-        infinite;
-}
-
-.led-item{
-
-    white-space:nowrap;
-
-    padding:
-        20px
-        120px
-        20px
-        0;
-
-    font-size:24px;
-    font-weight:800;
-
-    color:#ffe600;
-
-    text-shadow:
-        0 0 5px #ffe600,
-        0 0 15px #ffe600;
-}
-
-@keyframes ticker{
-
-    from{
-        transform:
-            translateX(0);
-    }
-
-    to{
-        transform:
-            translateX(-50%);
-    }
-}
-
-/* ===========================
-   FOOTER
-=========================== */
-
-.footer{
-
-    margin-top:120px;
-
-    padding:40px;
-
-    text-align:center;
-
-    color:#d7e4ff;
-}
-
-/* ===========================
-   MOBILE
-=========================== */
-
-@media(max-width:768px){
-
-    .header{
-        padding:25px;
-    }
-
-    .eureka{
-        font-size:46px;
-    }
-
-    .lott-ball{
-
-        width:90px;
-        height:48px;
-
-        font-size:34px;
-    }
-
-    .brand-sub{
-
-        font-size:15px;
-
-        letter-spacing:2px;
-    }
-
-    .nav a{
-
-        font-size:14px;
-
-        padding:
-            10px
-            16px;
-    }
-
-    .led-wrap{
-        margin:30px 25px;
-    }
-
-    .led-item{
-        font-size:18px;
-    }
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="header">
-
-    <div class="brand">
-
-        <span class="eureka">
-            Eureka
-        </span><span class="lott-ball">
-            Lott
-        </span>
-
-    </div>
-
-    <div class="brand-sub">
-        Where Dreams Begin
-    </div>
-
-    <div class="nav">
-
-        <a class="active">
-            🏠 Home
-        </a>
-
-        <a>
-            Powerball USA
-        </a>
-
-        <a>
-            Mega Millions USA
-        </a>
-
-        <a>
-            Lotto America
-        </a>
-
-        <a>
-            Vietlott Power 6/55
-        </a>
-
-        <a>
-            Mega 6/45
-        </a>
-
-        <a>
-            ✉ Contact
-        </a>
-
-    </div>
-
-</div>
-
-<div class="led-wrap">
-
-    <div class="led-track">
-
-        <div class="led-item">
-
-            FROM TRACES TO SIGNALS •
-            FROM SIGNALS TO HIDDEN STRUCTURES •
-
-            TỪ DẤU VẾT ĐẾN TÍN HIỆU •
-            TỪ TÍN HIỆU ĐẾN CẤU TRÚC ẨN •
-
-        </div>
-
-        <div class="led-item">
-
-            FROM TRACES TO SIGNALS •
-            FROM SIGNALS TO HIDDEN STRUCTURES •
-
-            TỪ DẤU VẾT ĐẾN TÍN HIỆU •
-            TỪ TÍN HIỆU ĐẾN CẤU TRÚC ẨN •
-
-        </div>
-
-    </div>
-
-</div>
-
-<div class="footer">
-    EurekaLott © 2026 • Where Dreams Begin
-</div>
-
-</body>
-</html>
