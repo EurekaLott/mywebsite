@@ -1,273 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>Powerball USA | EurekaLott</title>
 
 <style>
 
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
 body{
 
-    background:
-    linear-gradient(
-        180deg,
-        #0a2e73 0%,
-        #133f92 100%
-    );
+background:
+linear-gradient(
+180deg,
+#0a2e73 0%,
+#133f92 100%);
 
-    color:white;
+color:white;
 
-    font-family:
-        "Segoe UI",
-        Arial,
-        sans-serif;
+font-family:
+"Segoe UI",
+Arial,
+sans-serif;
 
-    min-height:100vh;
+min-height:100vh;
+
 }
 
-/* HEADER */
+/* ==========================
+HEADER
+========================== */
 
 .header{
 
-    padding:40px 50px;
+padding:40px 50px;
+
 }
 
 .brand{
 
-    font-size:60px;
+font-size:60px;
 
-    font-weight:900;
+font-weight:900;
 
-    font-style:italic;
+font-style:italic;
+
 }
 
 .eureka{
-    color:white;
+
+color:white;
+
 }
 
 .lott{
-    color:#ff3b30;
+
+color:#ff3b30;
+
 }
 
 .tagline{
 
-    margin-top:10px;
+margin-top:10px;
 
-    color:#cfe0ff;
+color:#cfe0ff;
 
-    letter-spacing:3px;
+letter-spacing:3px;
 
-    font-size:18px;
+font-size:18px;
+
 }
 
-/* MENU */
+/* ==========================
+MENU
+========================== */
 
 .nav{
 
-    margin-top:30px;
+margin-top:30px;
 
-    display:flex;
+display:flex;
 
-    flex-wrap:wrap;
+flex-wrap:wrap;
 
-    gap:14px;
+gap:14px;
+
 }
 
 .nav a{
 
-    text-decoration:none;
+text-decoration:none;
 
-    background:white;
+background:white;
 
-    color:#0a2e73;
+color:#0a2e73;
 
-    padding:12px 22px;
+padding:12px 22px;
 
-    border-radius:12px;
+border-radius:12px;
 
-    font-weight:700;
+font-weight:700;
 
-    transition:.25s;
+transition:.25s;
+
 }
 
 .nav a:hover{
 
-    transform:translateY(-3px);
+transform:translateY(-3px);
+
 }
 
 .active{
 
-    background:#ffd700 !important;
+background:#ffd700 !important;
+
 }
 
-/* CONTENT */
+/* ==========================
+CONTENT
+========================== */
 
 .container{
 
-    max-width:1200px;
+max-width:1200px;
 
-    margin:auto;
+margin:auto;
 
-    padding:30px;
+padding:30px;
+
 }
 
 .card{
 
-    background:#071528;
+background:#071528;
 
-    border-radius:18px;
+border-radius:18px;
 
-    padding:35px;
+padding:35px;
 
-    box-shadow:
-    0 10px 30px rgba(0,0,0,.30);
+box-shadow:
+0 10px 30px rgba(0,0,0,.30);
+
 }
 
 .title{
 
-    text-align:center;
+text-align:center;
 
-    font-size:42px;
+font-size:42px;
 
-    font-weight:900;
+font-weight:900;
 
-    margin-bottom:10px;
+margin-bottom:10px;
+
 }
 
 .date{
 
-    text-align:center;
+text-align:center;
 
-    color:#ffd700;
+color:#ffd700;
 
-    font-size:22px;
+font-size:22px;
 
-    margin-bottom:30px;
+margin-bottom:30px;
+
 }
+
+/* ==========================
+FORECAST RULES
+========================== */
 
 .rule{
 
-    background:#0f2240;
+background:#0b1c35;
 
-    border-left:4px solid #ffd700;
+border:2px solid #ffd700;
 
-    padding:18px;
+border-radius:16px;
 
-    border-radius:10px;
+padding:30px;
 
-    line-height:1.8;
+line-height:1.9;
 
-    margin-bottom:30px;
+font-size:17px;
+
+box-shadow:
+0 8px 25px rgba(0,0,0,.25);
+
+margin-bottom:35px;
+
+}
+
+.rule h3{
+
+color:#ffd700;
+
+font-size:28px;
+
+margin-bottom:18px;
+
+}
+
+.rule ul{
+
+margin-left:28px;
+
+margin-top:10px;
+
+}
+
+.rule li{
+
+margin:10px 0;
+
 }
 
 .table{
 
-    width:100%;
+width:100%;
 
-    border-collapse:collapse;
+border-collapse:collapse;
+
 }
 
 .table th{
 
-    background:#ffd700;
+background:#ffd700;
 
-    color:black;
+color:black;
 
-    padding:16px;
+padding:16px;
 
-    font-size:18px;
+font-size:18px;
+
 }
 
 .table td{
 
-    padding:18px;
+padding:18px;
 
-    text-align:center;
+text-align:center;
 
-    border-bottom:
-    1px solid rgba(255,255,255,.15);
+border-bottom:
+1px solid rgba(255,255,255,.15);
 
-    font-size:24px;
+font-size:24px;
 
-    font-weight:700;
+font-weight:700;
+
 }
 
 .table tr:hover{
 
-    background:
-    rgba(255,255,255,.05);
+background:
+rgba(255,255,255,.05);
+
 }
+    .recent{
 
-.recent{
+margin-top:50px;
 
-    margin-top:50px;
 }
 
 .recent h2{
 
-    margin-bottom:20px;
+margin-bottom:20px;
 
-    color:#ffd700;
+color:#ffd700;
+
 }
 
 .recent a{
 
-    display:block;
+display:block;
 
-    color:white;
+color:white;
 
-    text-decoration:none;
+text-decoration:none;
 
-    padding:10px 0;
+padding:10px 0;
+
 }
 
 .recent a:hover{
 
-    color:#ffd700;
+color:#ffd700;
+
 }
 
 .footer{
 
-    text-align:center;
+text-align:center;
 
-    padding:40px;
+padding:40px;
 
-    color:#cfe0ff;
+color:#cfe0ff;
+
 }
 
 @media(max-width:768px){
 
-    .brand{
-        font-size:42px;
-    }
+.brand{
 
-    .title{
-        font-size:28px;
-    }
+font-size:42px;
 
-    .table td{
-        font-size:16px;
-        padding:12px;
-    }
+}
 
-    .table th{
-        font-size:14px;
-    }
+.title{
 
-    .header{
-        padding:25px;
-    }
+font-size:28px;
+
+}
+
+.table td{
+
+font-size:16px;
+
+padding:12px;
+
+}
+
+.table th{
+
+font-size:14px;
+
+}
+
+.header{
+
+padding:25px;
+
+}
+
+.rule{
+
+padding:20px;
+
+font-size:15px;
+
+}
+
+.rule h3{
+
+font-size:22px;
+
+}
+
 }
 
 </style>
+
 </head>
 
 <body>
@@ -275,25 +369,35 @@ body{
 <div class="header">
 
 <div class="brand">
+
 <span class="eureka">Eureka</span><span class="lott">Lott</span>
+
 </div>
 
 <div class="tagline">
+
 Where Dreams Begin
+
 </div>
 
 <div class="nav">
 
 <a href="index.html">
+
 🏠 Home
+
 </a>
 
 <a class="active">
+
 🎯 Powerball USA
+
 </a>
 
 <a href="#">
+
 ✉ Contact
+
 </a>
 
 </div>
@@ -305,24 +409,134 @@ Where Dreams Begin
 <div class="card">
 
 <div class="title">
+
 POWERBALL USA
+
 </div>
 
-<!-- DAILY UPDATE START -->
+<!-- ==========================
+DAILY UPDATE START
+========================== -->
 
 <div class="date">
+
 June 25, 2026
+
 </div>
 
 <div class="rule">
 
-<b>Rule:</b><br>
+<h3>
 
-Choose ONE number from the LEFT pair<br>
+Forecast Rules
 
-OR<br>
+</h3>
 
-Choose ONE number from the RIGHT pair
+<p>
+
+<b>1. Choose ONE Side Only</b><br>
+
+Select either <b>LEFT AI SIGNALS</b> or <b>RIGHT AI SIGNALS</b>.<br>
+
+Do not combine both sides.
+
+</p>
+
+<br>
+
+<p>
+
+<b>2. Latest Draw</b><br>
+
+The <b>Latest Draw</b> is the reference draw used to generate the AI Signals.<br>
+
+It is <b>NOT</b> the draw for using this forecast.
+
+</p>
+<br>
+
+<p>
+
+<b>3. Three Checkpoints</b><br><br>
+
+Imagine there are <b>three checkpoints</b>
+on the journey toward the
+<b>Final Destination.</b>
+
+</p>
+
+<ul>
+
+<li>
+
+<b>Checkpoint 1:</b>
+
+If either AI Signal on your chosen side appears,
+<b>stop tracking this forecast immediately.</b>
+
+</li>
+
+<li>
+
+<b>Checkpoint 2:</b>
+
+If either AI Signal on your chosen side appears,
+<b>stop tracking this forecast immediately.</b>
+
+</li>
+
+<li>
+
+Only if <b>neither AI Signal appears</b>
+at Checkpoint 1 or Checkpoint 2
+should you continue to the
+<b>Final Destination.</b>
+
+</li>
+
+</ul>
+
+<br>
+
+<p>
+
+<b>4. Final Destination</b><br><br>
+
+The third draw is the
+<b>Final Destination.</b>
+
+<br><br>
+
+At this point,
+choose <b>ONE</b> number from your selected
+AI Signal pair.
+
+<br><br>
+
+<b>If your chosen number appears in this draw,
+the AI forecast is considered successful.</b>
+
+</p>
+
+<br>
+
+<p>
+
+<b>5. Help Improve EurekaLott</b><br><br>
+
+If you find that this forecasting method
+does not perform as expected,
+<b>even a single time</b>,
+please report it to us.
+
+<br><br>
+
+Every report is valuable in helping improve
+the system and removing methods that
+no longer meet
+<b>EurekaLott's quality standards.</b>
+
+</p>
 
 </div>
 
@@ -330,68 +544,111 @@ Choose ONE number from the RIGHT pair
 
 <tr>
 
-<th>AI SIGNALS</th>
+<th>
 
-<th>LATEST DRAW</th>
+AI SIGNALS
 
-<th>AI SIGNALS</th>
+</th>
+
+<th>
+
+LATEST DRAW
+
+</th>
+
+<th>
+
+AI SIGNALS
+
+</th>
 
 </tr>
 
 <tr>
+
 <td>19 12</td>
+
 <td>68 27 63 33 66</td>
+
 <td>45 12</td>
+
 </tr>
 
 <tr>
+
 <td>08 41</td>
+
 <td>68 27 63 33 66</td>
+
 <td>29 54</td>
+
 </tr>
 
 <tr>
+
 <td>16 33</td>
+
 <td>68 27 63 33 66</td>
+
 <td>11 48</td>
+
 </tr>
 
 <tr>
+
 <td>22 57</td>
+
 <td>68 27 63 33 66</td>
+
 <td>36 09</td>
+
 </tr>
 
 <tr>
+
 <td>04 71</td>
+
 <td>68 27 63 33 66</td>
+
 <td>18 43</td>
+
 </tr>
 
 </table>
 
-<!-- DAILY UPDATE END -->
-
-<div class="recent">
+<!-- ==========================
+DAILY UPDATE END
+========================== -->
+    <div class="recent">
 
 <h2>
+
 Recent Forecasts
+
 </h2>
 
 <a href="#">
+
 ▶ June 24, 2026
+
 </a>
 
 <a href="#">
+
 ▶ June 23, 2026
+
 </a>
 
 <a href="#">
+
 ▶ June 22, 2026
+
 </a>
 
 <a href="#">
+
 ▶ June 21, 2026
+
 </a>
 
 </div>
@@ -407,4 +664,5 @@ EurekaLott © 2026 • Where Dreams Begin
 </div>
 
 </body>
+
 </html>
