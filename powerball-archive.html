@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Powerball Archive | EurekaLott</title>
+
+<script src="archive-data.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+
+background:
+linear-gradient(
+180deg,
+#0a2e73 0%,
+#133f92 100%);
+
+color:white;
+
+font-family:
+"Segoe UI",
+Arial,
+sans-serif;
+
+min-height:100vh;
+
+}
+
+.header{
+
+padding:40px 50px;
+
+}
+
+.brand{
+
+font-size:60px;
+
+font-weight:900;
+
+font-style:italic;
+
+}
+
+.eureka{
+
+color:white;
+
+}
+
+.lott{
+
+color:#ff3b30;
+
+}
+
+.tagline{
+
+margin-top:10px;
+
+color:#cfe0ff;
+
+letter-spacing:3px;
+
+font-size:18px;
+
+}
+
+.nav{
+
+margin-top:30px;
+
+display:flex;
+
+flex-wrap:wrap;
+
+gap:14px;
+
+}
+
+.nav a{
+
+text-decoration:none;
+
+background:white;
+
+color:#0a2e73;
+
+padding:12px 22px;
+
+border-radius:12px;
+
+font-weight:700;
+
+transition:.25s;
+
+}
+
+.nav a:hover{
+
+transform:translateY(-3px);
+
+}
+
+.active{
+
+background:#ffd700 !important;
+
+}
+
+.container{
+
+max-width:1200px;
+
+margin:auto;
+
+padding:30px;
+
+}
+
+.card{
+
+background:#071528;
+
+border-radius:18px;
+
+padding:35px;
+
+box-shadow:
+0 10px 30px rgba(0,0,0,.30);
+
+}
+
+.title{
+
+text-align:center;
+
+font-size:42px;
+
+font-weight:900;
+
+margin-bottom:30px;
+
+color:#ffd700;
+
+}
+
+.archiveBlock{
+
+margin-bottom:50px;
+
+}
+
+.archiveDate{
+
+font-size:26px;
+
+font-weight:900;
+
+color:#ffd700;
+
+margin-bottom:20px;
+
+text-align:center;
+
+}
+
+.table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-bottom:20px;
+
+}
+
+.table th{
+
+background:#ffd700;
+
+color:black;
+
+padding:16px;
+
+font-size:18px;
+
+}
+
+.table td{
+
+padding:18px;
+
+text-align:center;
+
+border-bottom:
+1px solid rgba(255,255,255,.15);
+
+font-size:22px;
+
+font-weight:700;
+
+}
+
+.table tr:hover{
+
+background:
+rgba(255,255,255,.05);
+
+}
+
+.footer{
+
+text-align:center;
+
+padding:40px;
+
+color:#cfe0ff;
+
+}
+
+@media(max-width:768px){
+
+.brand{
+
+font-size:42px;
+
+}
+
+.title{
+
+font-size:30px;
+
+}
+
+.archiveDate{
+
+font-size:22px;
+
+}
+
+.table td{
+
+font-size:16px;
+
+padding:12px;
+
+}
+
+.table th{
+
+font-size:14px;
+
+}
+
+.header{
+
+padding:25px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<div class="brand">
+
+<span class="eureka">Eureka</span><span class="lott">Lott</span>
+
+</div>
+
+<div class="tagline">
+
+Where Dreams Begin
+
+</div>
+
+<div class="nav">
+
+<a href="index.html">
+
+🏠 Home
+
+</a>
+
+<a href="powerball.html">
+
+🎯 Powerball USA
+
+</a>
+
+<a class="active">
+
+📚 Forecast Archive
+
+</a>
+
+</div>
+
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<div class="title">
+
+POWERBALL FORECAST ARCHIVE
+
+</div>
+
+<div id="archiveContainer">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="footer">
+
+EurekaLott © 2026 • Where Dreams Begin
+
+</div>
+<script>
+
+const container =
+document.getElementById("archiveContainer");
+
+const months = [
+
+"",
+"January",
+"February",
+"March",
+"April",
+"May",
+"June",
+"July",
+"August",
+"September",
+"October",
+"November",
+"December"
+
+];
+
+archive.forEach(item=>{
+
+    const d = item.date.split(/\s+/);
+
+    const year = d[0];
+    const month = months[parseInt(d[1],10)];
+    const day = parseInt(d[2],10);
+
+    let html = `
+
+<div class="archiveBlock">
+
+<div class="archiveDate">
+
+${month} ${day}, ${year}
+
+</div>
+
+<table class="table">
+
+<thead>
+
+<tr>
+
+<th>AI SIGNALS</th>
+
+<th>LATEST DRAW</th>
+
+<th>AI SIGNALS</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+`;
+
+    const rows =
+    item.rows
+    .trim()
+    .split(/\r?\n/);
+
+    rows.forEach(r=>{
+
+        const n = r.trim().split(/\s+/);
+
+        if(n.length!==9) return;
+
+        html += `
+
+<tr>
+
+<td>${n[0]} ${n[1]}</td>
+
+<td>${n[2]} ${n[3]} ${n[4]} ${n[5]} ${n[6]}</td>
+
+<td>${n[7]} ${n[8]}</td>
+
+</tr>
+
+`;
+
+    });
+
+    html += `
+
+</tbody>
+
+</table>
+
+</div>
+
+`;
+
+    container.innerHTML += html;
+
+});
+
+</script>
+
+</body>
+
+</html>
