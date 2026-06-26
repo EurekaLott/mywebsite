@@ -603,29 +603,49 @@ EurekaLott © 2026 • Where Dreams Begin
 </div>
 <script>
 
-document.getElementById("forecastDate").textContent =
-forecast.date;
+<script>
 
-const tbody =
-document.getElementById("forecastTable");
+const text = forecast.trim();
 
-forecast.rows.forEach(function(row){
+const lines = text.split("\n");
 
-tbody.innerHTML += `
+const date = lines[0].trim();
 
-<tr>
+document.getElementById("forecastDate").textContent = date;
 
-<td>${row[0]}</td>
+const tbody = document.getElementById("forecastTable");
 
-<td>${forecast.latestDraw}</td>
+for(let i = 1; i < lines.length; i++){
 
-<td>${row[1]}</td>
+    const line = lines[i].trim();
 
-</tr>
+    if(line === "") continue;
 
-`;
+    const parts = line.split("|");
 
-});
+    if(parts.length !== 3) continue;
+
+    const left = parts[0].trim();
+
+    const latest = parts[1].trim();
+
+    const right = parts[2].trim();
+
+    tbody.innerHTML += `
+
+    <tr>
+
+        <td>${left}</td>
+
+        <td>${latest}</td>
+
+        <td>${right}</td>
+
+    </tr>
+
+    `;
+
+}
 
 </script>
     
