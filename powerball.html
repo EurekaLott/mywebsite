@@ -9,7 +9,7 @@
 content="width=device-width, initial-scale=1.0">
 
 <title>Powerball USA | EurekaLott</title>
-
+<script src="forecast-data.js"></script> 
 <style>
 
 *{
@@ -418,11 +418,7 @@ POWERBALL USA
 DAILY UPDATE START
 ========================== -->
 
-<div class="date">
-
-June 25, 2026
-
-</div>
+<div class="date" id="forecastDate"></div>
 
 <div class="rule">
 
@@ -542,83 +538,26 @@ no longer meet
 
 <table class="table">
 
-<tr>
-
-<th>
-
-AI SIGNALS
-
-</th>
-
-<th>
-
-LATEST DRAW
-
-</th>
-
-<th>
-
-AI SIGNALS
-
-</th>
-
-</tr>
+<thead>
 
 <tr>
 
-<td>19 12</td>
+<th>AI SIGNALS</th>
 
-<td>68 27 63 33 66</td>
+<th>LATEST DRAW</th>
 
-<td>45 12</td>
-
-</tr>
-
-<tr>
-
-<td>08 41</td>
-
-<td>68 27 63 33 66</td>
-
-<td>29 54</td>
+<th>AI SIGNALS</th>
 
 </tr>
 
-<tr>
+</thead>
 
-<td>16 33</td>
+<tbody id="forecastTable">
 
-<td>68 27 63 33 66</td>
-
-<td>11 48</td>
-
-</tr>
-
-<tr>
-
-<td>22 57</td>
-
-<td>68 27 63 33 66</td>
-
-<td>36 09</td>
-
-</tr>
-
-<tr>
-
-<td>04 71</td>
-
-<td>68 27 63 33 66</td>
-
-<td>18 43</td>
-
-</tr>
+</tbody>
 
 </table>
-
-<!-- ==========================
-DAILY UPDATE END
-========================== -->
+    
     <div class="recent">
 
 <h2>
@@ -662,7 +601,34 @@ Recent Forecasts
 EurekaLott © 2026 • Where Dreams Begin
 
 </div>
+<script>
 
+document.getElementById("forecastDate").textContent =
+forecast.date;
+
+const tbody =
+document.getElementById("forecastTable");
+
+forecast.rows.forEach(function(row){
+
+tbody.innerHTML += `
+
+<tr>
+
+<td>${row[0]}</td>
+
+<td>${forecast.latestDraw}</td>
+
+<td>${row[1]}</td>
+
+</tr>
+
+`;
+
+});
+
+</script>
+    
 </body>
 
 </html>
