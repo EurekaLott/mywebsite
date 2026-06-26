@@ -607,43 +607,79 @@ EurekaLott © 2026 • Where Dreams Begin
 
 const text = forecast.trim();
 
-const lines = text.split("\n");
+const lines = text
+.split(/\r?\n/)
+.map(line => line.trim())
+.filter(line => line !== "");
 
-const date = lines[0].trim();
+/* ==========================
+DATE
+========================== */
 
-document.getElementById("forecastDate").textContent = date;
+const d = lines[0].split(/\s+/);
 
-const tbody = document.getElementById("forecastTable");
+const year = d[0];
+
+const month = parseInt(d[1],10);
+
+const day = parseInt(d[2],10);
+
+const months = [
+
+"",
+"January",
+"February",
+"March",
+"April",
+"May",
+"June",
+"July",
+"August",
+"September",
+"October",
+"November",
+"December"
+
+];
+
+document.getElementById("forecastDate").textContent =
+`${months[month]} ${day}, ${year}`;
+
+/* ==========================
+TABLE
+========================== */
+
+const tbody =
+document.getElementById("forecastTable");
 
 for(let i = 1; i < lines.length; i++){
 
-    const line = lines[i].trim();
+    const n = lines[i].split(/\s+/);
 
-    if(line === "") continue;
+    if(n.length !== 9) continue;
 
-    const parts = line.split("|");
+    const left =
+    `${n[0]} ${n[1]}`;
 
-    if(parts.length !== 3) continue;
+    const latest =
+    `${n[2]} ${n[3]} ${n[4]} ${n[5]} ${n[6]}`;
 
-    const left = parts[0].trim();
-
-    const latest = parts[1].trim();
-
-    const right = parts[2].trim();
+    const right =
+    `${n[7]} ${n[8]}`;
 
     tbody.innerHTML += `
 
-    <tr>
+<tr>
 
-        <td>${left}</td>
+<td>${left}</td>
 
-        <td>${latest}</td>
+<td>${latest}</td>
 
-        <td>${right}</td>
+<td>${right}</td>
 
-    </tr>
+</tr>
 
-    `;
+`;
 
 }
 
