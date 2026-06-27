@@ -1,0 +1,48 @@
+name: Daily Forecast Verification
+
+on:
+  schedule:
+    #  08:00 UTC = 15:00 giờ Việt Nam
+    #  Powerball quay lúc 22:59 ET (Mỹ) = ~10:00 UTC hôm sau
+    #  → 08:00 UTC đảm bảo powerball.com đã cập nhật kết quả đêm trước
+    - cron: '0 8 * * *'
+
+  # Cho phép chạy thủ công từ GitHub UI khi cần
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo (branch main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch & normalize Powerball draws → draws-data.js
+        run: node fetch-draws.js
+
+      - name: Verify forecasts → verified-data.js
+        run: node verify.js
+
+      - name: Commit & push to main (triggers Cloudflare Pages auto-deploy)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add draws-data.js verified-data.js
+          if git diff --cached --quiet; then
+            echo "✅ No changes — draws and forecasts already up to date."
+          else
+            git commit -m "🔄 Auto-update draws & verify forecasts [skip ci]"
+            git push origin main
+          fi
