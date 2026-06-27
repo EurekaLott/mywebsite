@@ -9,7 +9,8 @@
 content="width=device-width, initial-scale=1.0">
 
 <title>Powerball USA | EurekaLott</title>
-<script src="forecast-data.js"></script> 
+<script src="forecast-data.js"></script>
+<script src="verified-data.js"></script>
 <style>
 
 *{
@@ -310,6 +311,68 @@ color:#cfe0ff;
 
 }
 
+/* ==========================
+STATUS SECTION (ACTIVE / CANCELLED)
+========================== */
+
+.status-card{
+    border-radius:16px;
+    padding:25px 30px;
+    margin-bottom:25px;
+    box-shadow:0 8px 25px rgba(0,0,0,.25);
+}
+
+.status-card.active{
+    background:#0b1c35;
+    border:2px solid #2ecc71;
+}
+
+.status-card.cancelled{
+    background:#1a0e0e;
+    border:2px solid #ff4d4d;
+    opacity:.75;
+}
+
+.status-card h3{
+    font-size:24px;
+    margin-bottom:14px;
+}
+
+.status-card.active h3{ color:#2ecc71; }
+.status-card.cancelled h3{ color:#ff4d4d; }
+
+.status-row{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    font-size:16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.status-row b{ color:#cfe0ff; }
+
+.cancelled-section{
+    margin-top:50px;
+}
+
+.cancelled-section .disclaimer{
+    color:#cfe0ff;
+    font-size:14px;
+    margin-bottom:20px;
+    line-height:1.6;
+    opacity:.8;
+}
+
+details.cancelled-details{
+    margin-top:10px;
+}
+
+details.cancelled-details summary{
+    color:#ffd700;
+    cursor:pointer;
+    font-weight:700;
+}
+
 @media(max-width:768px){
 
 .brand{
@@ -413,6 +476,12 @@ Where Dreams Begin
 POWERBALL USA
 
 </div>
+
+<!-- ==========================
+STATUS SECTION START
+========================== -->
+
+<div id="statusSection"></div>
 
 <!-- ==========================
 DAILY UPDATE START
@@ -681,6 +750,73 @@ for(let i = 1; i < lines.length; i++){
 
 `;
 
+}
+
+/* ==========================
+STATUS SECTION (ACTIVE / CANCELLED)
+đọc từ verified-data.js
+========================== */
+
+if (typeof verified !== "undefined" && verified.length > 0) {
+
+    const statusDiv = document.getElementById("statusSection");
+    let activeHtml = "";
+    let cancelledHtml = "";
+
+    verified.forEach(v => {
+
+        const cp1Label = v.cp1 ? "✔ PASS" : "—";
+        const cp2Label = v.cp2 ? "✔ PASS" : "—";
+
+        if (v.status === "ALIVE") {
+
+            activeHtml += `
+                <div class="status-card active">
+                    <h3>🟢 ACTIVE FORECAST</h3>
+                    <div class="status-row"><span>Forecast Date</span><b>${v.finalDate}</b></div>
+                    <div class="status-row"><span>Status</span><b>✅ ACTIVE</b></div>
+                    <div class="status-row"><span>Checkpoint 1</span><b>${cp1Label}</b></div>
+                    <div class="status-row"><span>Checkpoint 2</span><b>${cp2Label}</b></div>
+                    <div class="status-row"><span>Final Destination</span><b>🎯 READY</b></div>
+                </div>
+            `;
+
+        } else if (v.status === "DEAD") {
+
+            cancelledHtml += `
+                <div class="status-card cancelled">
+                    <h3>🔴 FORECAST CANCELLED</h3>
+                    <div class="status-row"><span>Forecast Date</span><b>${v.finalDate}</b></div>
+                    <div class="status-row"><span>Status</span><b>❌ CANCELLED</b></div>
+                    <details class="cancelled-details">
+                        <summary>View Details</summary>
+                        <p style="margin-top:10px; opacity:.85;">${v.reason}</p>
+                    </details>
+                </div>
+            `;
+
+        }
+        // status === "PENDING" → không hiển thị card, tránh gây hiểu lầm khi data chưa đủ
+
+    });
+
+    let html = activeHtml;
+
+    if (cancelledHtml !== "") {
+        html += `
+            <div class="cancelled-section">
+                <h2 style="color:#ffd700;">📚 CANCELLED FORECASTS <small style="opacity:.6;">(Reference Only)</small></h2>
+                <p class="disclaimer">
+                    These forecasts are provided for transparency and research only.
+                    They should not be used for prediction because the forecast was
+                    cancelled before reaching the Final Destination.
+                </p>
+                ${cancelledHtml}
+            </div>
+        `;
+    }
+
+    statusDiv.innerHTML = html;
 }
 
 </script>
