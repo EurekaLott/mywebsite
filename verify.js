@@ -7,7 +7,17 @@
 const fs = require('fs');
 const { draws: rawDraws } = require('./draws-data.js');
 const draws = rawDraws.slice().sort((a, b) => a.date.localeCompare(b.date));
-const { forecast } = require('./forecast-data.js'); // số ít, đúng export thật
+
+// Đọc forecast-data.js như TEXT THUẦN, không require() — vì file này còn được
+// browser load trực tiếp qua <script src="forecast-data.js">, không có module.exports
+const forecastText = fs.readFileSync('./forecast-data.js', 'utf8');
+const forecastMatch = forecastText.match(/`([\s\S]*?)`/);
+const forecast = forecastMatch ? forecastMatch[1] : null;
+
+if (!forecast) {
+  console.error('❌ Không tìm thấy nội dung forecast trong forecast-data.js (thiếu cặp dấu ` `)');
+  process.exit(1);
+}
 
 function all6(draw) {
   return [...draw.white, draw.powerball];
