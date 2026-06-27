@@ -2,825 +2,499 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Powerball USA | EurekaLott</title>
 <script src="forecast-data.js"></script>
 <script src="verified-data.js"></script>
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-
-background:
-linear-gradient(
-180deg,
-#0a2e73 0%,
-#133f92 100%);
-
-color:white;
-
-font-family:
-"Segoe UI",
-Arial,
-sans-serif;
-
-min-height:100vh;
-
+  background:linear-gradient(180deg,#0a2e73 0%,#133f92 100%);
+  color:white;
+  font-family:"Segoe UI",Arial,sans-serif;
+  min-height:100vh;
 }
 
-/* ==========================
-HEADER
-========================== */
-
-.header{
-
-padding:40px 50px;
-
-}
-
-.brand{
-
-font-size:60px;
-
-font-weight:900;
-
-font-style:italic;
-
-}
-
-.eureka{
-
-color:white;
-
-}
-
-.lott{
-
-color:#ff3b30;
-
-}
-
-.tagline{
-
-margin-top:10px;
-
-color:#cfe0ff;
-
-letter-spacing:3px;
-
-font-size:18px;
-
-}
-
-/* ==========================
-MENU
-========================== */
-
-.nav{
-
-margin-top:30px;
-
-display:flex;
-
-flex-wrap:wrap;
-
-gap:14px;
-
-}
-
-.nav a{
-
-text-decoration:none;
-
-background:white;
-
-color:#0a2e73;
-
-padding:12px 22px;
-
-border-radius:12px;
-
-font-weight:700;
-
-transition:.25s;
-
-}
-
-.nav a:hover{
-
-transform:translateY(-3px);
-
-}
-
-.active{
-
-background:#ffd700 !important;
-
-}
-
-/* ==========================
-CONTENT
-========================== */
-
-.container{
-
-max-width:1200px;
-
-margin:auto;
-
-padding:30px;
-
-}
-
-.card{
-
-background:#071528;
-
-border-radius:18px;
-
-padding:35px;
-
-box-shadow:
-0 10px 30px rgba(0,0,0,.30);
-
-}
-
-.title{
-
-text-align:center;
-
-font-size:42px;
-
-font-weight:900;
-
-margin-bottom:10px;
-
-}
-
-.date{
-
-text-align:center;
-
-color:#ffd700;
-
-font-size:22px;
-
-margin-bottom:30px;
-
-}
-
-/* ==========================
-FORECAST RULES
-========================== */
-
+/* HEADER */
+.header{padding:40px 50px;}
+.brand{font-size:60px;font-weight:900;font-style:italic;}
+.eureka{color:white;}
+.lott{color:#ff3b30;}
+.tagline{margin-top:10px;color:#cfe0ff;letter-spacing:3px;font-size:18px;}
+
+/* NAV */
+.nav{margin-top:30px;display:flex;flex-wrap:wrap;gap:14px;}
+.nav a{text-decoration:none;background:white;color:#0a2e73;padding:12px 22px;border-radius:12px;font-weight:700;transition:.25s;}
+.nav a:hover{transform:translateY(-3px);}
+.active{background:#ffd700 !important;}
+
+/* CONTAINER */
+.container{max-width:1200px;margin:auto;padding:30px;}
+.card{background:#071528;border-radius:18px;padding:35px;box-shadow:0 10px 30px rgba(0,0,0,.30);}
+
+.title{text-align:center;font-size:42px;font-weight:900;margin-bottom:10px;}
+.date{text-align:center;color:#ffd700;font-size:22px;margin-bottom:30px;}
+
+/* FORECAST RULES */
 .rule{
+  background:#0b1c35;border:2px solid #ffd700;border-radius:16px;
+  padding:30px;line-height:1.9;font-size:17px;
+  box-shadow:0 8px 25px rgba(0,0,0,.25);margin-bottom:35px;
+}
+.rule h3{color:#ffd700;font-size:28px;margin-bottom:18px;}
+.rule ul{margin-left:28px;margin-top:10px;}
+.rule li{margin:10px 0;}
 
-background:#0b1c35;
+/* TABLE */
+.table{width:100%;border-collapse:collapse;}
+.table th{background:#ffd700;color:black;padding:16px;font-size:18px;}
+.table td{padding:18px;text-align:center;border-bottom:1px solid rgba(255,255,255,.15);font-size:24px;font-weight:700;}
+.table tr:hover{background:rgba(255,255,255,.05);}
 
-border:2px solid #ffd700;
+/* RECENT */
+.recent{margin-top:50px;}
+.recent h2{margin-bottom:20px;color:#ffd700;}
+.recent a{display:block;color:white;text-decoration:none;padding:10px 0;}
+.recent a:hover{color:#ffd700;}
 
-border-radius:16px;
+/* FOOTER */
+.footer{text-align:center;padding:40px;color:#cfe0ff;}
 
-padding:30px;
-
-line-height:1.9;
-
-font-size:17px;
-
-box-shadow:
-0 8px 25px rgba(0,0,0,.25);
-
-margin-bottom:35px;
-
+/* =====================
+   TIMELINE STATUS BANNER
+   ===================== */
+.status-banner{
+  border-radius:16px;
+  padding:28px 32px;
+  margin-bottom:30px;
+  border-width:2px;
+  border-style:solid;
 }
 
-.rule h3{
+/* awaiting states */
+.status-banner.awaiting{
+  background:#0b1c35;
+  border-color:#4a90d9;
+}
+.status-banner.awaiting .banner-icon{color:#4a90d9;}
+.status-banner.awaiting .banner-title{color:#4a90d9;}
 
-color:#ffd700;
+/* ready state */
+.status-banner.ready{
+  background:#051f0e;
+  border-color:#2ecc71;
+}
+.status-banner.ready .banner-icon{color:#2ecc71;}
+.status-banner.ready .banner-title{color:#2ecc71;}
 
-font-size:28px;
+/* cancelled state */
+.status-banner.cancelled{
+  background:#1a0808;
+  border-color:#ff4d4d;
+}
+.status-banner.cancelled .banner-icon{color:#ff4d4d;}
+.status-banner.cancelled .banner-title{color:#ff4d4d;}
 
-margin-bottom:18px;
+.banner-icon{font-size:32px;margin-bottom:8px;}
+.banner-title{font-size:26px;font-weight:900;margin-bottom:10px;}
+.banner-body{color:#cfe0ff;font-size:16px;line-height:1.7;}
 
+/* checkpoint progress track */
+.cp-track{
+  display:flex;
+  align-items:center;
+  gap:0;
+  margin:22px 0 6px;
+}
+.cp-step{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  flex:1;
+}
+.cp-circle{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;border:2px solid;
+}
+.cp-circle.done{background:#2ecc71;border-color:#2ecc71;color:#051f0e;}
+.cp-circle.hit{background:#ff4d4d;border-color:#ff4d4d;color:#1a0808;}
+.cp-circle.pending{background:transparent;border-color:#4a90d9;color:#4a90d9;}
+.cp-circle.future{background:transparent;border-color:#334;color:#556;}
+.cp-label{font-size:12px;color:#cfe0ff;margin-top:6px;text-align:center;}
+.cp-date{font-size:11px;color:#778;margin-top:2px;}
+
+.cp-line{
+  height:2px;flex:1;
+  background:linear-gradient(90deg,#2ecc71,#4a90d9);
+  margin-bottom:24px;
+}
+.cp-line.dim{background:#223;}
+
+/* cancelled detail box */
+.cancelled-detail{
+  margin-top:18px;
+  padding:16px 20px;
+  background:rgba(255,77,77,.08);
+  border:1px solid rgba(255,77,77,.3);
+  border-radius:10px;
+  font-size:14px;
+  color:#ffb3b3;
+  line-height:1.6;
 }
 
-.rule ul{
+/* ARCHIVED SECTION */
+.archived-section{margin-top:50px;}
+.archived-section h2{color:#ffd700;margin-bottom:10px;}
+.archived-disclaimer{color:#cfe0ff;font-size:14px;margin-bottom:20px;line-height:1.6;opacity:.8;}
 
-margin-left:28px;
-
-margin-top:10px;
-
+/* ARCHIVED CARD */
+.archived-card{
+  background:#0b1228;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:22px 26px;
+  margin-bottom:16px;
 }
-
-.rule li{
-
-margin:10px 0;
-
+.archived-card h3{font-size:16px;color:#cfe0ff;margin-bottom:12px;}
+.archived-row{
+  display:flex;justify-content:space-between;
+  padding:5px 0;font-size:14px;
+  border-bottom:1px solid rgba(255,255,255,.07);
 }
-
-.table{
-
-width:100%;
-
-border-collapse:collapse;
-
+.archived-row b{color:#9ab;}
+.archived-outcome{
+  display:inline-block;
+  margin-top:10px;
+  padding:4px 12px;
+  border-radius:20px;
+  font-size:13px;
+  font-weight:700;
 }
+.outcome-dead{background:rgba(255,77,77,.15);color:#ff8888;border:1px solid rgba(255,77,77,.3);}
+.outcome-win{background:rgba(46,204,113,.15);color:#2ecc71;border:1px solid rgba(46,204,113,.3);}
 
-.table th{
-
-background:#ffd700;
-
-color:black;
-
-padding:16px;
-
-font-size:18px;
-
+details.archived-reason summary{
+  color:#ffd700;cursor:pointer;font-weight:700;font-size:13px;margin-top:8px;
 }
-
-.table td{
-
-padding:18px;
-
-text-align:center;
-
-border-bottom:
-1px solid rgba(255,255,255,.15);
-
-font-size:24px;
-
-font-weight:700;
-
-}
-
-.table tr:hover{
-
-background:
-rgba(255,255,255,.05);
-
-}
-    .recent{
-
-margin-top:50px;
-
-}
-
-.recent h2{
-
-margin-bottom:20px;
-
-color:#ffd700;
-
-}
-
-.recent a{
-
-display:block;
-
-color:white;
-
-text-decoration:none;
-
-padding:10px 0;
-
-}
-
-.recent a:hover{
-
-color:#ffd700;
-
-}
-
-.footer{
-
-text-align:center;
-
-padding:40px;
-
-color:#cfe0ff;
-
-}
-
-/* ==========================
-STATUS SECTION (ACTIVE / CANCELLED)
-========================== */
-
-.status-card{
-    border-radius:16px;
-    padding:25px 30px;
-    margin-bottom:25px;
-    box-shadow:0 8px 25px rgba(0,0,0,.25);
-}
-
-.status-card.active{
-    background:#0b1c35;
-    border:2px solid #2ecc71;
-}
-
-.status-card.cancelled{
-    background:#1a0e0e;
-    border:2px solid #ff4d4d;
-    opacity:.75;
-}
-
-.status-card h3{
-    font-size:24px;
-    margin-bottom:14px;
-}
-
-.status-card.active h3{ color:#2ecc71; }
-.status-card.cancelled h3{ color:#ff4d4d; }
-
-.status-row{
-    display:flex;
-    justify-content:space-between;
-    padding:6px 0;
-    font-size:16px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-}
-
-.status-row b{ color:#cfe0ff; }
-
-.cancelled-section{
-    margin-top:50px;
-}
-
-.cancelled-section .disclaimer{
-    color:#cfe0ff;
-    font-size:14px;
-    margin-bottom:20px;
-    line-height:1.6;
-    opacity:.8;
-}
-
-details.cancelled-details{
-    margin-top:10px;
-}
-
-details.cancelled-details summary{
-    color:#ffd700;
-    cursor:pointer;
-    font-weight:700;
-}
+details.archived-reason p{margin-top:8px;opacity:.8;font-size:13px;line-height:1.6;}
 
 @media(max-width:768px){
-
-.brand{
-
-font-size:42px;
-
+  .brand{font-size:42px;}
+  .title{font-size:28px;}
+  .table td{font-size:16px;padding:12px;}
+  .table th{font-size:14px;}
+  .header{padding:25px;}
+  .rule{padding:20px;font-size:15px;}
+  .rule h3{font-size:22px;}
+  .banner-title{font-size:20px;}
+  .cp-track{gap:0;}
+  .cp-label{font-size:11px;}
 }
-
-.title{
-
-font-size:28px;
-
-}
-
-.table td{
-
-font-size:16px;
-
-padding:12px;
-
-}
-
-.table th{
-
-font-size:14px;
-
-}
-
-.header{
-
-padding:25px;
-
-}
-
-.rule{
-
-padding:20px;
-
-font-size:15px;
-
-}
-
-.rule h3{
-
-font-size:22px;
-
-}
-
-}
-
 </style>
-
 </head>
 
 <body>
 
 <div class="header">
-
-<div class="brand">
-
-<span class="eureka">Eureka</span><span class="lott">Lott</span>
-
-</div>
-
-<div class="tagline">
-
-Where Dreams Begin
-
-</div>
-
-<div class="nav">
-
-<a href="index.html">
-
-🏠 Home
-
-</a>
-
-<a class="active">
-
-🎯 Powerball USA
-
-</a>
-
-<a href="#">
-
-✉ Contact
-
-</a>
-
-</div>
-
+  <div class="brand">
+    <span class="eureka">Eureka</span><span class="lott">Lott</span>
+  </div>
+  <div class="tagline">Where Dreams Begin</div>
+  <div class="nav">
+    <a href="index.html">🏠 Home</a>
+    <a class="active">🎯 Powerball USA</a>
+    <a href="#">✉ Contact</a>
+  </div>
 </div>
 
 <div class="container">
+  <div class="card">
+
+    <div class="title">POWERBALL USA</div>
+
+    <!-- STATUS BANNER — rendered by JS -->
+    <div id="statusBanner"></div>
+
+    <!-- FORECAST DATE & TABLE -->
+    <div class="date" id="forecastDate"></div>
+
+    <div class="rule">
+      <h3>Forecast Rules</h3>
+      <p><b>1. Choose ONE Side Only</b><br>
+        Select either <b>LEFT AI SIGNALS</b> or <b>RIGHT AI SIGNALS</b>.<br>
+        Do not combine both sides.
+      </p><br>
+      <p><b>2. Latest Draw</b><br>
+        The <b>Latest Draw</b> is the reference draw used to generate the AI Signals.<br>
+        It is <b>NOT</b> the draw for using this forecast.
+      </p><br>
+      <p><b>3. Three Checkpoints</b><br><br>
+        Imagine there are <b>three checkpoints</b> on the journey toward the <b>Final Destination.</b>
+      </p>
+      <ul>
+        <li><b>Checkpoint 1:</b> If either AI Signal on your chosen side appears, <b>stop tracking this forecast immediately.</b></li>
+        <li><b>Checkpoint 2:</b> If either AI Signal on your chosen side appears, <b>stop tracking this forecast immediately.</b></li>
+        <li>Only if <b>neither AI Signal appears</b> at Checkpoint 1 or Checkpoint 2 should you continue to the <b>Final Destination.</b></li>
+      </ul><br>
+      <p><b>4. Final Destination</b><br><br>
+        The third draw is the <b>Final Destination.</b><br><br>
+        At this point, choose <b>ONE</b> number from your selected AI Signal pair.<br><br>
+        <b>If your chosen number appears in this draw, the AI forecast is considered successful.</b>
+      </p><br>
+      <p><b>5. Help Improve EurekaLott</b><br><br>
+        If you find that this forecasting method does not perform as expected,
+        <b>even a single time</b>, please report it to us.<br><br>
+        Every report is valuable in helping improve the system and removing methods
+        that no longer meet <b>EurekaLott's quality standards.</b>
+      </p>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>AI SIGNALS</th>
+          <th>LATEST DRAW</th>
+          <th>AI SIGNALS</th>
+        </tr>
+      </thead>
+      <tbody id="forecastTable"></tbody>
+    </table>
+
+    <!-- ARCHIVED SECTION — rendered by JS -->
+    <div id="archivedSection"></div>
 
-<div class="card">
-
-<div class="title">
-
-POWERBALL USA
-
-</div>
-
-<!-- ==========================
-STATUS SECTION START
-========================== -->
-
-<div id="statusSection"></div>
-
-<!-- ==========================
-DAILY UPDATE START
-========================== -->
-
-<div class="date" id="forecastDate"></div>
-
-<div class="rule">
-
-<h3>
-
-Forecast Rules
-
-</h3>
-
-<p>
-
-<b>1. Choose ONE Side Only</b><br>
-
-Select either <b>LEFT AI SIGNALS</b> or <b>RIGHT AI SIGNALS</b>.<br>
-
-Do not combine both sides.
-
-</p>
-
-<br>
-
-<p>
-
-<b>2. Latest Draw</b><br>
-
-The <b>Latest Draw</b> is the reference draw used to generate the AI Signals.<br>
-
-It is <b>NOT</b> the draw for using this forecast.
-
-</p>
-<br>
-
-<p>
-
-<b>3. Three Checkpoints</b><br><br>
-
-Imagine there are <b>three checkpoints</b>
-on the journey toward the
-<b>Final Destination.</b>
-
-</p>
-
-<ul>
-
-<li>
-
-<b>Checkpoint 1:</b>
-
-If either AI Signal on your chosen side appears,
-<b>stop tracking this forecast immediately.</b>
-
-</li>
-
-<li>
-
-<b>Checkpoint 2:</b>
-
-If either AI Signal on your chosen side appears,
-<b>stop tracking this forecast immediately.</b>
-
-</li>
-
-<li>
-
-Only if <b>neither AI Signal appears</b>
-at Checkpoint 1 or Checkpoint 2
-should you continue to the
-<b>Final Destination.</b>
-
-</li>
-
-</ul>
-
-<br>
-
-<p>
-
-<b>4. Final Destination</b><br><br>
-
-The third draw is the
-<b>Final Destination.</b>
-
-<br><br>
-
-At this point,
-choose <b>ONE</b> number from your selected
-AI Signal pair.
-
-<br><br>
-
-<b>If your chosen number appears in this draw,
-the AI forecast is considered successful.</b>
-
-</p>
-
-<br>
-
-<p>
-
-<b>5. Help Improve EurekaLott</b><br><br>
-
-If you find that this forecasting method
-does not perform as expected,
-<b>even a single time</b>,
-please report it to us.
-
-<br><br>
-
-Every report is valuable in helping improve
-the system and removing methods that
-no longer meet
-<b>EurekaLott's quality standards.</b>
-
-</p>
-
-</div>
-
-<table class="table">
-
-<thead>
-
-<tr>
-
-<th>AI SIGNALS</th>
-
-<th>LATEST DRAW</th>
-
-<th>AI SIGNALS</th>
-
-</tr>
-
-</thead>
-
-<tbody id="forecastTable">
-
-</tbody>
-
-</table>
-    
     <div class="recent">
+      <h2>Recent Forecasts</h2>
+      <a href="#">▶ June 24, 2026</a>
+      <a href="#">▶ June 23, 2026</a>
+      <a href="#">▶ June 22, 2026</a>
+      <a href="#">▶ June 21, 2026</a>
+    </div>
 
-<h2>
-
-Recent Forecasts
-
-</h2>
-
-<a href="#">
-
-▶ June 24, 2026
-
-</a>
-
-<a href="#">
-
-▶ June 23, 2026
-
-</a>
-
-<a href="#">
-
-▶ June 22, 2026
-
-</a>
-
-<a href="#">
-
-▶ June 21, 2026
-
-</a>
-
+  </div>
 </div>
 
-</div>
-
-</div>
-
-<div class="footer">
-
-EurekaLott © 2026 • Where Dreams Begin
-
-</div>
-
+<div class="footer">EurekaLott © 2026 • Where Dreams Begin</div>
 
 <script>
+/* ======================================================
+   STEP 1 — Render forecast table + date from forecast-data.js
+   ====================================================== */
+(function(){
+  const text  = forecast.trim();
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l!=="");
+  if(!lines.length) return;
 
-const text = forecast.trim();
+  const d      = lines[0].split(/\s+/);
+  const year   = d[0], month = parseInt(d[1],10), day = parseInt(d[2],10);
+  const months = ["","January","February","March","April","May","June",
+                  "July","August","September","October","November","December"];
+  document.getElementById("forecastDate").textContent =
+    `${months[month]} ${day}, ${year}`;
 
-const lines = text
-.split(/\r?\n/)
-.map(line => line.trim())
-.filter(line => line !== "");
-
-/* ==========================
-DATE
-========================== */
-
-const d = lines[0].split(/\s+/);
-
-const year = d[0];
-
-const month = parseInt(d[1],10);
-
-const day = parseInt(d[2],10);
-
-const months = [
-
-"",
-"January",
-"February",
-"March",
-"April",
-"May",
-"June",
-"July",
-"August",
-"September",
-"October",
-"November",
-"December"
-
-];
-
-document.getElementById("forecastDate").textContent =
-`${months[month]} ${day}, ${year}`;
-
-/* ==========================
-TABLE
-========================== */
-
-const tbody =
-document.getElementById("forecastTable");
-
-for(let i = 1; i < lines.length; i++){
-
+  const tbody = document.getElementById("forecastTable");
+  for(let i=1;i<lines.length;i++){
     const n = lines[i].split(/\s+/);
-
-    if(n.length !== 9) continue;
-
-    const left =
-    `${n[0]} ${n[1]}`;
-
-    const latest =
-    `${n[2]} ${n[3]} ${n[4]} ${n[5]} ${n[6]}`;
-
-    const right =
-    `${n[7]} ${n[8]}`;
-
+    if(n.length!==9) continue;
     tbody.innerHTML += `
+      <tr>
+        <td>${n[0]} ${n[1]}</td>
+        <td>${n[2]} ${n[3]} ${n[4]} ${n[5]} ${n[6]}</td>
+        <td>${n[7]} ${n[8]}</td>
+      </tr>`;
+  }
+})();
 
-<tr>
+/* ======================================================
+   STEP 2 — Timeline-based status banner from verified-data.js
+   ====================================================== */
+(function(){
+  if(typeof verified === "undefined" || !verified.length) return;
 
-<td>${left}</td>
+  /* today as YYYY-MM-DD string for comparison */
+  const todayStr = new Date().toISOString().slice(0,10);
 
-<td>${latest}</td>
+  const bannerDiv   = document.getElementById("statusBanner");
+  const archivedDiv = document.getElementById("archivedSection");
 
-<td>${right}</td>
+  let activeBannerHtml = "";
+  let archivedCardsHtml = "";
 
-</tr>
+  verified.forEach(function(v){
+    const cp1Date   = v.cp1  ? v.cp1.date  : null;
+    const cp2Date   = v.cp2  ? v.cp2.date  : null;
+    const finalDate = v.finalDate;           /* Final Destination draw date */
 
-`;
+    /* ---- derive timeline phase from today vs draw dates ---- */
+    /*
+      Phase A  → today < cp1Date          : Awaiting CP1
+      Phase B  → cp1Date <= today < cp2Date && CP1 clean : Awaiting CP2
+      Phase B' → cp1Date <= today < cp2Date && CP1 hit   : Cancelled
+      Phase C  → cp2Date <= today < finalDate && both CPs clean : Ready
+      Phase C' → cp2Date <= today < finalDate && hit somewhere  : Cancelled
+      Phase D  → today >= finalDate        : Archived (no banner)
+    */
 
-}
+    const cp1Hit   = v.cp1 && v.cp1.hits && v.cp1.hits.length > 0;
+    const cp2Hit   = v.cp2 && v.cp2.hits && v.cp2.hits.length > 0;
+    const dead     = v.status === "DEAD";
 
-/* ==========================
-STATUS SECTION (ACTIVE / CANCELLED)
-đọc từ verified-data.js
-========================== */
-
-if (typeof verified !== "undefined" && verified.length > 0) {
-
-    const statusDiv = document.getElementById("statusSection");
-    let activeHtml = "";
-    let cancelledHtml = "";
-
-    verified.forEach(v => {
-
-        const cp1Label = v.cp1 ? "✔ PASS" : "—";
-        const cp2Label = v.cp2 ? "✔ PASS" : "—";
-
-        if (v.status === "ALIVE") {
-
-            activeHtml += `
-                <div class="status-card active">
-                    <h3>🟢 ACTIVE FORECAST</h3>
-                    <div class="status-row"><span>Forecast Date</span><b>${v.finalDate}</b></div>
-                    <div class="status-row"><span>Status</span><b>✅ ACTIVE</b></div>
-                    <div class="status-row"><span>Checkpoint 1</span><b>${cp1Label}</b></div>
-                    <div class="status-row"><span>Checkpoint 2</span><b>${cp2Label}</b></div>
-                    <div class="status-row"><span>Final Destination</span><b>🎯 READY</b></div>
-                </div>
-            `;
-
-        } else if (v.status === "DEAD") {
-
-            cancelledHtml += `
-                <div class="status-card cancelled">
-                    <h3>🔴 FORECAST CANCELLED</h3>
-                    <div class="status-row"><span>Forecast Date</span><b>${v.finalDate}</b></div>
-                    <div class="status-row"><span>Status</span><b>❌ CANCELLED</b></div>
-                    <details class="cancelled-details">
-                        <summary>View Details</summary>
-                        <p style="margin-top:10px; opacity:.85;">${v.reason}</p>
-                    </details>
-                </div>
-            `;
-
-        }
-        // status === "PENDING" → không hiển thị card, tránh gây hiểu lầm khi data chưa đủ
-
-    });
-
-    let html = activeHtml;
-
-    if (cancelledHtml !== "") {
-        html += `
-            <div class="cancelled-section">
-                <h2 style="color:#ffd700;">📚 CANCELLED FORECASTS <small style="opacity:.6;">(Reference Only)</small></h2>
-                <p class="disclaimer">
-                    These forecasts are provided for transparency and research only.
-                    They should not be used for prediction because the forecast was
-                    cancelled before reaching the Final Destination.
-                </p>
-                ${cancelledHtml}
-            </div>
-        `;
+    /* helper: which phase today sits in */
+    let phase;
+    if(finalDate && todayStr >= finalDate){
+      phase = "archived";
+    } else if(dead){
+      phase = "cancelled";
+    } else if(!cp1Date || todayStr < cp1Date){
+      phase = "await_cp1";
+    } else if(!cp2Date || todayStr < cp2Date){
+      phase = cp1Hit ? "cancelled" : "await_cp2";
+    } else {
+      phase = (cp1Hit||cp2Hit) ? "cancelled" : "ready";
     }
 
-    statusDiv.innerHTML = html;
-}
+    /* ---- build checkpoint progress track ---- */
+    function cpCircle(label, dateStr, stateStr){
+      /* stateStr: "done" | "hit" | "pending" | "future" */
+      const icons = {done:"✓", hit:"✕", pending:"◎", future:"○"};
+      return `
+        <div class="cp-step">
+          <div class="cp-circle ${stateStr}">${icons[stateStr]}</div>
+          <div class="cp-label">${label}</div>
+          <div class="cp-date">${dateStr||""}</div>
+        </div>`;
+    }
 
+    function buildTrack(phase){
+      /* CP1 */
+      let s1 = "future", s2 = "future", sFD = "future";
+      let line1 = "dim", line2 = "dim";
+      if(phase==="await_cp1"){
+        s1="pending";
+      } else if(phase==="await_cp2"){
+        s1= cp1Hit ? "hit" : "done";
+        s2="pending"; line1="";
+      } else if(phase==="ready"){
+        s1="done"; s2="done"; sFD="pending";
+        line1=""; line2="";
+      } else if(phase==="cancelled"){
+        s1 = cp1Hit ? "hit" : (cp1Date&&todayStr>=cp1Date ? "done":"pending");
+        s2 = cp2Hit ? "hit" : (cp2Date&&todayStr>=cp2Date ? "done":"pending");
+        if(cp1Date&&todayStr>=cp1Date) line1="";
+        if(cp2Date&&todayStr>=cp2Date) line2="";
+      }
+      return `
+        <div class="cp-track">
+          ${cpCircle("Checkpoint 1", cp1Date, s1)}
+          <div class="cp-line ${line1}"></div>
+          ${cpCircle("Checkpoint 2", cp2Date, s2)}
+          <div class="cp-line ${line2}"></div>
+          ${cpCircle("Final Destination", finalDate, sFD)}
+        </div>`;
+    }
+
+    /* ---- render per phase ---- */
+    if(phase === "archived"){
+      /* No banner. Build archived card instead. */
+      const outcomeClass = dead ? "outcome-dead" : "outcome-win";
+      const outcomeLabel = dead ? "❌ Cancelled" : "✅ Completed";
+      archivedCardsHtml += `
+        <div class="archived-card">
+          <h3>Forecast — Final Destination: ${finalDate}</h3>
+          <div class="archived-row"><span>Status</span><b>${v.status}</b></div>
+          <div class="archived-row"><span>Checkpoint 1</span><b>${cp1Date||"—"}</b></div>
+          <div class="archived-row"><span>Checkpoint 2</span><b>${cp2Date||"—"}</b></div>
+          <div class="archived-row"><span>Final Destination</span><b>${finalDate}</b></div>
+          <span class="archived-outcome ${outcomeClass}">${outcomeLabel}</span>
+          ${v.reason ? `
+            <details class="archived-reason">
+              <summary>View details</summary>
+              <p>${v.reason}</p>
+            </details>` : ""}
+        </div>`;
+      return; /* skip banner for archived */
+    }
+
+    if(phase === "await_cp1"){
+      activeBannerHtml += `
+        <div class="status-banner awaiting">
+          <div class="banner-icon">⏳</div>
+          <div class="banner-title">Awaiting Checkpoint 1</div>
+          ${buildTrack(phase)}
+          <div class="banner-body">
+            Today's AI Signals have been generated.<br>
+            The first checkpoint has not occurred yet.<br>
+            Please check back after the next official Powerball draw on <b>${cp1Date}</b>.
+          </div>
+        </div>`;
+    }
+
+    else if(phase === "await_cp2"){
+      activeBannerHtml += `
+        <div class="status-banner awaiting">
+          <div class="banner-icon">⏳</div>
+          <div class="banner-title">Awaiting Checkpoint 2</div>
+          ${buildTrack(phase)}
+          <div class="banner-body">
+            Checkpoint 1 passed successfully.<br>
+            One more checkpoint remains before this forecast can reach the Final Destination.<br>
+            Please check back after the next official Powerball draw on <b>${cp2Date}</b>.
+          </div>
+        </div>`;
+    }
+
+    else if(phase === "ready"){
+      activeBannerHtml += `
+        <div class="status-banner ready">
+          <div class="banner-icon">🟢</div>
+          <div class="banner-title">Ready for Final Destination</div>
+          ${buildTrack(phase)}
+          <div class="banner-body">
+            Both checkpoints have been cleared successfully.<br>
+            This forecast is now eligible for the upcoming Final Destination draw on <b>${finalDate}</b>.<br>
+            Choose <b>ONE</b> number from your selected AI Signal pair.
+          </div>
+        </div>`;
+    }
+
+    else if(phase === "cancelled"){
+      activeBannerHtml += `
+        <div class="status-banner cancelled">
+          <div class="banner-icon">🔴</div>
+          <div class="banner-title">DING! DING! DING! ⚡</div>
+          ${buildTrack(phase)}
+          <div class="banner-body">
+            Today's AI Signals were generated successfully.<br>
+            However, this forecast was cancelled before reaching the Final Destination,
+            so it is not available for play today.<br>
+            It remains published for transparency and research only.
+          </div>
+          ${v.reason ? `<div class="cancelled-detail">${v.reason}</div>` : ""}
+        </div>`;
+    }
+  });
+
+  /* ---- inject banners ---- */
+  bannerDiv.innerHTML = activeBannerHtml;
+
+  /* ---- inject archived section ---- */
+  if(archivedCardsHtml !== ""){
+    archivedDiv.innerHTML = `
+      <div class="archived-section">
+        <h2>📚 Archived Forecasts <small style="opacity:.6;font-size:16px;">(Reference Only)</small></h2>
+        <p class="archived-disclaimer">
+          These forecasts are provided for transparency and research only.
+          The forecast journey has ended. No action is needed.
+        </p>
+        ${archivedCardsHtml}
+      </div>`;
+  }
+
+})();
 </script>
-    
-</body>
 
+</body>
 </html>
