@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Powerball USA | EurekaLott</title>
+<title>Powerball USA Forecast | EurekaLott</title>
 <script src="forecast-data.js"></script>
 <script src="verified-data.js"></script>
 <style>
@@ -181,6 +181,62 @@ details.archived-reason summary{
 }
 details.archived-reason p{margin-top:8px;opacity:.8;font-size:13px;line-height:1.6;}
 
+/* =====================
+   LATEST DRAW BOX
+   ===================== */
+.draw-box{
+  background:#0b1c35;
+  border:2px solid #ffd700;
+  border-radius:16px;
+  padding:28px 32px;
+  margin-bottom:30px;
+  text-align:center;
+}
+.draw-box h3{
+  color:#ffd700;font-size:22px;font-weight:900;margin-bottom:6px;
+}
+.draw-source{
+  font-size:13px;color:#778;margin-bottom:18px;
+}
+.draw-balls{
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;flex-wrap:wrap;margin:16px 0;
+}
+.ball{
+  width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:900;
+  background:white;color:#071528;
+  border:3px solid #ccc;
+  transition:transform .2s;
+}
+.ball:hover{transform:scale(1.08);}
+.ball.pb{
+  background:#ff3b30;color:white;border-color:#cc2a1f;
+}
+.ball.loading{
+  background:#1a2a40;color:#4a90d9;border-color:#4a90d9;
+  font-size:13px;width:auto;border-radius:8px;
+  padding:0 14px;white-space:nowrap;
+}
+.draw-date-label{
+  font-size:14px;color:#ffd700;margin-bottom:14px;min-height:20px;
+}
+.draw-actions{
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;
+}
+.btn-draw{
+  padding:10px 22px;border-radius:10px;font-weight:700;
+  font-size:14px;cursor:pointer;border:none;transition:.2s;
+}
+.btn-refresh{background:#ffd700;color:#071528;}
+.btn-refresh:hover{background:#e6c200;}
+.btn-manual{background:transparent;color:#cfe0ff;border:1px solid #4a90d9;}
+.btn-manual:hover{background:#0d2240;}
+.draw-error{
+  color:#ff8888;font-size:13px;margin-top:10px;display:none;
+}
+
 @media(max-width:768px){
   .brand{font-size:42px;}
   .title{font-size:28px;}
@@ -215,7 +271,20 @@ details.archived-reason p{margin-top:8px;opacity:.8;font-size:13px;line-height:1
 
     <div class="title">POWERBALL USA</div>
 
-    <!-- STATUS BANNER — rendered by JS -->
+    <!-- LATEST DRAW BOX -->
+    <div class="draw-box">
+      <h3>🎱 Latest Powerball Draw</h3>
+      <div class="draw-source" id="drawSource">—</div>
+      <div class="draw-date-label" id="drawDateLabel">Click Refresh to load latest draw</div>
+      <div class="draw-balls" id="drawBalls">
+        <div class="ball loading">Press Refresh ↓</div>
+      </div>
+      <div class="draw-actions">
+        <button class="btn-draw btn-refresh" onclick="fetchLatestDraw()">🔄 Refresh</button>
+        <button class="btn-draw btn-manual" onclick="manualRawInput()">✏️ Enter Manually</button>
+      </div>
+      <div class="draw-error" id="drawError"></div>
+    </div>
     <div id="statusBanner"></div>
 
     <!-- FORECAST DATE & TABLE -->
@@ -494,6 +563,129 @@ details.archived-reason p{margin-top:8px;opacity:.8;font-size:13px;line-height:1
   }
 
 })();
+
+/* ======================================================
+   STEP 3 — Latest Draw: Hybrid Fetch (API + Manual fallback)
+   ====================================================== */
+
+const MONTHS = ["","January","February","March","April","May",
+  "June","July","August","September","October","November","December"];
+
+function renderBalls(whites, pb, dateStr, source){
+  const ballsDiv    = document.getElementById("drawBalls");
+  const dateLabel   = document.getElementById("drawDateLabel");
+  const sourceLabel = document.getElementById("drawSource");
+  const errDiv      = document.getElementById("drawError");
+  errDiv.style.display = "none";
+
+  /* parse dateStr YYYY-MM-DD */
+  let label = dateStr;
+  if(dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)){
+    const p = dateStr.split("-");
+    label = `${MONTHS[parseInt(p[1],10)]} ${parseInt(p[2],10)}, ${p[0]}`;
+  }
+  dateLabel.textContent   = label ? `Draw Date: ${label}` : "";
+  sourceLabel.textContent = source || "";
+
+  let html = whites.map(n =>
+    `<div class="ball">${n}</div>`
+  ).join("") + `<div class="ball pb">${pb}</div>`;
+  ballsDiv.innerHTML = html;
+}
+
+function showDrawError(msg){
+  const errDiv = document.getElementById("drawError");
+  errDiv.textContent = msg;
+  errDiv.style.display = "block";
+  document.getElementById("drawBalls").innerHTML =
+    `<div class="ball loading">Failed to load</div>`;
+  document.getElementById("drawDateLabel").textContent = "";
+  document.getElementById("drawSource").textContent = "";
+}
+
+/* ---- Source 1: Powerball.com official API ---- */
+async function fetchFromPowerball(){
+  const url = "https://www.powerball.com/api/v1/drawings/powerball?per_page=1";
+  const res  = await fetch(url, {cache:"no-cache"});
+  if(!res.ok) throw new Error("powerball.com status " + res.status);
+  const data = await res.json();
+  const d    = data[0];
+  /* winning_numbers = "05 12 22 34 56" (sorted), powerball separate */
+  const whites = d.winning_numbers.trim().split(/\s+/).slice(0,5).map(Number);
+  const pb     = parseInt(d.powerball || d.multiplier || 0);
+  return { whites, pb, date: d.draw_date ? d.draw_date.slice(0,10) : "", source:"powerball.com (official)" };
+}
+
+/* ---- Source 2: Texas Lottery CSV ---- */
+async function fetchFromTexas(){
+  const url = "https://www.texaslottery.com/export/sites/lottery/Games/Powerball/Winning_Numbers/powerball.csv";
+  const res  = await fetch(url, {cache:"no-cache"});
+  if(!res.ok) throw new Error("Texas CSV status " + res.status);
+  const text = await res.text();
+  /* Format: Month Day, Year,n1,n2,n3,n4,n5,pb,multiplier */
+  const lines = text.trim().split(/\r?\n/).filter(l=>l.trim()&&!l.startsWith("Month"));
+  /* most recent = first data line */
+  const cols  = lines[0].split(",");
+  /* cols[0]=date string, cols[1-5]=whites, cols[6]=pb */
+  const whites = [cols[1],cols[2],cols[3],cols[4],cols[5]].map(Number);
+  const pb     = parseInt(cols[6]);
+  /* parse date e.g. "June 25, 2026" */
+  const rawDate = cols[0].trim();
+  return { whites, pb, date: rawDate, source:"Texas Lottery (official CSV)" };
+}
+
+/* ---- Main fetch with cascade fallback ---- */
+async function fetchLatestDraw(){
+  const ballsDiv = document.getElementById("drawBalls");
+  const errDiv   = document.getElementById("drawError");
+  ballsDiv.innerHTML = `<div class="ball loading">⏳ Loading...</div>`;
+  errDiv.style.display = "none";
+  document.getElementById("drawDateLabel").textContent = "Fetching latest draw...";
+  document.getElementById("drawSource").textContent = "";
+
+  /* Try powerball.com first */
+  try{
+    const r = await fetchFromPowerball();
+    renderBalls(r.whites, r.pb, r.date, r.source);
+    return;
+  }catch(e1){
+    console.warn("powerball.com failed:", e1.message);
+  }
+
+  /* Fallback: Texas CSV */
+  try{
+    const r = await fetchFromTexas();
+    renderBalls(r.whites, r.pb, r.date, r.source);
+    return;
+  }catch(e2){
+    console.warn("Texas CSV failed:", e2.message);
+  }
+
+  /* Both failed → prompt manual */
+  showDrawError("⚠️ Auto-fetch unavailable. Please enter manually.");
+  document.getElementById("drawDateLabel").textContent = "Enter numbers manually ↓";
+}
+
+/* ---- Manual fallback ---- */
+function manualRawInput(){
+  const input = prompt(
+    "Enter 5 white balls + Powerball (space separated):\nExample: 62 55 60 57 25 23",
+    ""
+  );
+  if(!input) return;
+  const nums = input.trim().split(/\s+/).map(Number).filter(n=>!isNaN(n)&&n>0);
+  if(nums.length < 6){
+    alert("Please enter exactly 6 numbers (5 white + 1 Powerball).");
+    return;
+  }
+  const whites = nums.slice(0,5);
+  const pb     = nums[5];
+  const today  = new Date().toISOString().slice(0,10);
+  renderBalls(whites, pb, today, "Manual entry");
+}
+
+/* Auto-load on page open */
+fetchLatestDraw();
 </script>
 
 </body>
