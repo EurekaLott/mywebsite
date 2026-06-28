@@ -240,27 +240,48 @@ function selectLottery(type){
   panel.classList.add('open');
   if(type==='powerball'){
     document.getElementById('resultTitle').textContent='🎱 Powerball USA';
-    renderRecent12();
+    /* latest ball từ draws-data.js */
     fetchLatestDraw();
+    /* recent 12 từ draws-data.js — raw order như Texas CSV */
+    renderRecent12(null);
   }
   panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-/* ── RENDER RECENT 12 from draws-data.js ── */
-function renderRecent12(){
+/* ── PARSE TEXAS CSV raw format ── */
+/* Format: Powerball,month,day,year,n1,n2,n3,n4,n5,pb,multiplier */
+function parseTexasCSV(text){
+  return text.trim().split(/\r?\n/)
+    .filter(l=>l.trim()&&l.startsWith('Powerball'))
+    .map(l=>{
+      const c=l.split(',');
+      const month=parseInt(c[1],10);
+      const day=parseInt(c[2],10);
+      const year=parseInt(c[3],10);
+      const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const white=[c[4],c[5],c[6],c[7],c[8]].map(Number);
+      const pb=parseInt(c[9]);
+      return{date,white,pb};
+    });
+}
+
+/* ── RENDER RECENT 12 ── */
+function renderRecent12(data){
   const tbody=document.getElementById('recentBody');
   tbody.innerHTML='';
-  if(typeof draws==='undefined'||!draws.length){
-    tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No local data</td></tr>';
+  const src=data||(typeof draws!=='undefined'?draws:[]);
+  if(!src.length){
+    tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No data</td></tr>';
     return;
   }
-  const recent=draws.slice(-12).reverse(); /* 12 kỳ gần nhất, mới nhất lên trên */
+  const recent=src.slice(-12).reverse();
   recent.forEach(d=>{
     const row=document.createElement('tr');
+    const whites=d.white||[];
     row.innerHTML=`
       <td>${fmtDate(d.date)}</td>
-      <td>${d.white.join(' &nbsp; ')}</td>
-      <td class="pb-num">${d.powerball}</td>`;
+      <td>${whites.join(' &nbsp; ')}</td>
+      <td class="pb-num">${d.pb||d.powerball}</td>`;
     tbody.appendChild(row);
   });
 }
