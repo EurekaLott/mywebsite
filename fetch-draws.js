@@ -10,9 +10,9 @@
  *
  * Output canonical draw object:
  * {
- *   date:      "2026-06-24",      // ISO date YYYY-MM-DD
- *   white:     [13,14,16,21,38],  // 5 white balls, sorted ascending
- *   powerball: 14                 // 1 Powerball number
+ *   date:      "2026-06-24",
+ *   white:     [13,21,38,14,16],  // RAW ORDER — giữ nguyên thứ tự bóng rơi
+ *   powerball: 14
  * }
  */
 
@@ -45,12 +45,13 @@ function get(url) {
   });
 }
 
-// ─── Normalize helper ────────────────────────────────────────────────────────
+// ─── Normalize helper ─────────────────────────────────────────────────────────
+// ⚠️  RAW ORDER — KHÔNG sort, giữ nguyên thứ tự bóng rơi từ nguồn
 
 function makeCanonical(date, w1, w2, w3, w4, w5, pb) {
   return {
     date,
-    white:     [w1, w2, w3, w4, w5].sort((a, b) => a - b),
+    white:     [w1, w2, w3, w4, w5], // ← KHÔNG .sort() — giữ raw order
     powerball: pb,
   };
 }
@@ -84,7 +85,7 @@ async function fetchSourceA() {
   return draws;
 }
 
-// ─── SOURCE B: Texas Lottery CSV (tối ưu — bản của Cường) ────────────────────
+// ─── SOURCE B: Texas Lottery CSV ─────────────────────────────────────────────
 
 async function fetchSourceB() {
   console.log(' [B] Texas Lottery CSV...');
@@ -107,7 +108,7 @@ async function fetchSourceB() {
     const w3 = parseInt(cols[6], 10);
     const w4 = parseInt(cols[7], 10);
     const w5 = parseInt(cols[8], 10);
-    const pb = parseInt(cols[9], 10);   // Quan trọng: cột Powerball là index 9
+    const pb = parseInt(cols[9], 10);
     if ([w1, w2, w3, w4, w5, pb].some(n => isNaN(n) || n < 1)) continue;
     draws.push(makeCanonical(date, w1, w2, w3, w4, w5, pb));
   }
@@ -159,7 +160,7 @@ async function fetchSourceC() {
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 
 (async () => {
-  console.log('\n🎯 EurekaLott — Fetching Powerball draws (3-source fallback)...\n');
+  console.log('\n🎯 EurekaLott — Fetching Powerball draws (raw order preserved)...\n');
 
   let draws = null, usedSource = null;
 
@@ -181,7 +182,6 @@ async function fetchSourceC() {
 
   if (!draws || draws.length === 0) {
     console.error('\n❌ All 3 sources failed — draws-data.js NOT updated.');
-    console.error('   Action required: check network or update source URLs/regex.');
     process.exit(1);
   }
 
@@ -194,13 +194,14 @@ async function fetchSourceC() {
 // Do not edit manually.
 // Source: ${usedSource}
 // Last updated: ${new Date().toISOString()}
+// ⚠️  white[] = RAW ORDER (thứ tự bóng rơi thực tế, KHÔNG sorted)
 
 const draws = ${JSON.stringify(final, null, 2)};
 
-module.exports = { draws };
+if (typeof module !== 'undefined') module.exports = { draws };
 `);
 
-  console.log(`\n✅ draws-data.js written`);
+  console.log(`\n✅ draws-data.js written (RAW ORDER)`);
   console.log(`   Source : ${usedSource}`);
   console.log(`   Total  : ${final.length} draws`);
   console.log(`   Oldest : ${final[0].date}`);
