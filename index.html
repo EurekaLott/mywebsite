@@ -115,7 +115,145 @@ body{
     background:white;
 
     color:#0a2e73;
+/* ==========================
+NEW MENU BUTTONS
+========================== */
 
+.nav a,
+.dropbtn{
+
+    text-decoration:none;
+
+    background:white;
+
+    color:#0a2e73;
+
+    padding:14px 22px;
+
+    border-radius:12px;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.15);
+
+    border:none;
+
+    font-family:inherit;
+}
+
+.nav a:hover,
+.dropbtn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 12px 30px rgba(0,0,0,.25);
+}
+
+/* dropdown */
+
+.dropdown{
+
+    position:relative;
+
+    display:inline-block;
+
+}
+
+.dropdown-content{
+
+    display:none;
+
+    position:absolute;
+
+    top:58px;
+
+    left:0;
+
+    background:white;
+
+    min-width:240px;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    z-index:999;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.30);
+
+}
+
+.dropdown-content a{
+
+    display:block;
+
+    border-radius:0;
+
+    background:white;
+
+    color:#0a2e73;
+
+    padding:14px 18px;
+
+    text-decoration:none;
+
+    font-size:15px;
+
+}
+
+.dropdown-content a:hover{
+
+    background:#eef5ff;
+
+    transform:none;
+
+    box-shadow:none;
+
+}
+
+.dropdown:hover .dropdown-content{
+
+    display:block;
+
+}
+
+/* coming soon */
+
+.coming{
+
+    color:#999;
+
+    font-size:13px;
+
+}
+
+/* mobile */
+
+@media(max-width:768px){
+
+.dropdown{
+
+width:100%;
+
+}
+
+.dropdown-content{
+
+position:relative;
+
+top:0;
+
+width:100%;
+
+}
+
+} 
     padding:
         14px
         22px;
@@ -150,7 +288,176 @@ body{
 
     color:#0a2e73;
 }
+/* =========================
+VIEW RESULTS DROPDOWN
+========================= */
 
+.dropdown{
+
+    position:relative;
+
+}
+
+.results-menu{
+
+    display:none;
+
+    position:absolute;
+
+    top:58px;
+
+    left:0;
+
+    min-width:260px;
+
+    background:white;
+
+    border-radius:14px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.35);
+
+    z-index:999;
+
+}
+
+.results-menu.show{
+
+    display:block;
+
+}
+
+.results-menu a{
+
+    display:block;
+
+    text-decoration:none;
+
+    color:#0a2e73;
+
+    padding:16px 20px;
+
+    font-weight:700;
+
+    border-bottom:
+        1px solid #ececec;
+
+    background:white;
+
+}
+
+.results-menu a:last-child{
+
+    border-bottom:none;
+
+}
+
+.results-menu a:hover{
+
+    background:#eef5ff;
+
+}
+
+.results-menu small{
+
+    color:#888;
+
+    font-size:11px;
+
+    margin-left:6px;
+
+}
+/* ==========================
+LATEST RESULTS
+========================== */
+
+.results-panel{
+
+margin:40px 50px;
+
+background:#071528;
+
+border-radius:18px;
+
+padding:30px;
+
+box-shadow:
+0 10px 35px rgba(0,0,0,.35);
+
+display:none;
+
+}
+
+.results-panel.show{
+
+display:block;
+
+animation:fadeResults .35s ease;
+
+}
+
+@keyframes fadeResults{
+
+from{
+
+opacity:0;
+
+transform:translateY(-10px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:none;
+
+}
+
+}
+
+.results-panel h2{
+
+margin-bottom:25px;
+
+font-size:32px;
+
+color:#ffd700;
+
+}
+
+.result-card{
+
+background:#0d2240;
+
+padding:22px;
+
+border-radius:14px;
+
+}
+
+.result-card h3{
+
+margin-bottom:12px;
+
+font-size:22px;
+
+color:white;
+
+}
+
+.result-card p{
+
+font-size:18px;
+
+color:#cfe0ff;
+
+line-height:1.8;
+
+}
+      
 /* LED BOARD */
 
 .led-wrap{
@@ -285,34 +592,141 @@ body{
         Where Dreams Begin
     </div>
 
-    <div class="nav">
+   <div class="nav">
 
-        <a class="active" href="index.html">
-            🏠 Home
-        </a>
+<a class="active" href="index.html">
+🏠 Home
+</a>
 
-        <a href="powerball.html">
-            🎯 Powerball USA
-        </a>
+<div class="dropdown">
 
-        <a href="#">
-            ✉ Contact
-        </a>
+<a href="#" id="btnResults"
+onclick="toggleResults();return false;">
+🌍 View Results ▾
+</a>
 
-        <a onclick="setLang('en')">
-            🇺🇸 English
-        </a>
+<div id="resultsMenu" class="results-menu">
 
-        <a onclick="setLang('vi')">
-            🇻🇳 Tiếng Việt
-        </a>
+<a href="#" onclick="showPowerball();return false;">
+🎱 Powerball USA
+</a>
 
-    </div>
+<a href="#">
+🎲 Mega Millions
+<small>(Coming Soon)</small>
+</a>
+
+<a href="#">
+🇪🇺 EuroMillions
+<small>(Coming Soon)</small>
+</a>
+
+<a href="#">
+🇦🇺 Oz Lotto
+<small>(Coming Soon)</small>
+</a>
 
 </div>
 
-<div class="led-wrap">
+</div>
 
+<a href="powerball.html">
+🎯 Powerball USA
+</a>
+
+<a href="#">
+🧠 Neural Network Tool
+<small>(Coming Soon)</small>
+</a>
+
+<a href="#">
+📖 User Guide
+</a>
+
+<a href="#">
+💬 Community
+</a>
+
+<a
+href="https://www.facebook.com/groups/1243032744487699"
+target="_blank">
+📘 Facebook
+</a>
+
+<a onclick="setLang('en')">
+🇺🇸 English
+</a>
+
+<a onclick="setLang('vi')">
+🇻🇳 Tiếng Việt
+</a>
+
+</div>
+
+</div>
+<!-- ==========================
+LATEST RESULTS
+========================== -->
+
+<div
+class="results-panel"
+id="resultsPanel">
+
+<h2>
+
+🌍 Latest Lottery Results
+
+</h2>
+
+<div
+id="resultsContent">
+
+<div class="result-card">
+
+<h3>
+
+🎱 Powerball USA
+
+</h3>
+
+<p>
+
+Loading latest draw...
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+      
+<div class="led-wrap">
+<div
+id="powerballResults"
+style="
+display:none;
+margin:40px 50px;
+background:#071528;
+padding:30px;
+border-radius:18px;
+">
+
+<h2
+style="
+margin-bottom:20px;
+color:#ffd700;
+">
+🎱 Powerball USA
+</h2>
+
+<div id="latestResults">
+
+Loading...
+
+</div>
+
+</div>
     <div class="led-track">
 
         <div
@@ -342,7 +756,77 @@ body{
 </div>
 
 <script>
+/* ==========================
+VIEW RESULTS DROPDOWN
+========================== */
 
+const btnResults = document.getElementById("btnResults");
+
+const dropdown = document.createElement("div");
+
+dropdown.className = "results-menu";
+
+dropdown.innerHTML = `
+
+<a href="powerball.html">
+
+🎱 Powerball USA
+
+</a>
+
+<a href="#">
+
+🎯 Mega Millions
+
+<small>Coming Soon</small>
+
+</a>
+
+<a href="#">
+
+🇪🇺 EuroMillions
+
+<small>Coming Soon</small>
+
+</a>
+
+<a href="#">
+
+🇦🇺 Oz Lotto
+
+<small>Coming Soon</small>
+
+</a>
+
+`;
+
+btnResults.parentNode.classList.add("dropdown");
+
+btnResults.parentNode.appendChild(dropdown);
+
+btnResults.onclick=function(e){
+
+    e.preventDefault();
+
+    dropdown.classList.toggle("show");
+
+    document
+        .getElementById("resultsPanel")
+        .classList.add("show");
+
+    loadPowerballResults();
+
+};
+
+document.addEventListener("click",function(e){
+
+    if(!btnResults.parentNode.contains(e.target)){
+
+        dropdown.classList.remove("show");
+
+    }
+
+});
 function setLang(lang){
 
     let text = "";
