@@ -462,19 +462,24 @@ line-height:1.8;
 
 .led-wrap{
 
-    margin:
-        40px
-        50px;
+    margin:40px 50px;
 
-    background:#071528;
+    background:
+        radial-gradient(
+            ellipse at center,
+            #1a0a2e 0%,
+            #0d0420 60%,
+            #050210 100%
+        );
 
     overflow:hidden;
 
     border-radius:14px;
 
     box-shadow:
-        0 10px 35px
-        rgba(0,0,0,.35);
+        0 10px 35px rgba(0,0,0,.5),
+        inset 0 0 40px rgba(157,78,221,.15);
+
 }
 
 .led-track{
@@ -494,20 +499,22 @@ line-height:1.8;
 
     white-space:nowrap;
 
-    padding:
-        20px
-        120px
-        20px
-        0;
+    padding:20px 120px 20px 0;
 
     font-size:24px;
+
     font-weight:800;
 
-    color:#ffe600;
+    letter-spacing:1px;
+
+    color:#c77dff;
 
     text-shadow:
-        0 0 5px #ffe600,
-        0 0 15px #ffe600;
+        0 0 6px #e0aaff,
+        0 0 16px #c77dff,
+        0 0 32px #9d4edd,
+        0 0 50px #5a189a;
+
 }
 
 @keyframes ticker{
@@ -631,7 +638,7 @@ onclick="toggleResults();return false;">
 </div>
 
 <a href="powerball.html">
-🎯 Powerball USA
+🎯 Powerball USA Forecast
 </a>
 
 <a href="#">
