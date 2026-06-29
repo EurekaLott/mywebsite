@@ -497,35 +497,27 @@ Share your research, test results and ideas with the EurekaLott community.
 
 <div class="categories">
 
-<div class="category active">
-
+<div class="category active" data-category="powerball">
 🎯 Powerball USA
-
 </div>
 
-<div class="category">
-
+<div class="category" data-category="mega">
 🎲 Mega Millions USA
-
 </div>
 
-<div class="category">
-
+<div class="category" data-category="vietlott">
 🇻🇳 Vietlott 6/55
-
 </div>
 
-<div class="category">
-
+<div class="category" data-category="euromillions">
 🇪🇺 EuroMillions
-
 </div>
 
-<div class="category">
-
+<div class="category" data-category="general">
 💬 General Discussion
-
 </div>
+
+
 
 </div>
 <form id="commentForm">
@@ -683,20 +675,171 @@ I'm testing Mega Millions now.
 
 <script>
 
-const currentCategory="powerball";
+const API="https://eurekalott-engine.trongcuong-org.workers.dev";
+let currentCategory="powerball";
 
-const commentsList=document.getElementById("commentsList");
+const commentsList=document.getElementById("commentsList");      
+async function loadComments(){
 
+    commentsList.innerHTML="<p>Loading...</p>";
+
+    try{
+
+        const res=await fetch(
+            API+"/comments?category="+currentCategory
+        );
+
+        if(!res.ok){
+
+            throw new Error("HTTP "+res.status);
+
+        }
+
+        const data=await res.json();
+
+        commentsList.innerHTML="";
+
+        if(data.length===0){
+
+            commentsList.innerHTML=`
+                <p style="color:#cfe0ff;">
+                    No comments yet.
+                    Be the first researcher to share your ideas.
+                </p>
+            `;
+
+            return;
+
+        }
+
+        data.forEach(c=>{
+
+            commentsList.innerHTML+=`
+
+<div class="comment">
+
+    <div class="comment-header">
+
+        <div>
+
+            <div class="comment-name">
+
+                ${c.name}
+
+            </div>
+
+            <div class="comment-country">
+
+                ${c.country||""}
+
+            </div>
+
+        </div>
+
+        <div class="comment-time">
+
+            ${c.created_at}
+
+        </div>
+
+    </div>
+
+    <div class="comment-message">
+
+        ${c.message}
+
+    </div>
+
+</div>
+
+`;
+
+        });
+
+    }
+
+    catch(err){
+
+        commentsList.innerHTML=`
+            <p style="color:#ff8080;">
+                Cannot connect to Community API.<br>
+                ${err.message}
+            </p>
+        `;
+
+    }
+
+}
+document
+.querySelectorAll(".category")
+.forEach(btn=>{
+
+    btn.onclick=function(){
+
+        document
+        .querySelectorAll(".category")
+        .forEach(x=>x.classList.remove("active"));
+
+        this.classList.add("active");
+
+        currentCategory=this.dataset.category;
+
+        loadComments();
+
+    };
+
+});   
 document
 .getElementById("postBtn")
-.onclick=function(){
+.onclick=async function(){
 
-    alert(
-        "Cloudflare D1 integration will be enabled in the next rounds."
-    );
+    const body={
+
+        category:currentCategory,
+
+        name:document.getElementById("name").value.trim(),
+
+        country:document.getElementById("country").value.trim(),
+
+        message:document.getElementById("message").value.trim()
+
+    };
+
+    if(!body.name || !body.message){
+
+        alert("Please enter your name and comment.");
+
+        return;
+
+    }
+
+    const res=await fetch(API+"/comments",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify(body)
+
+    });
+
+    if(!res.ok){
+
+        alert("Unable to post comment.");
+
+        return;
+
+    }
+
+    document.getElementById("message").value="";
+
+    loadComments();
 
 };
-
+loadComments();      
+      
 </script>
 
 </body>
