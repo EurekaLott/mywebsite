@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0">
+
+<title>EurekaLott | Community</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    background:
+    linear-gradient(
+        180deg,
+        #0a2e73 0%,
+        #133f92 100%
+    );
+
+    min-height:100vh;
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    color:white;
+
+    overflow-x:hidden;
+}
+
+/* HEADER */
+
+.header{
+    padding:40px 50px;
+}
+
+/* LOGO */
+
+.brand{
+
+    display:flex;
+
+    align-items:center;
+
+    line-height:1;
+}
+
+.eureka{
+
+    font-size:72px;
+
+    font-weight:900;
+
+    color:white;
+
+    font-style:italic;
+
+    letter-spacing:-2px;
+}
+
+.lott{
+
+    font-size:72px;
+
+    font-weight:900;
+
+    color:#ff3b30;
+
+    font-style:italic;
+
+    letter-spacing:-2px;
+}
+
+.brand-sub{
+
+    margin-top:14px;
+
+    color:#cfe0ff;
+
+    font-size:22px;
+
+    letter-spacing:3px;
+}
+
+/* NAV */
+
+.nav{
+
+    margin-top:35px;
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:14px;
+}
+
+.nav a{
+
+    text-decoration:none;
+
+    background:white;
+
+    color:#0a2e73;
+
+    padding:14px 22px;
+
+    border-radius:12px;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    transition:.25s;
+}
+
+.nav a:hover{
+
+    transform:translateY(-3px);
+}
+
+.nav .active{
+
+    background:#ffd700;
+}
+/* MAIN CONTAINER */
+
+.container{
+
+    max-width:1200px;
+
+    margin:40px auto;
+
+    padding:0 40px;
+}
+
+/* COMMUNITY CARD */
+
+.community-card{
+
+    background:#071528;
+
+    border-radius:18px;
+
+    padding:35px;
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.35);
+}
+
+.community-card h1{
+
+    color:#ffd700;
+
+    font-size:34px;
+
+    margin-bottom:12px;
+}
+
+.community-card p{
+
+    color:#cfe0ff;
+
+    margin-bottom:30px;
+
+    font-size:18px;
+}
+
+/* CATEGORY BUTTONS */
+
+.categories{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:12px;
+
+    margin-bottom:35px;
+}
+
+.category{
+
+    background:white;
+
+    color:#0a2e73;
+
+    padding:12px 18px;
+
+    border-radius:10px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.category:hover{
+
+    transform:translateY(-3px);
+}
+
+.category.active{
+
+    background:#ffd700;
+}
+
+/* FORM */
+
+.form-group{
+
+    margin-bottom:18px;
+}
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:700;
+
+    color:#cfe0ff;
+}
+
+.form-group input,
+.form-group textarea{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:16px;
+
+    outline:none;
+}
+
+.form-group textarea{
+
+    min-height:140px;
+
+    resize:vertical;
+}
+
+.post-btn{
+
+    background:#ff3b30;
+
+    color:white;
+
+    border:none;
+
+    padding:15px 28px;
+
+    border-radius:12px;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.post-btn:hover{
+
+    transform:translateY(-2px);
+}
+  /* COMMENTS */
+
+.comments{
+
+    margin-top:45px;
+}
+
+.comments h2{
+
+    color:#ffd700;
+
+    margin-bottom:25px;
+
+    font-size:28px;
+}
+
+.comment{
+
+    background:#0d2240;
+
+    border-radius:14px;
+
+    padding:20px;
+
+    margin-bottom:18px;
+
+    border-left:5px solid #ffd700;
+}
+
+.comment-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    flex-wrap:wrap;
+
+    margin-bottom:10px;
+}
+
+.comment-name{
+
+    font-weight:800;
+
+    color:#ffffff;
+
+    font-size:18px;
+}
+
+.comment-country{
+
+    color:#cfe0ff;
+
+    font-size:14px;
+}
+
+.comment-time{
+
+    color:#9bb7ff;
+
+    font-size:13px;
+}
+
+.comment-message{
+
+    color:#ffffff;
+
+    line-height:1.7;
+
+    font-size:16px;
+}
+
+/* FOOTER */
+
+.footer{
+
+    margin-top:80px;
+
+    padding:35px;
+
+    text-align:center;
+
+    color:#d7e4ff;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+    .header{
+
+        padding:25px;
+    }
+
+    .eureka,
+    .lott{
+
+        font-size:46px;
+    }
+
+    .brand-sub{
+
+        font-size:15px;
+
+        letter-spacing:2px;
+    }
+
+    .nav{
+
+        gap:10px;
+    }
+
+    .nav a{
+
+        font-size:14px;
+
+        padding:10px 16px;
+    }
+
+    .container{
+
+        padding:0 20px;
+    }
+
+    .community-card{
+
+        padding:22px;
+    }
+
+    .community-card h1{
+
+        font-size:28px;
+    }
+
+    .categories{
+
+        flex-direction:column;
+    }
+
+    .post-btn{
+
+        width:100%;
+    }
+
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="header">
+
+    <div class="brand">
+
+        <span class="eureka">Eureka</span><span class="lott">Lott</span>
+
+    </div>
+
+    <div class="brand-sub">
+
+        Where Dreams Begin
+
+    </div>
+
+    <div class="nav">
+
+        <a href="index.html">
+
+            🏠 Home
+
+        </a>
+
+        <a href="powerball.html">
+
+            🎯 Powerball Prediction
+
+        </a>
+
+        <a class="active" href="community.html">
+
+            💬 Community
+
+        </a>
+
+        <a href="https://www.facebook.com/groups/1243032744487699"
+           target="_blank">
+
+            📘 Facebook
+
+        </a>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+<div class="community-card">
+
+<h1>
+
+💬 COMMUNITY
+
+</h1>
+
+<p>
+
+Share your research, test results and ideas with the EurekaLott community.
+
+</p>
+
+<div class="categories">
+
+<div class="category active">
+
+🎯 Powerball USA
+
+</div>
+
+<div class="category">
+
+🎲 Mega Millions USA
+
+</div>
+
+<div class="category">
+
+🇻🇳 Vietlott 6/55
+
+</div>
+
+<div class="category">
+
+🇪🇺 EuroMillions
+
+</div>
+
+<div class="category">
+
+💬 General Discussion
+
+</div>
+
+</div>
+<form id="commentForm">
+
+    <div class="form-group">
+
+        <label>
+
+            Name
+
+        </label>
+
+        <input
+            type="text"
+            id="name"
+            placeholder="Your name">
+
+    </div>
+
+    <div class="form-group">
+
+        <label>
+
+            Country
+
+        </label>
+
+        <input
+            type="text"
+            id="country"
+            placeholder="Your country">
+
+    </div>
+
+    <div class="form-group">
+
+        <label>
+
+            Comment
+
+        </label>
+
+        <textarea
+            id="message"
+            placeholder="Share your research, AI Signals testing, ideas..."></textarea>
+
+    </div>
+
+    <button
+        type="button"
+        class="post-btn"
+        id="postBtn">
+
+        🚀 POST
+
+    </button>
+
+</form>
+
+<div class="comments">
+
+<h2>
+
+Latest Comments
+
+</h2>
+
+<div id="commentsList">
+
+<div class="comment">
+
+<div class="comment-header">
+
+<div>
+
+<div class="comment-name">
+
+Minh
+
+</div>
+
+<div class="comment-country">
+
+🇻🇳 Vietnam
+
+</div>
+
+</div>
+
+<div class="comment-time">
+
+Just now
+
+</div>
+
+</div>
+
+<div class="comment-message">
+
+The left AI Signals seem stronger.
+
+</div>
+
+</div>
+
+<div class="comment">
+
+<div class="comment-header">
+
+<div>
+
+<div class="comment-name">
+
+Carlos
+
+</div>
+
+<div class="comment-country">
+
+🇪🇸 Spain
+
+</div>
+
+</div>
+
+<div class="comment-time">
+
+5 minutes ago
+
+</div>
+
+</div>
+
+<div class="comment-message">
+
+Interesting idea.
+I'm testing Mega Millions now.
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+
+<div class="footer">
+
+    EurekaLott © 2026 • Community
+
+</div>
+
+<script>
+
+const currentCategory="powerball";
+
+const commentsList=document.getElementById("commentsList");
+
+document
+.getElementById("postBtn")
+.onclick=function(){
+
+    alert(
+        "Cloudflare D1 integration will be enabled in the next rounds."
+    );
+
+};
+
+</script>
+
+</body>
+
+</html>  
+
