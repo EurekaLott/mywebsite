@@ -271,4 +271,40 @@ for(const [date,records] of groupedForecasts){
     console.log("Signals:",records.length);
 
 }
+function buildForecastText(grouped){
 
+    let output = "const forecast = `\n\n";
+
+    for(const [date,records] of grouped){
+
+        const forecastDate = formatDate(
+            getNextDrawDate("powerball",date)
+        );
+
+        output += forecastDate + "\n\n";
+
+        for(const item of records){
+
+            output +=
+                item.aiLeft.join(" ") +
+                "  " +
+                item.latest.join(" ") +
+                "  " +
+                item.aiRight.join(" ") +
+                "\n";
+
+        }
+
+        output += "\n";
+
+    }
+
+    output += "`;";
+
+    return output;
+
+}
+
+const forecastText = buildForecastText(groupedForecasts);
+
+console.log(forecastText);
