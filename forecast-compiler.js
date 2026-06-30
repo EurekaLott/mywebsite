@@ -252,3 +252,23 @@ function groupByDate(records){
 const groupedForecasts = groupByDate(validForecasts);
 
 console.log(groupedForecasts);
+function formatDate(date){
+
+    return date.toISOString().slice(0,10);
+
+}
+
+for(const [date,records] of groupedForecasts){
+
+    console.log("----------------------");
+
+    console.log("Latest Drawing :",date);
+
+    console.log("Forecast Date  :",formatDate(
+        getNextDrawDate("powerball",date)
+    ));
+
+    console.log("Signals:",records.length);
+
+}
+
