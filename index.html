@@ -4,107 +4,67 @@
   <meta charset="UTF-8">
   <title>Bruce Lee Vũ Trụ</title>
   <style>
-    body { margin:0; overflow:hidden; background:#000; }
+    body, html { margin:0; padding:0; height:100%; background:#000; overflow:hidden; }
     canvas { display:block; }
-    #text { position:absolute; top:20px; left:20px; color:#ff0; font-size:22px; text-shadow:0 0 15px gold; }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <div id="text">Bruce Lee đang du hành vũ trụ...</div>
 
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    let w = canvas.width = window.innerWidth;
-    let h = canvas.height = window.innerHeight;
-    window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
     let stars = [];
-    for (let i = 0; i < 900; i++) {
-      stars.push({x: Math.random()*w, y: Math.random()*h, size: Math.random()*2.5 + 0.5, speed: Math.random()*1.2 + 0.3});
+    for (let i = 0; i < 800; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 3,
+        speed: Math.random() * 1.5 + 0.5
+      });
     }
 
-    let bruceX = -150;
-    let age = 28;
-    let distance = 0;
-    let metPlanet = false;
+    let x = -100;
     let frame = 0;
-    let action = 0;
-
-    const planet = {x: w*0.78, y: h*0.38, radius: 95};
-
-    function drawBruce(x, y) {
-      ctx.save();
-      ctx.translate(x, y);
-      
-      ctx.fillStyle = '#FFDBAC';
-      ctx.beginPath();
-      ctx.arc(45, -35, 22, 0, Math.PI*2);
-      ctx.fill();
-
-      ctx.fillStyle = '#FFD700';
-      ctx.fillRect(25, -25, 45, 55);
-
-      ctx.fillStyle = '#111';
-      ctx.fillRect(30, 25, 18, 45);
-      ctx.fillRect(48, 25, 18, 45);
-
-      ctx.fillStyle = '#FFD700';
-      ctx.fillRect(65, -15, 35, 18);
-
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('🥋', 35, -65);
-
-      ctx.restore();
-    }
 
     function draw() {
-      ctx.fillStyle = 'rgba(0, 2, 15, 0.2)';
-      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#fff';
+      // Sao bay
+      ctx.fillStyle = '#ffffff';
       stars.forEach(s => {
-        ctx.globalAlpha = 0.6 + Math.random()*0.4;
         ctx.fillRect(s.x, s.y, s.size, s.size);
         s.x -= s.speed;
-        if (s.x < 0) s.x = w;
+        if (s.x < 0) s.x = canvas.width;
       });
-      ctx.globalAlpha = 1;
 
+      // Bruce Lee đơn giản
       frame++;
-      drawBruce(bruceX, h * 0.58);
+      ctx.fillStyle = '#ffdbac';           // da
+      ctx.fillRect(x + 30, 180, 40, 40);   // đầu
 
-      bruceX += 3.2;
-      distance += 3.2;
-      if (distance % 220 === 0) age++;
+      ctx.fillStyle = '#ffd700';           // áo vàng
+      ctx.fillRect(x + 25, 220, 50, 70);   // thân
 
-      document.getElementById('text').innerHTML = `Bruce Lee • ${age} tuổi • Khoảng cách: ${Math.floor(distance/12)} triệu năm ánh sáng`;
+      ctx.fillStyle = '#222';              // quần
+      ctx.fillRect(x + 28, 285, 18, 50);   // chân trái
+      ctx.fillRect(x + 52, 285, 18, 50);   // chân phải
 
-      if (distance > 950) {
-        ctx.beginPath();
-        ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI*2);
-        ctx.fillStyle = '#8A2BE2';
-        ctx.shadowBlur = 60;
-        ctx.shadowColor = '#BA55D3';
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
+      // Tay đấm
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(x + 70, 230 + Math.sin(frame/6)*8, 35, 18);
 
-      if (bruceX > planet.x - 80 && !metPlanet) {
-        metPlanet = true;
-        document.getElementById('text').innerHTML = "🥋 Bruce Lee đã đến Hành Tinh Tím!";
-      }
-
-      if (age > 82) {
-        ctx.fillStyle = 'rgba(0,0,0,0.9)';
-        ctx.fillRect(0,0,w,h);
-        ctx.fillStyle = '#ff0';
-        ctx.font = 'bold 68px Arial';
-        ctx.fillText('Bruce Lee đã quy thiên 🥋', w/2 - 380, h/2);
-        return;
-      }
+      x += 3.5;
+      if (x > canvas.width + 100) x = -100;
 
       requestAnimationFrame(draw);
     }
