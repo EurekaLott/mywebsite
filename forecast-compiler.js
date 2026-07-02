@@ -167,9 +167,13 @@ const signals = extractSignals(left, latest, right);
 
     date: block.date,
 
-    leftForecast: signals.leftForecast,
+    leftAI: signals.leftForecast.ai,
 
-    rightForecast: signals.rightForecast
+    leftLatest: signals.leftForecast.latest,
+
+    rightLatest: signals.rightForecast.latest,
+
+    rightAI: signals.rightForecast.ai
 
 });
 
@@ -230,8 +234,6 @@ if(isValidPair(signals.leftForecast.ai) &&
 
         side: "LEFT",
 
-        latest,
-
         ai: signals.leftForecast.ai,
 
         latestPair: signals.leftForecast.latest
@@ -248,8 +250,6 @@ if(isValidPair(signals.rightForecast.latest) &&
         date: block.date,
 
         side: "RIGHT",
-
-        latest,
 
         latestPair: signals.rightForecast.latest,
 
@@ -321,6 +321,16 @@ function buildForecastText(grouped){
         const leftRecords = records.filter(r => r.side === "LEFT");
 const rightRecords = records.filter(r => r.side === "RIGHT");
 
+leftRecords.sort((a,b)=>
+    a.ai[0]-b.ai[0] ||
+    a.ai[1]-b.ai[1]
+);
+
+rightRecords.sort((a,b)=>
+    a.ai[0]-b.ai[0] ||
+    a.ai[1]-b.ai[1]
+);
+        
 if(leftRecords.length){
 
     output += "LEFT\n";
