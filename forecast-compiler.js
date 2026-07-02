@@ -104,19 +104,37 @@ for(const block of blocks){
     }
 
 }
-function extractSignals(left,right){
+function extractSignals(left,latest,right){
 
     return{
 
-        aiLeft:[
-            left[2],   // pos2
-            left[4]    // pos4
-        ],
+        leftForecast:{
 
-        aiRight:[
-            right[0],  // pos5
-            right[2]   // pos7
-        ]
+            ai:[
+                left[2],
+                left[3]
+            ],
+
+            latest:[
+                latest[1],
+                latest[2]
+            ]
+
+        },
+
+        rightForecast:{
+
+            latest:[
+                latest[2],
+                latest[3]
+            ],
+
+            ai:[
+                right[1],
+                right[2]
+            ]
+
+        }
 
     };
 
@@ -143,20 +161,17 @@ for(const block of blocks){
             continue;
 
         }
-
-        const signals=extractSignals(left,right);
+const signals = extractSignals(left, latest, right);
 
         console.log({
 
-            date:block.date,
+    date: block.date,
 
-            latest,
+    leftForecast: signals.leftForecast,
 
-            aiLeft:signals.aiLeft,
+    rightForecast: signals.rightForecast
 
-            aiRight:signals.aiRight
-
-        });
+});
 
     }
 
@@ -167,18 +182,18 @@ function validWhiteBall(n){
 
 }
 
-function isValidSignal(signals){
+function isValidPair(pair){
 
     return (
 
-        validWhiteBall(signals.aiLeft[0]) &&
-        validWhiteBall(signals.aiLeft[1]) &&
-        validWhiteBall(signals.aiRight[0]) &&
-        validWhiteBall(signals.aiRight[1])
+        validWhiteBall(pair[0]) &&
+        validWhiteBall(pair[1])
 
     );
 
 }
+
+
 
 const validForecasts=[];
 
@@ -204,25 +219,45 @@ for(const block of blocks){
 
         }
 
-        const signals=extractSignals(left,right);
+        const signals = extractSignals(left, latest, right);
 
-        if(!isValidSignal(signals)){
+if(isValidPair(signals.leftForecast.ai) &&
+   isValidPair(signals.leftForecast.latest)){
 
-            continue;
+    validForecasts.push({
 
-        }
+        date: block.date,
 
-        validForecasts.push({
+        side: "LEFT",
 
-            date:block.date,
+        latest,
 
-            latest,
+        ai: signals.leftForecast.ai,
 
-            aiLeft:signals.aiLeft,
+        latestPair: signals.leftForecast.latest
 
-            aiRight:signals.aiRight
+    });
 
-        });
+}
+
+if(isValidPair(signals.rightForecast.latest) &&
+   isValidPair(signals.rightForecast.ai)){
+
+    validForecasts.push({
+
+        date: block.date,
+
+        side: "RIGHT",
+
+        latest,
+
+        latestPair: signals.rightForecast.latest,
+
+        ai: signals.rightForecast.ai
+
+    });
+
+}
 
     }
 
@@ -283,17 +318,44 @@ function buildForecastText(grouped){
 
         output += forecastDate + "\n\n";
 
-        for(const item of records){
+        const leftRecords = records.filter(r => r.side === "LEFT");
+const rightRecords = records.filter(r => r.side === "RIGHT");
 
-            output +=
-                item.aiLeft.join(" ") +
-                "  " +
-                item.latest.join(" ") +
-                "  " +
-                item.aiRight.join(" ") +
-                "\n";
+if(leftRecords.length){
 
-        }
+    output += "LEFT\n";
+
+    for(const item of leftRecords){
+
+        output +=
+            item.ai.join(" ") +
+            "   " +
+            item.latestPair.join(" ") +
+            "\n";
+
+    }
+
+    output += "\n";
+
+}
+
+if(rightRecords.length){
+
+    output += "RIGHT\n";
+
+    for(const item of rightRecords){
+
+        output +=
+            item.latestPair.join(" ") +
+            "   " +
+            item.ai.join(" ") +
+            "\n";
+
+    }
+
+    output += "\n";
+
+}
 
         output += "\n";
 
