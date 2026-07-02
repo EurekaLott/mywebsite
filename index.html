@@ -1,78 +1,40 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>Banner Bruce Lee</title>
-  <style>
-    body { margin:0; padding:0; background:#000; }
-    #banner {
-      position: relative;
-      width: 100%;
-      max-width: 800px;        /* Kích thước banner */
-      height: 280px;
-      margin: 20px auto;
-      overflow: hidden;
-      background: linear-gradient(to right, #000428, #004e92);
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
-    }
-    #stars { position:absolute; top:0; left:0; width:100%; height:100%; }
-    #bruce {
-      position:absolute;
-      bottom: 40px;
-      left: -80px;
-      width: 120px;
-      transition: left 0.08s linear;
-    }
-  </style>
-</head>
-<body>
+<!-- BANNER BRUCE LEE NHỎ -->
+<div style="position:relative; width:100%; max-width:620px; height:160px; margin:15px auto; overflow:hidden; background:linear-gradient(#000, #001133); border-radius:10px; box-shadow:0 0 15px rgba(138,43,226,0.5);">
+  <canvas id="stars" style="position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
+  <img id="bruce" src="https://i.imgur.com/0Z8vXbJ.png" style="position:absolute; bottom:20px; left:-60px; width:90px;" alt="Bruce Lee">
+</div>
 
-  <div id="banner">
-    <canvas id="stars"></canvas>
-    <img id="bruce" src="https://i.imgur.com/0Z8vXbJ.png" alt="Bruce Lee">
-  </div>
+<script>
+// Sao bay
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+canvas.width = 620;
+canvas.height = 160;
 
-  <script>
-    // Canvas sao
-    const canvas = document.getElementById('stars');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 800;
-    canvas.height = 280;
+let stars = [];
+for (let i = 0; i < 250; i++) {
+  stars.push({x: Math.random()*620, y: Math.random()*160, size: Math.random()*2 + 0.5, speed: Math.random()*2 + 0.8});
+}
 
-    let stars = [];
-    for (let i = 0; i < 400; i++) {
-      stars.push({
-        x: Math.random()*canvas.width,
-        y: Math.random()*canvas.height,
-        size: Math.random()*2.2 + 0.5,
-        speed: Math.random()*1.8 + 0.6
-      });
-    }
+function animate() {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(0,0,620,160);
+  ctx.fillStyle = '#fff';
+  stars.forEach(s => {
+    ctx.fillRect(s.x, s.y, s.size, s.size);
+    s.x -= s.speed;
+    if (s.x < 0) s.x = 620;
+  });
+  requestAnimationFrame(animate);
+}
+animate();
 
-    function drawStars() {
-      ctx.fillStyle = 'rgba(0,0,0,0.2)';
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = '#fff';
-      stars.forEach(s => {
-        ctx.fillRect(s.x, s.y, s.size, s.size);
-        s.x -= s.speed;
-        if (s.x < 0) s.x = canvas.width;
-      });
-      requestAnimationFrame(drawStars);
-    }
-    drawStars();
-
-    // Bruce di chuyển
-    const bruce = document.getElementById('bruce');
-    let pos = -80;
-
-    setInterval(() => {
-      pos += 5.5;
-      bruce.style.left = pos + 'px';
-      if (pos > 850) pos = -80;
-    }, 35);
-  </script>
-
-</body>
-</html>
+// Bruce di chuyển
+const bruce = document.getElementById('bruce');
+let pos = -60;
+setInterval(() => {
+  pos += 6;
+  bruce.style.left = pos + 'px';
+  if (pos > 680) pos = -60;
+}, 40);
+</script>
