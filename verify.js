@@ -28,52 +28,166 @@ function anyHit(draw, signals) {
   return signals.filter(s => nums.includes(s));
 }
 
-function parseForecast(raw) {
-  const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
-  if (lines.length < 2) return null;
+function parseForecast(raw){
 
-  const [y, m, d] = lines[0].split(/\s+/);
-  const finalDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    const lines = raw
+        .trim()
+        .split(/\r?\n/)
+        .map(x => x.trim())
+        .filter(x => x !== "");
 
-  const rows = [];
-  let latestNumsRef = null;
+    if(!lines.length){
 
-  for (let i = 1; i < lines.length; i++) {
-    const nums = lines[i].split(/\s+/).map(Number).filter(n => !isNaN(n) && n > 0);
-    if (nums.length !== 9) {
-      console.warn(`⚠️  ${finalDate} dòng ${i}: expected 9 numbers, got ${nums.length} — skip dòng này`);
-      continue;
+        return null;
+
     }
-    const left  = [nums[0], nums[1]];
-    const latestNums = [nums[2], nums[3], nums[4], nums[5], nums[6]];
-    const right = [nums[7], nums[8]];
 
-    if (!latestNumsRef) latestNumsRef = latestNums;
-    rows.push({ left, right });
-  }
+    const finalDate = lines[0].replace(/ /g,"-");
 
-  if (rows.length === 0) return null;
+    const rows = [];
 
-  const allSignals = rows.flatMap(r => [...r.left, ...r.right]);
+    let mode = "";
 
-  const latestDraw = draws.find(d =>
-    latestNumsRef.length === d.white.length &&
-    latestNumsRef.every(n => d.white.includes(n))
-  );
+let latestCode = "";
 
-  return { finalDate, rows, allSignals, latestDraw };
+    for(let i=1;i<lines.length;i++){
+
+        const line = lines[i];
+
+        if(line === "LATEST"){
+
+    latestCode = lines[++i];
+
+    continue;
+
+}
+
+if(line === "LEFT"){
+
+    mode = "LEFT";
+
+    continue;
+
+}
+
+if(line === "RIGHT"){
+
+    mode = "RIGHT";
+
+    continue;
+
+}
+
+        const nums = line
+            .split(/\s+/)
+            .map(Number);
+
+        if(nums.length !== 4){
+
+            continue;
+
+        }
+
+        if(mode === "LEFT"){
+
+            rows.push({
+
+                side: "LEFT",
+
+                latestPair: [nums[2], nums[3]],
+
+                ai: [nums[0], nums[1]]
+
+            });
+
+        }
+
+        if(mode === "RIGHT"){
+
+            rows.push({
+
+                side: "RIGHT",
+
+                latestPair: [nums[0], nums[1]],
+
+                ai: [nums[2], nums[3]]
+
+            });
+
+        }
+
+    }
+
+    if(rows.length === 0){
+
+        return null;
+
+    }
+
+    const allSignals = rows.flatMap(r => r.ai);
+
+    return {
+
+    finalDate,
+
+    rows,
+
+    allSignals,
+
+    latestCode
+
+};
+
 }
 
 function verify(raw) {
   const f = parseForecast(raw);
   if (!f) return null;
 
-  const { finalDate, rows, allSignals, latestDraw } = f;
+  const {
 
-  if (!latestDraw) {
-    return { finalDate, rows, latestDrawDate: null, status: 'PENDING',
-      reason: 'Latest draw not found in draws-data.js', cp1: null, cp2: null, finalDraw: null };
-  }
+    finalDate,
+
+    rows,
+
+    allSignals,
+
+    latestCode
+
+} = f;
+
+ const latest = latestCode
+    .match(/\d{2}/g)
+    .map(Number);
+
+const latestDraw = draws.find(draw =>
+
+    draw.white.length === latest.length &&
+    latest.every(n => draw.white.includes(n))
+
+);
+
+if(!latestDraw){
+
+    return {
+
+        finalDate,
+
+        rows,
+
+        status: "PENDING",
+
+        reason: "Latest pair not found in draws-data.js",
+
+        cp1: null,
+
+        cp2: null,
+
+        finalDraw: null
+
+    };
+
+}
 
   const after = draws
     .filter(d => d.date > latestDraw.date)
