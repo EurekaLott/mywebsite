@@ -284,29 +284,101 @@ details.archived-reason p{margin-top:8px;opacity:.8;font-size:13px;line-height:1
 /* ======================================================
    STEP 1 — Render forecast table + date from forecast-data.js
    ====================================================== */
-(function(){
-  const text  = forecast.trim();
-  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l!=="");
+2026-06-22
+
+LEFT
+09 19   54 49
+18 20   54 49
+
+RIGHT
+49 30   22 33
+49 30   17 61
+  (function(){
+
+  const text = forecast.trim();
+
+  const lines = text
+    .split(/\r?\n/)
+    .map(x=>x.trim())
+    .filter(x=>x!== "");
+
   if(!lines.length) return;
 
-  const d      = lines[0].split(/\s+/);
-  const year   = d[0], month = parseInt(d[1],10), day = parseInt(d[2],10);
-  const months = ["","January","February","March","April","May","June",
-                  "July","August","September","October","November","December"];
+  const d = lines[0].split(/[- ]/);
+
+  const year = d[0];
+  const month = parseInt(d[1],10);
+  const day = parseInt(d[2],10);
+
+  const months=[
+    "",
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+
   document.getElementById("forecastDate").textContent =
-    `${months[month]} ${day}, ${year}`;
+      `${months[month]} ${day}, ${year}`;
 
   const tbody = document.getElementById("forecastTable");
+
+  let mode = "";
+
   for(let i=1;i<lines.length;i++){
-    const n = lines[i].split(/\s+/);
-    if(n.length!==9) continue;
-    tbody.innerHTML += `
-      <tr>
-        <td>${n[0]} ${n[1]}</td>
-        <td>${n[2]} ${n[3]} ${n[4]} ${n[5]} ${n[6]}</td>
-        <td>${n[7]} ${n[8]}</td>
-      </tr>`;
+
+      const line = lines[i];
+
+      if(line==="LEFT"){
+
+          mode="LEFT";
+          continue;
+
+      }
+
+      if(line==="RIGHT"){
+
+          mode="RIGHT";
+          continue;
+
+      }
+
+      const nums=line.split(/\s+/);
+
+      if(nums.length!==4){
+
+          continue;
+
+      }
+
+      const firstPair =
+          nums[0]+" "+nums[1];
+
+      const secondPair =
+          nums[2]+" "+nums[3];
+
+      if(mode==="LEFT"){
+
+          tbody.innerHTML += `
+          <tr>
+              <td>${firstPair}</td>
+              <td>${secondPair}</td>
+              <td></td>
+          </tr>`;
+
+      }
+
+      if(mode==="RIGHT"){
+
+          tbody.innerHTML += `
+          <tr>
+              <td></td>
+              <td>${firstPair}</td>
+              <td>${secondPair}</td>
+          </tr>`;
+
+      }
+
   }
+
 })();
 
 /* ======================================================
