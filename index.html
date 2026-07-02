@@ -1,27 +1,330 @@
-<!-- BANNER SIÊU NHỎ -->
-<div style="width:100%; max-width:520px; height:100px; margin:10px auto; overflow:hidden; background:#000; border:1px solid #8A2BE2; border-radius:8px; position:relative;">
-  <canvas id="s" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
-  <img id="b" src="https://i.imgur.com/0Z8vXbJ.png" style="position:absolute;bottom:8px;left:-50px;width:70px;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>EurekaLott | Where Dreams Begin</title>
+<script src="draws-data.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  background:linear-gradient(180deg,#0a2e73 0%,#133f92 100%);
+  min-height:100vh;
+  font-family:"Segoe UI",Arial,sans-serif;
+  overflow-x:hidden;
+  color:white;
+}
+
+.header{padding:40px 50px;}
+.brand{display:flex;align-items:center;line-height:1;}
+.eureka{font-size:72px;font-weight:900;color:#fff;font-style:italic;letter-spacing:-2px;}
+.lott{font-size:72px;font-weight:900;color:#ff3b30;font-style:italic;letter-spacing:-2px;}
+.brand-sub{margin-top:14px;color:#cfe0ff;font-size:22px;letter-spacing:3px;}
+
+/* NAV */
+.nav{margin-top:35px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;}
+.nav a{
+  text-decoration:none;background:white;color:#0a2e73;
+  padding:14px 22px;border-radius:12px;font-size:17px;font-weight:700;
+  cursor:pointer;transition:.25s;box-shadow:0 5px 20px rgba(0,0,0,.15);
+}
+.nav a:hover{transform:translateY(-3px);}
+.nav .active{background:#ffd700;}
+
+/* DROPDOWN */
+.dropdown{position:relative;}
+.btn-results{
+  background:white;color:#0a2e73;padding:14px 22px;border-radius:12px;
+  font-size:17px;font-weight:700;cursor:pointer;border:none;
+  transition:.25s;box-shadow:0 5px 20px rgba(0,0,0,.15);
+  display:flex;align-items:center;gap:8px;
+}
+.btn-results:hover{transform:translateY(-3px);}
+.btn-results.open{background:#ffd700;border-radius:12px 12px 0 0;}
+.arrow{font-size:12px;transition:transform .2s;}
+.btn-results.open .arrow{transform:rotate(180deg);}
+
+.dropdown-menu{
+  display:none;position:absolute;top:100%;left:0;
+  background:white;border-radius:0 12px 12px 12px;
+  box-shadow:0 12px 35px rgba(0,0,0,.30);min-width:230px;z-index:100;overflow:hidden;
+}
+.dropdown-menu.open{display:block;}
+.dd-item{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 20px;color:#0a2e73;font-weight:700;font-size:15px;
+  cursor:pointer;transition:.15s;border-bottom:1px solid #eef2ff;
+}
+.dd-item:last-child{border-bottom:none;}
+.dd-item:hover{background:#f0f4ff;}
+.dd-item.disabled{color:#aaa;cursor:default;}
+.dd-item.disabled:hover{background:white;}
+.coming{font-size:11px;font-weight:600;background:#eee;color:#888;padding:2px 7px;border-radius:20px;margin-left:auto;}
+
+/* RESULT PANEL */
+.result-panel{
+  margin:0 50px 30px;background:#071528;border-radius:18px;
+  padding:30px 32px;box-shadow:0 10px 30px rgba(0,0,0,.35);
+  display:none;animation:fadeIn .25s ease;
+}
+.result-panel.open{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+.result-panel h3{color:#ffd700;font-size:22px;font-weight:900;margin-bottom:18px;}
+
+/* LATEST DRAW — balls */
+.latest-section{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.1);}
+.latest-label{font-size:13px;color:#778;margin-bottom:6px;letter-spacing:1px;}
+.latest-date{font-size:16px;color:#ffd700;margin-bottom:14px;font-weight:700;}
+.balls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.ball{
+  width:50px;height:50px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;
+  background:white;color:#071528;border:3px solid #ccc;
+}
+.ball.pb{background:#ff3b30;color:white;border-color:#cc2a1f;}
+.ball.spin{background:#1a2a40;color:#4a90d9;border-color:#4a90d9;font-size:20px;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.latest-source{font-size:12px;color:#445;margin-top:6px;}
+
+.result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.btn-sm{padding:9px 18px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;border:none;transition:.2s;}
+.btn-sm.refresh{background:#ffd700;color:#071528;}
+.btn-sm.refresh:hover{background:#e6c200;}
+.btn-sm.manual{background:transparent;color:#cfe0ff;border:1px solid #4a90d9;}
+.btn-sm.manual:hover{background:#0d2240;}
+.result-error{color:#ff8888;font-size:13px;margin-top:8px;display:none;}
+
+/* RECENT 12 TABLE */
+.recent-section h4{color:#cfe0ff;font-size:15px;font-weight:700;margin-bottom:14px;letter-spacing:1px;}
+.recent-table{width:100%;border-collapse:collapse;}
+.recent-table th{
+  background:#0d2240;color:#ffd700;padding:10px 12px;
+  font-size:13px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);
+}
+.recent-table td{
+  padding:10px 12px;font-size:14px;font-weight:700;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  color:#cfe0ff;
+}
+.recent-table tr:hover td{background:rgba(255,255,255,.04);}
+.recent-table td:first-child{color:#778;font-weight:400;font-size:13px;}
+.pb-num{color:#ff6b60;font-weight:900;}
+
+/* LED BOARD */
+.led-wrap{margin:40px 50px;background:#071528;overflow:hidden;border-radius:14px;box-shadow:0 10px 35px rgba(0,0,0,.35);}
+.led-track{display:flex;width:max-content;animation:ticker 38s linear infinite;}
+.led-item{white-space:nowrap;padding:20px 120px 20px 0;font-size:24px;font-weight:800;color:#ffe600;text-shadow:0 0 5px #ffe600,0 0 15px #ffe600;}
+@keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+.footer{margin-top:120px;padding:40px;text-align:center;color:#d7e4ff;}
+
+  
+@media(max-width:768px){
+  .header{padding:25px;}
+  .eureka,.lott{font-size:46px;}
+  .brand-sub{font-size:15px;letter-spacing:2px;}
+  .nav a,.btn-results{font-size:14px;padding:10px 16px;}
+  .result-panel{margin:0 25px 20px;padding:20px;}
+  .ball{width:42px;height:42px;font-size:15px;}
+  .led-wrap{margin:30px 25px;}
+  .led-item{font-size:18px;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <span class="eureka">Eureka</span><span class="lott">Lott</span>
+  </div>
+  <div class="brand-sub">Where Dreams Begin</div>
+
+  <div class="nav">
+    <a class="active" href="index.html">🏠 Home</a>
+
+    <div class="dropdown">
+      <button class="btn-results" id="btnResults" onclick="toggleDropdown()">
+        🌍 View Results <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropdownMenu">
+        <div class="dd-item" onclick="selectLottery('powerball')">🎱 Powerball USA</div>
+        <div class="dd-item disabled">🎲 Mega Millions <span class="coming">Soon</span></div>
+        <div class="dd-item disabled">🇪🇺 EuroMillions <span class="coming">Soon</span></div>
+        <div class="dd-item disabled">🇦🇺 Oz Lotto <span class="coming">Soon</span></div>
+      </div>
+    </div>
+
+    <a href="powerball.html">🎯 Powerball Prediction</a>
+    <a href="community.html">💬 Community</a>
+    <a href="https://www.facebook.com/groups/1243032744487699" target="_blank">📘 Facebook</a>
+    <a onclick="setLang('en')">🇺🇸 English</a>
+    <a onclick="setLang('vi')">🇻🇳 Tiếng Việt</a>
+  </div>
 </div>
 
+
+  <!-- RESULT PANEL -->
+<div class="result-panel" id="resultPanel">
+  <h3 id="resultTitle">🎱 Powerball USA</h3>
+
+  <!-- Latest draw with balls -->
+  <div class="latest-section">
+    <div class="latest-label">LATEST DRAW</div>
+    <div class="latest-date" id="latestDate">—</div>
+    <div class="balls" id="latestBalls"><div class="ball spin">↻</div></div>
+    <div class="latest-source" id="latestSource"></div>
+    <div class="result-actions">
+      <button class="btn-sm refresh" onclick="fetchLatestDraw()">🔄 Refresh</button>
+    </div>
+    <div class="result-error" id="resultError"></div>
+  </div>
+
+  <!-- Recent 12 draws table -->
+  <div class="recent-section">
+    <h4>📋 RECENT 12 DRAWS</h4>
+    <table class="recent-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>White Balls</th>
+          <th>PB</th>
+        </tr>
+      </thead>
+      <tbody id="recentBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="led-wrap">
+  <div class="led-track">
+    <div class="led-item" id="ledText">FROM TRACES TO SIGNALS • FROM SIGNALS TO HIDDEN STRUCTURES • </div>
+    <div class="led-item" id="ledText2">FROM TRACES TO SIGNALS • FROM SIGNALS TO HIDDEN STRUCTURES • </div>
+  </div>
+</div>
+
+<div class="footer">EurekaLott © 2026 • Where Dreams Begin</div>
+
 <script>
-const c = document.getElementById('s');
-const ctx = c.getContext('2d');
-c.width = 520; c.height = 100;
+/* ── MONTHS ── */
+const MONTHS = ["","January","February","March","April","May","June",
+  "July","August","September","October","November","December"];
 
-let stars = [];
-for(let i=0;i<180;i++) stars.push({x:Math.random()*520,y:Math.random()*100,size:Math.random()*2,speed:Math.random()*2+0.8});
-
-function loop(){
-  ctx.fillStyle='rgba(0,0,0,0.3)';
-  ctx.fillRect(0,0,520,100);
-  ctx.fillStyle='#fff';
-  stars.forEach(s=>{ ctx.fillRect(s.x,s.y,s.size,s.size); s.x-=s.speed; if(s.x<0)s.x=520; });
-  requestAnimationFrame(loop);
+function fmtDate(str){
+  if(!str) return str;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(str)){
+    const p=str.split('-');
+    return `${MONTHS[parseInt(p[1],10)]} ${parseInt(p[2],10)}, ${p[0]}`;
+  }
+  return str;
 }
-loop();
 
-const b = document.getElementById('b');
-let x = -50;
-setInterval(()=>{ x+=5.5; b.style.left = x+'px'; if(x>580) x=-50; }, 35);
+/* ── DROPDOWN ── */
+function toggleDropdown(){
+  document.getElementById('btnResults').classList.toggle('open');
+  document.getElementById('dropdownMenu').classList.toggle('open');
+}
+document.addEventListener('click',function(e){
+  const dd=document.querySelector('.dropdown');
+  if(!dd.contains(e.target)){
+    document.getElementById('btnResults').classList.remove('open');
+    document.getElementById('dropdownMenu').classList.remove('open');
+  }
+});
+
+/* ── SELECT LOTTERY ── */
+function selectLottery(type){
+  toggleDropdown();
+  const panel=document.getElementById('resultPanel');
+  panel.classList.add('open');
+  if(type==='powerball'){
+    document.getElementById('resultTitle').textContent='🎱 Powerball USA';
+    /* latest ball từ draws-data.js */
+    fetchLatestDraw();
+    /* recent 12 từ draws-data.js — raw order như Texas CSV */
+    renderRecent12(null);
+  }
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ── PARSE TEXAS CSV raw format ── */
+/* Format: Powerball,month,day,year,n1,n2,n3,n4,n5,pb,multiplier */
+function parseTexasCSV(text){
+  return text.trim().split(/\r?\n/)
+    .filter(l=>l.trim()&&l.startsWith('Powerball'))
+    .map(l=>{
+      const c=l.split(',');
+      const month=parseInt(c[1],10);
+      const day=parseInt(c[2],10);
+      const year=parseInt(c[3],10);
+      const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const white=[c[4],c[5],c[6],c[7],c[8]].map(Number);
+      const pb=parseInt(c[9]);
+      return{date,white,pb};
+    });
+}
+
+/* ── RENDER RECENT 12 ── */
+function renderRecent12(data){
+  const tbody=document.getElementById('recentBody');
+  tbody.innerHTML='';
+  const src=data||(typeof draws!=='undefined'?draws:[]);
+  if(!src.length){
+    tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No data</td></tr>';
+    return;
+  }
+  const recent=src.slice(-12).reverse();
+  recent.forEach(d=>{
+    const row=document.createElement('tr');
+    const whites=d.white||[];
+    row.innerHTML=`
+      <td>${fmtDate(d.date)}</td>
+      <td>${whites.join(' &nbsp; ')}</td>
+      <td class="pb-num">${d.pb||d.powerball}</td>`;
+    tbody.appendChild(row);
+  });
+}
+
+/* ── RENDER BALLS (latest) ── */
+function renderBalls(white,pb,dateStr,source){
+  document.getElementById('latestBalls').innerHTML=
+    white.map(n=>`<div class="ball">${n}</div>`).join('')+
+    `<div class="ball pb">${pb}</div>`;
+  document.getElementById('latestDate').textContent=fmtDate(dateStr)||'';
+  document.getElementById('latestSource').textContent=source||'';
+  document.getElementById('resultError').style.display='none';
+}
+
+function showError(msg){
+  document.getElementById('resultError').textContent=msg;
+  document.getElementById('resultError').style.display='block';
+  document.getElementById('latestBalls').innerHTML='<div class="ball spin">↻</div>';
+  document.getElementById('latestDate').textContent='';
+  document.getElementById('latestSource').textContent='';
+}
+
+/* ── LOAD LATEST from draws-data.js (no CORS issue) ── */
+function fetchLatestDraw(){
+  if(typeof draws==='undefined'||!draws.length){
+    showError('⚠️ No data available.');
+    return;
+  }
+  const d=draws[draws.length-1];
+  renderBalls(d.white, d.powerball, d.date, 'draws-data.js (local)');
+}
+
+/* ── LANGUAGE ── */
+function setLang(lang){
+  const text=lang==='vi'
+    ?'TỪ DẤU VẾT ĐẾN TÍN HIỆU • TỪ TÍN HIỆU ĐẾN CẤU TRÚC ẨN • '
+    :'FROM TRACES TO SIGNALS • FROM SIGNALS TO HIDDEN STRUCTURES • ';
+  document.getElementById('ledText').innerHTML=text;
+  document.getElementById('ledText2').innerHTML=text;
+}
 </script>
+
+</body>
+</html>
