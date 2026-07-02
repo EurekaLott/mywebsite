@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Bruce Lee Vũ Trụ</title>
+  <title>Bruce Lee Kung Fu Vũ Trụ</title>
   <style>
     body, html { margin:0; padding:0; height:100%; background:#000; overflow:hidden; }
     canvas { display:block; }
@@ -19,52 +19,73 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    window.addEventListener('resize', resize);
     resize();
+    window.addEventListener('resize', resize);
 
     let stars = [];
-    for (let i = 0; i < 800; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 3,
-        speed: Math.random() * 1.5 + 0.5
-      });
+    for (let i = 0; i < 1000; i++) {
+      stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2.8 + 0.8, speed: Math.random()*2 + 0.5});
     }
 
-    let x = -100;
+    let x = -120;
     let frame = 0;
 
+    function drawBruce() {
+      ctx.save();
+      ctx.translate(x, canvas.height * 0.45);
+
+      // Đầu
+      ctx.fillStyle = '#FFDBAC';
+      ctx.beginPath();
+      ctx.arc(50, 30, 28, 0, Math.PI*2);
+      ctx.fill();
+
+      // Thân
+      ctx.fillStyle = '#FFD700';
+      ctx.fillRect(25, 55, 55, 75);
+
+      // Chân
+      ctx.fillStyle = '#111';
+      ctx.fillRect(32, 125, 20, 65);                    // chân trái
+      ctx.fillRect(55, 125, 20, 65);                    // chân phải
+
+      // Tay + Đấm
+      const punch = Math.sin(frame/4) * 25;
+      ctx.fillStyle = '#FFD700';
+      ctx.fillRect(70, 65, 45 + punch, 22);             // tay đấm
+
+      // Chân đá
+      const kick = Math.sin(frame/5) * 30;
+      ctx.fillRect(65, 130, 18, 25);                    // chân đá
+      ctx.fillRect(75 + kick, 145, 22, 18);
+
+      // Text
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 28px Arial';
+      ctx.fillText('🥋', 40, 25);
+
+      ctx.restore();
+    }
+
     function draw() {
-      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillStyle = 'rgba(0,0,8,0.18)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Sao bay
-      ctx.fillStyle = '#ffffff';
+      // Sao
+      ctx.fillStyle = '#fff';
       stars.forEach(s => {
+        ctx.globalAlpha = Math.random()*0.7 + 0.5;
         ctx.fillRect(s.x, s.y, s.size, s.size);
         s.x -= s.speed;
         if (s.x < 0) s.x = canvas.width;
       });
+      ctx.globalAlpha = 1;
 
-      // Bruce Lee đơn giản
       frame++;
-      ctx.fillStyle = '#ffdbac';           // da
-      ctx.fillRect(x + 30, 180, 40, 40);   // đầu
+      drawBruce();
 
-      ctx.fillStyle = '#ffd700';           // áo vàng
-      ctx.fillRect(x + 25, 220, 50, 70);   // thân
-
-      ctx.fillStyle = '#222';              // quần
-      ctx.fillRect(x + 28, 285, 18, 50);   // chân trái
-      ctx.fillRect(x + 52, 285, 18, 50);   // chân phải
-
-      // Tay đấm
-      ctx.fillStyle = '#ffd700';
-      ctx.fillRect(x + 70, 230 + Math.sin(frame/6)*8, 35, 18);
-
-      x += 3.5;
-      if (x > canvas.width + 100) x = -100;
+      x += 4.2;
+      if (x > canvas.width + 150) x = -150;
 
       requestAnimationFrame(draw);
     }
