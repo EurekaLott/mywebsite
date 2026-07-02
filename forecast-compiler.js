@@ -317,7 +317,9 @@ function buildForecastText(grouped){
         );
 
         output += forecastDate + "\n\n";
-
+output += "LATEST\n";
+output += records[0].latest.join("") + "\n\n";
+        
         const leftRecords = records.filter(r => r.side === "LEFT");
 const rightRecords = records.filter(r => r.side === "RIGHT");
 
