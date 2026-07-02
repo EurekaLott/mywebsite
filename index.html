@@ -1,40 +1,27 @@
-<!-- BANNER BRUCE LEE NHỎ -->
-<div style="position:relative; width:100%; max-width:620px; height:160px; margin:15px auto; overflow:hidden; background:linear-gradient(#000, #001133); border-radius:10px; box-shadow:0 0 15px rgba(138,43,226,0.5);">
-  <canvas id="stars" style="position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
-  <img id="bruce" src="https://i.imgur.com/0Z8vXbJ.png" style="position:absolute; bottom:20px; left:-60px; width:90px;" alt="Bruce Lee">
+<!-- BANNER SIÊU NHỎ -->
+<div style="width:100%; max-width:520px; height:100px; margin:10px auto; overflow:hidden; background:#000; border:1px solid #8A2BE2; border-radius:8px; position:relative;">
+  <canvas id="s" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+  <img id="b" src="https://i.imgur.com/0Z8vXbJ.png" style="position:absolute;bottom:8px;left:-50px;width:70px;">
 </div>
 
 <script>
-// Sao bay
-const canvas = document.getElementById('stars');
-const ctx = canvas.getContext('2d');
-canvas.width = 620;
-canvas.height = 160;
+const c = document.getElementById('s');
+const ctx = c.getContext('2d');
+c.width = 520; c.height = 100;
 
 let stars = [];
-for (let i = 0; i < 250; i++) {
-  stars.push({x: Math.random()*620, y: Math.random()*160, size: Math.random()*2 + 0.5, speed: Math.random()*2 + 0.8});
-}
+for(let i=0;i<180;i++) stars.push({x:Math.random()*520,y:Math.random()*100,size:Math.random()*2,speed:Math.random()*2+0.8});
 
-function animate() {
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.fillRect(0,0,620,160);
-  ctx.fillStyle = '#fff';
-  stars.forEach(s => {
-    ctx.fillRect(s.x, s.y, s.size, s.size);
-    s.x -= s.speed;
-    if (s.x < 0) s.x = 620;
-  });
-  requestAnimationFrame(animate);
+function loop(){
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.fillRect(0,0,520,100);
+  ctx.fillStyle='#fff';
+  stars.forEach(s=>{ ctx.fillRect(s.x,s.y,s.size,s.size); s.x-=s.speed; if(s.x<0)s.x=520; });
+  requestAnimationFrame(loop);
 }
-animate();
+loop();
 
-// Bruce di chuyển
-const bruce = document.getElementById('bruce');
-let pos = -60;
-setInterval(() => {
-  pos += 6;
-  bruce.style.left = pos + 'px';
-  if (pos > 680) pos = -60;
-}, 40);
+const b = document.getElementById('b');
+let x = -50;
+setInterval(()=>{ x+=5.5; b.style.left = x+'px'; if(x>580) x=-50; }, 35);
 </script>
