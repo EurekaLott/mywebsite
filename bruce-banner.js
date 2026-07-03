@@ -39,4 +39,43 @@ resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
 console.log("🌌 Canvas Ready");    
+const stars = [];
+
+for (let i = 0; i < 180; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 0.3,
+        speed: Math.random() * 0.8 + 0.2
+    });
+}
+function drawStars() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+
+    for (const star of stars) {
+
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        star.x -= star.speed;
+
+        if (star.x < 0) {
+
+            star.x = canvas.width;
+            star.y = Math.random() * canvas.height;
+
+        }
+
+    }
+
+    requestAnimationFrame(drawStars);
+
+}
+
+drawStars();    
+    
 }
