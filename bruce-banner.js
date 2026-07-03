@@ -58,7 +58,7 @@ bruce.src = "https://i.imgur.com/0Z8vXbJ.png";
 
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
-}    
+   
 function drawStars() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -96,10 +96,9 @@ if (bruce.complete) {
 
 }
     requestAnimationFrame(drawStars);
-drawStars();    
-console.log("⭐ Stars Animated");      
 
 }
-
+drawStars();    
+console.log("⭐ Stars Animated");      
   
-
+}
