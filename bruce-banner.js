@@ -6,7 +6,6 @@ if (!banner) {
     console.error("❌ #bruce-banner not found");
 } else {
     console.log("🥋 Bruce Banner Ready");
-const banner = document.getElementById("bruce-banner");
 
 banner.style.width = "100%";
 banner.style.maxWidth = "1100px";
@@ -21,4 +20,23 @@ banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
     banner.innerHTML = `
         <canvas id="bruceCanvas"></canvas>
     `;
+// ===============================
+// Canvas
+// ===============================
+
+const canvas = document.getElementById("bruceCanvas");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+
+    canvas.width = banner.clientWidth;
+    canvas.height = banner.clientHeight;
+
+}
+
+resizeCanvas();
+
+window.addEventListener("resize", resizeCanvas);
+
+console.log("🌌 Canvas Ready");    
 }
