@@ -58,7 +58,7 @@ function drawStars() {
     for (const star of stars) {
 
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
 
         star.x -= star.speed;
@@ -77,5 +77,6 @@ function drawStars() {
 }
 
 drawStars();    
+console.log("⭐ Stars Animated");    
     
 }
