@@ -71,12 +71,33 @@ function drawStars() {
         }
 
     }
+// Bruce Lee
+if (bruce.complete) {
 
+    ctx.drawImage(
+        bruce,
+        bruceX,
+        bruceY,
+        60,
+        60
+    );
+
+    bruceX += 0.8;
+
+}
     requestAnimationFrame(drawStars);
 
 }
 
 drawStars();    
 console.log("⭐ Stars Animated");    
-    
+// ===============================
+// Bruce Lee
+// ===============================
+
+const bruce = new Image();
+bruce.src = "https://i.imgur.com/0Z8vXbJ.png";
+
+let bruceX = -80;
+const bruceY = canvas.height - 70;    
 }
