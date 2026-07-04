@@ -191,10 +191,25 @@ if (blackhole.complete) {
 
     ctx.restore();
 
-    blackY += 0.45;
-    blackX += 0.25;
+    // Rơi xuống trước
+if (blackY < 10) {
 
-    if (blackY > canvas.height + 20) {
+    blackY += 1.2;
+
+}
+// Sau đó bay ngang qua Bruce
+else {
+
+    blackX += 0.8;
+
+}
+
+   if (blackX > canvas.width + 160) {
+
+    blackX = -160;
+    blackY = -140;
+
+}
 
         blackY = -140;
         blackX = 40;
