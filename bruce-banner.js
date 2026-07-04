@@ -65,7 +65,13 @@ bruce.onerror = () => {
 
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
-   
+// ===============================
+// Shooting Star
+// ===============================
+
+let meteorX = canvas.width + 150;
+let meteorY = 20;
+    
 function drawStars() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -87,7 +93,28 @@ function drawStars() {
 
         }
 
-    }
+    
+  }
+
+// ===============================
+// Shooting Star
+// ===============================
+
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 2;
+
+ctx.beginPath();
+ctx.moveTo(meteorX, meteorY);
+ctx.lineTo(meteorX - 40, meteorY + 20);
+ctx.stroke();
+
+meteorX -= 6;
+meteorY += 1;
+
+if (meteorX < -50) {
+    meteorX = canvas.width + 150;
+    meteorY = Math.random() * 40;
+}    
 // Bruce Lee
 if (bruce.complete) {
 
