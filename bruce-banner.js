@@ -97,24 +97,45 @@ function drawStars() {
   }
 
 // ===============================
-// Shooting Star
+// Halley Comet
 // ===============================
 
-ctx.strokeStyle = "#ffffff";
-ctx.lineWidth = 2;
+// Tail
+const g = ctx.createLinearGradient(
+    meteorX,
+    meteorY,
+    meteorX - 80,
+    meteorY + 40
+);
+
+g.addColorStop(0, "rgba(255,255,255,0.9)");
+g.addColorStop(0.4, "rgba(180,220,255,0.45)");
+g.addColorStop(1, "rgba(255,255,255,0)");
+
+ctx.strokeStyle = g;
+ctx.lineWidth = 5;
+ctx.lineCap = "round";
 
 ctx.beginPath();
 ctx.moveTo(meteorX, meteorY);
-ctx.lineTo(meteorX - 40, meteorY + 20);
+ctx.lineTo(meteorX - 80, meteorY + 40);
 ctx.stroke();
 
-meteorX -= 6;
-meteorY += 1;
+// Comet head
+ctx.beginPath();
+ctx.fillStyle = "#ffffff";
+ctx.arc(meteorX, meteorY, 4, 0, Math.PI * 2);
+ctx.fill();
 
-if (meteorX < -50) {
-    meteorX = canvas.width + 150;
-    meteorY = Math.random() * 40;
-}    
+// Move
+meteorX -= 3.2;
+meteorY += 0.5;
+
+// Restart
+if (meteorX < -100) {
+    meteorX = canvas.width + 200;
+    meteorY = Math.random() * 35;
+} 
 // Bruce Lee
 if (bruce.complete) {
 
