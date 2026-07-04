@@ -79,6 +79,23 @@ jupiter.onerror = () => {
 
 let jupiterX = canvas.width - 30;
 const jupiterY = 5;
+// ===============================
+// Black Hole
+// ===============================
+
+const blackhole = new Image();
+blackhole.src = "images/blackhole.png";
+
+blackhole.onload = () => {
+    console.log("🕳️ Black Hole Loaded");
+};
+
+blackhole.onerror = () => {
+    console.error("❌ Black Hole Load Failed");
+};
+
+let blackX = 40;
+let blackY = -140;
     
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
