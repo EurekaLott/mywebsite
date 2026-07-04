@@ -108,23 +108,23 @@ const g = ctx.createLinearGradient(
     meteorY + 40
 );
 
-g.addColorStop(0, "rgba(255,255,255,0.9)");
-g.addColorStop(0.4, "rgba(180,220,255,0.45)");
+g.addColorStop(0, "rgba(255,255,255,1)");
+g.addColorStop(0.4, "rgba(120,220,255,0.8)");
 g.addColorStop(1, "rgba(255,255,255,0)");
 
 ctx.strokeStyle = g;
-ctx.lineWidth = 5;
+ctx.lineWidth = 8;
 ctx.lineCap = "round";
 
 ctx.beginPath();
 ctx.moveTo(meteorX, meteorY);
-ctx.lineTo(meteorX - 80, meteorY + 40);
+ctx.lineTo(meteorX - 140, meteorY + 70);
 ctx.stroke();
 
 // Comet head
 ctx.beginPath();
 ctx.fillStyle = "#ffffff";
-ctx.arc(meteorX, meteorY, 4, 0, Math.PI * 2);
+ctx.arc(meteorX, meteorY, 8, 0, Math.PI * 2);
 ctx.fill();
 
 // Move
