@@ -101,8 +101,13 @@ if (bruce.complete) {
 
     bruceX += 0.8;
 
+    if (bruceX > canvas.width) {
+        bruceX = -60;
+    }
+
 }
-    requestAnimationFrame(drawStars);
+
+requestAnimationFrame(drawStars);
 
 }
 drawStars();    
