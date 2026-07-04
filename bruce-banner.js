@@ -62,7 +62,24 @@ bruce.src = "images/bruce.png";
 bruce.onerror = () => {
     console.error("❌ Bruce Image Load Failed");
 };
+// ===============================
+// Jupiter
+// ===============================
 
+const jupiter = new Image();
+jupiter.src = "images/Jupiter.png";
+
+jupiter.onload = () => {
+    console.log("🪐 Jupiter Loaded");
+};
+
+jupiter.onerror = () => {
+    console.error("❌ Jupiter Load Failed");
+};
+
+let jupiterX = canvas.width + 120;
+const jupiterY = 5;
+    
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
 // ===============================
@@ -136,6 +153,33 @@ if (meteorX < -100) {
     meteorX = canvas.width + 200;
     meteorY = 15 + Math.random() * 20;
 } 
+// ===============================
+// Jupiter
+// ===============================
+
+if (jupiter.complete) {
+
+    ctx.shadowColor = "#ffd27a";
+    ctx.shadowBlur = 25;
+
+    ctx.drawImage(
+        jupiter,
+        jupiterX,
+        jupiterY,
+        100,
+        100
+    );
+
+    ctx.shadowBlur = 0;
+
+    jupiterX -= 0.35;
+
+    if (jupiterX < -120) {
+        jupiterX = canvas.width + 150;
+    }
+
+}
+    
 // Bruce Lee
 if (bruce.complete) {
 
