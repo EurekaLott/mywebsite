@@ -170,6 +170,38 @@ if (meteorX < -100) {
     meteorX = canvas.width + 200;
     meteorY = 8 + Math.random() * 10;
 } 
+
+// ===============================
+// Black Hole
+// ===============================
+
+if (blackhole.complete) {
+
+    ctx.save();
+
+    ctx.globalAlpha = 0.95;
+
+    ctx.drawImage(
+        blackhole,
+        blackX,
+        blackY,
+        140,
+        140
+    );
+
+    ctx.restore();
+
+    blackY += 0.45;
+    blackX += 0.25;
+
+    if (blackY > canvas.height + 20) {
+
+        blackY = -140;
+        blackX = 40;
+
+    }
+
+}    
 // ===============================
 // Jupiter
 // ===============================
