@@ -200,17 +200,16 @@ if (blackhole.complete) {
     // Giai đoạn 2: bay ngang
     else {
 
-        blackX += 1.0;
-
+        blackX -= 1.0;
     }
 
     // Khi bay hết banner thì xuất hiện lại
-    if (blackX > canvas.width + 160) {
+    if (blackX < -160) {
 
-        blackX = 40;
-        blackY = -140;
+    blackX = canvas.width + 140;
+    blackY = -140;
 
-    }
+}
 
 }
 // ===============================
