@@ -54,7 +54,14 @@ for (let i = 0; i < 180; i++) {
 // ===============================
 
 const bruce = new Image();
-bruce.src = "https://i.imgur.com/0Z8vXbJ.png";
+bruce.src = "images/bruce.png";
+    bruce.onload = () => {
+    console.log("🥋 Bruce Image Loaded");
+};
+
+bruce.onerror = () => {
+    console.error("❌ Bruce Image Load Failed");
+};
 
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
