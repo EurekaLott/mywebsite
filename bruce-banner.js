@@ -77,7 +77,7 @@ jupiter.onerror = () => {
     console.error("❌ Jupiter Load Failed");
 };
 
-let jupiterX = canvas.width + 120;
+let jupiterX = canvas.width - 30;
 const jupiterY = 5;
     
 let bruceX = -80;
@@ -86,8 +86,8 @@ const bruceY = canvas.height - 70;
 // Shooting Star
 // ===============================
 
-let meteorX = canvas.width + 150;
-let meteorY = 20;
+let meteorX = canvas.width - 120;
+let meteorY = 12;
     
 function drawStars() {
 
@@ -151,7 +151,7 @@ meteorY += 0.08;
 // Restart
 if (meteorX < -100) {
     meteorX = canvas.width + 200;
-    meteorY = 15 + Math.random() * 20;
+    meteorY = 8 + Math.random() * 10;
 } 
 // ===============================
 // Jupiter
@@ -172,8 +172,7 @@ if (jupiter.complete) {
 
     ctx.shadowBlur = 0;
 
-    jupiterX -= 0.35;
-
+   jupiterX -= 0.6;
     if (jupiterX < -120) {
         jupiterX = canvas.width + 150;
     }
