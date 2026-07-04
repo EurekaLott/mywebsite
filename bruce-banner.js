@@ -128,13 +128,13 @@ ctx.arc(meteorX, meteorY, 8, 0, Math.PI * 2);
 ctx.fill();
 
 // Move
-meteorX -= 3.2;
-meteorY += 0.5;
+meteorX -= 1.6;
+meteorY += 0.08;
 
 // Restart
 if (meteorX < -100) {
     meteorX = canvas.width + 200;
-    meteorY = Math.random() * 35;
+    meteorY = 15 + Math.random() * 20;
 } 
 // Bruce Lee
 if (bruce.complete) {
