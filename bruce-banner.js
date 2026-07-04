@@ -191,17 +191,28 @@ if (blackhole.complete) {
 
     ctx.restore();
 
-    blackY += 0.45;
-    blackX += 0.25;
+    // Giai đoạn 1: rơi xuống
+    if (blackY < 5) {
 
-    if (blackY > canvas.height + 20) {
+        blackY += 1.0;
 
-        blackY = -140;
-        blackX = 40;
+    }
+    // Giai đoạn 2: bay ngang
+    else {
+
+        blackX += 1.0;
 
     }
 
-}    
+    // Khi bay hết banner thì xuất hiện lại
+    if (blackX > canvas.width + 160) {
+
+        blackX = 40;
+        blackY = -140;
+
+    }
+
+}
 // ===============================
 // Jupiter
 // ===============================
