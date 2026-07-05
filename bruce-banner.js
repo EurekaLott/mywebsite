@@ -79,6 +79,7 @@ jupiter.onerror = () => {
 
 let jupiterX = canvas.width - 30;
 const jupiterY = 5;
+let jupiterAngle = 0;    
 // ===============================
 // Black Hole
 // ===============================
@@ -218,20 +219,28 @@ if (blackhole.complete) {
 
 if (jupiter.complete) {
 
-    ctx.shadowColor = "#ffd27a";
-    ctx.shadowBlur = 25;
+ctx.save();
 
-    ctx.drawImage(
-        jupiter,
-        jupiterX,
-        jupiterY,
-        100,
-        100
-    );
+ctx.shadowColor = "#ffd27a";
+ctx.shadowBlur = 25;
 
-    ctx.shadowBlur = 0;
+ctx.translate(jupiterX + 50, jupiterY + 50);
+ctx.rotate(jupiterAngle);
 
-   jupiterX -= 0.6;
+ctx.drawImage(
+    jupiter,
+    -50,
+    -50,
+    100,
+    100
+);
+
+ctx.restore();
+
+jupiterAngle += 0.003;
+
+jupiterX -= 0.6;
+    
     if (jupiterX < -120) {
         jupiterX = canvas.width + 150;
     }
