@@ -185,10 +185,10 @@ if (blackhole.complete) {
 glowPhase += 0.08;
 
 const glow =
-    18 +
-    Math.sin(glowPhase) * 12;
+    40 +
+    Math.sin(glowPhase) * 30;
 
-ctx.shadowColor = "#ffd54a";
+ctx.shadowColor = "#fff6a0";
 ctx.shadowBlur = glow;
     ctx.globalAlpha = 0.95;
 
@@ -233,15 +233,15 @@ ctx.save();
 
 ctx.shadowColor = "#ffd27a";
 
-ctx.translate(jupiterX + 50, jupiterY + 50);
+ctx.translate(jupiterX + 60, jupiterY + 60);
 ctx.rotate(jupiterAngle);
 
 ctx.drawImage(
     jupiter,
-    -50,
-    -50,
-    100,
-    100
+    -60,
+    -60,
+    120,
+    120
 );
 
 ctx.restore();
