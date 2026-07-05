@@ -100,8 +100,6 @@ blackhole.onerror = () => {
 
 let blackX = 40;
 let blackY = -140;
-let blackAngle = 0;
-let flarePhase = 0;
     
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
@@ -178,104 +176,53 @@ if (meteorX < -100) {
 } 
 
 // ===============================
-// Black Hole (Canvas)
+// Black Hole
 // ===============================
 
-ctx.save();
+if (blackhole.complete) {
 
-ctx.translate(blackX, blackY);
+    ctx.save();
+glowPhase += 0.08;
 
-blackAngle += 0.12;
-flarePhase += 0.18;
+const glow =
+    40 +
+    Math.sin(glowPhase) * 30;
 
-ctx.rotate(blackAngle);
+ctx.shadowColor = "#fff6a0";
+ctx.shadowBlur = glow;
+    ctx.globalAlpha = 0.95;
 
-// ===== Accretion Disk =====
+    ctx.drawImage(
+        blackhole,
+        blackX,
+        blackY,
+        140,
+        140
+    );
 
-const disk = ctx.createRadialGradient(
-    0,
-    0,
-    10,
-    0,
-    0,
-    55
-);
+    ctx.restore();
 
-disk.addColorStop(0.00,"rgba(255,255,220,0.95)");
-disk.addColorStop(0.25,"rgba(255,180,0,0.9)");
-disk.addColorStop(0.65,"rgba(255,80,0,0.45)");
-disk.addColorStop(1.00,"rgba(255,80,0,0)");
+    // Giai đoạn 1: rơi xuống
+    if (blackY < 5) {
 
-ctx.fillStyle = disk;
+        blackY += 1.0;
 
-ctx.beginPath();
-ctx.ellipse(
-    0,
-    0,
-    55,
-    16,
-    0,
-    0,
-    Math.PI*2
-);
+    }
+    // Giai đoạn 2: bay ngang
+    else {
 
-ctx.fill();
+        blackX -= 1.0;
+    }
 
-// ===== Event Horizon =====
+    // Khi bay hết banner thì xuất hiện lại
+    if (blackX < -160) {
 
-ctx.beginPath();
-
-ctx.fillStyle="black";
-
-ctx.arc(
-    0,
-    0,
-    18,
-    0,
-    Math.PI*2
-);
-
-ctx.fill();
-
-// ===== Blue Jet =====
-
-const jet =
-    34 +
-    Math.sin(flarePhase)*8;
-
-ctx.strokeStyle="#66ccff";
-ctx.lineWidth=4;
-
-ctx.beginPath();
-
-ctx.moveTo(0,-18);
-ctx.lineTo(0,-jet);
-
-ctx.moveTo(0,18);
-ctx.lineTo(0,jet);
-
-ctx.stroke();
-
-ctx.restore();
-// Move
-
-if (blackY < 5) {
-
-    blackY += 1;
-
-} else {
-
-    blackX -= 1;
-
-}
-
-if (blackX < -120) {
-
-    blackX = canvas.width + 120;
+    blackX = canvas.width + 140;
     blackY = -140;
 
 }
-    
+
+}
 // ===============================
 // Jupiter
 // ===============================
