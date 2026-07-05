@@ -237,7 +237,7 @@ ctx.drawImage(
 
 ctx.restore();
 
-jupiterAngle += 0.10;
+jupiterAngle += 0.05;
 
 jupiterX -= 0.6;
     
