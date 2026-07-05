@@ -230,6 +230,38 @@ ctx.shadowBlur = glow;
 if (jupiter.complete) {
 
 ctx.save();
+// ===============================
+// Jupiter Glow
+// ===============================
+
+glowPhase += 0.08;
+
+const glowRadius =
+    90 + Math.sin(glowPhase) * 12;
+
+const glow = ctx.createRadialGradient(
+    jupiterX + 50,
+    jupiterY + 50,
+    5,
+    jupiterX + 50,
+    jupiterY + 50,
+    glowRadius
+);
+
+glow.addColorStop(0, "rgba(255,255,220,0.45)");
+glow.addColorStop(0.4, "rgba(255,220,80,0.25)");
+glow.addColorStop(1, "rgba(255,220,80,0)");
+
+ctx.fillStyle = glow;
+ctx.beginPath();
+ctx.arc(
+    jupiterX + 50,
+    jupiterY + 50,
+    glowRadius,
+    0,
+    Math.PI * 2
+);
+ctx.fill();    
 
 ctx.shadowColor = "#ffd27a";
 
