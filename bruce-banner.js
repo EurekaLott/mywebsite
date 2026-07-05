@@ -269,7 +269,6 @@ ctx.arc(
 
 ctx.fill();  
 
-ctx.shadowColor = "#ffd27a";
 
 ctx.translate(jupiterX + 60, jupiterY + 60);
 ctx.rotate(jupiterAngle);
