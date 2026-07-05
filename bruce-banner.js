@@ -79,7 +79,9 @@ jupiter.onerror = () => {
 
 let jupiterX = canvas.width - 30;
 const jupiterY = 5;
-let jupiterAngle = 0;    
+let jupiterAngle = 0;   
+let glowPhase = 0;
+    
 // ===============================
 // Black Hole
 // ===============================
@@ -179,7 +181,14 @@ if (meteorX < -100) {
 if (blackhole.complete) {
 
     ctx.save();
+glowPhase += 0.08;
 
+const glow =
+    18 +
+    Math.sin(glowPhase) * 12;
+
+ctx.shadowColor = "#ffd54a";
+ctx.shadowBlur = glow;
     ctx.globalAlpha = 0.95;
 
     ctx.drawImage(
@@ -222,7 +231,6 @@ if (jupiter.complete) {
 ctx.save();
 
 ctx.shadowColor = "#ffd27a";
-ctx.shadowBlur = 25;
 
 ctx.translate(jupiterX + 50, jupiterY + 50);
 ctx.rotate(jupiterAngle);
