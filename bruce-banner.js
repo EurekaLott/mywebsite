@@ -81,6 +81,7 @@ let jupiterX = canvas.width - 30;
 const jupiterY = 5;
 let jupiterAngle = 0;   
 let glowPhase = 0;
+let moonAngle = 0;
     
 // ===============================
 // Black Hole
@@ -244,7 +245,36 @@ ctx.drawImage(
 );
 
 ctx.restore();
+// ===============================
+// Io & Europa
+// ===============================
 
+moonAngle += 0.03;
+
+// Europa
+const europaX =
+    jupiterX + 50 + Math.cos(moonAngle) * 72;
+
+const europaY =
+    jupiterY + 50 + Math.sin(moonAngle) * 26;
+
+ctx.beginPath();
+ctx.fillStyle = "#e8e8ff";
+ctx.arc(europaX, europaY, 4, 0, Math.PI * 2);
+ctx.fill();
+
+// Io
+const ioX =
+    jupiterX + 50 + Math.cos(moonAngle + Math.PI) * 58;
+
+const ioY =
+    jupiterY + 50 + Math.sin(moonAngle + Math.PI) * 20;
+
+ctx.beginPath();
+ctx.fillStyle = "#ffd37a";
+ctx.arc(ioX, ioY, 3.5, 0, Math.PI * 2);
+ctx.fill();
+    
 jupiterAngle += 0.05;
 
 jupiterX -= 0.6;
