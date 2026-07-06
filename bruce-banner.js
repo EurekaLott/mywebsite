@@ -101,6 +101,8 @@ blackhole.onerror = () => {
 let blackX = 40;
 let blackY = -140;
 let blackAngle = 0;
+        
+let blackAngle = 0;
 let flarePhase = 0;
     
 let bruceX = -80;
@@ -203,13 +205,24 @@ ctx.translate(
 
 ctx.rotate(blackAngle);
 
+ctx.save();
+
+ctx.translate(
+    blackX + 100,
+    blackY + 65
+);
+
+ctx.rotate(blackAngle);
+
 ctx.drawImage(
     blackhole,
-    -70,
-    -70,
-    140,
-    140
+    -100,
+    -65,
+    240,
+    160
 );
+
+ctx.restore();
 flarePhase += 0.25;
 
 const flare =
@@ -263,6 +276,7 @@ ctx.stroke();
     else {
 
         blackX -= 1.0;
+        blackAngle += 0.50;
     }
 
     // Khi bay hết banner thì xuất hiện lại
