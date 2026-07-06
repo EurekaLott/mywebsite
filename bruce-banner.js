@@ -1,368 +1,264 @@
-console.log("🥋 Bruce Banner Loaded");
+console.log("Universe Banner");
 
 const banner = document.getElementById("bruce-banner");
 
-if (!banner) {
-    console.error("❌ #bruce-banner not found");
-} else {
-    console.log("🥋 Bruce Banner Ready");
+banner.style.width="100%";
+banner.style.maxWidth="1100px";
+banner.style.height="120px";
+banner.style.margin="20px auto";
+banner.style.borderRadius="12px";
+banner.style.overflow="hidden";
+banner.style.background="#000814";
+banner.style.position="relative";
 
-banner.style.width = "100%";
-banner.style.maxWidth = "1100px";
-banner.style.height = "110px";
-banner.style.margin = "20px auto";
-banner.style.borderRadius = "14px";
-banner.style.overflow = "hidden";
-banner.style.position = "relative";
-banner.style.background = "linear-gradient(180deg,#000814,#001d3d)";
-banner.style.border = "1px solid #5b21b6";
-banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
-    banner.innerHTML = `
-        <canvas id="bruceCanvas"></canvas>
-    `;
-// ===============================
-// Canvas
-// ===============================
+banner.innerHTML="<canvas id='cv'></canvas>";
 
-const canvas = document.getElementById("bruceCanvas");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("cv");
+const ctx=canvas.getContext("2d");
 
-function resizeCanvas() {
+function resize(){
 
-    canvas.width = banner.clientWidth;
-    canvas.height = banner.clientHeight;
+canvas.width=banner.clientWidth;
+canvas.height=banner.clientHeight;
 
 }
 
-resizeCanvas();
+resize();
 
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize",resize);
 
-console.log("🌌 Canvas Ready");    
-const stars = [];
+//////////////////////////////////////////////////
+// Stars
+//////////////////////////////////////////////////
 
-for (let i = 0; i < 180; i++) {
-    stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 0.3,
-        speed: Math.random() * 0.8 + 0.2
-    });
+const stars=[];
+
+for(let i=0;i<200;i++){
+
+stars.push({
+
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*2,
+s:Math.random()*0.5+0.2
+
+});
+
 }
-// ===============================
-// Bruce Lee
-// ===============================
 
-const bruce = new Image();
-bruce.src = "images/bruce.png";
-    bruce.onload = () => {
-    console.log("🥋 Bruce Image Loaded");
-};
+//////////////////////////////////////////////////
+// Images
+//////////////////////////////////////////////////
 
-bruce.onerror = () => {
-    console.error("❌ Bruce Image Load Failed");
-};
-// ===============================
-// Jupiter
-// ===============================
+const jupiter=new Image();
+jupiter.src="images/Jupiter.png";
 
-const jupiter = new Image();
-jupiter.src = "images/Jupiter.png";
+const black=new Image();
+black.src="images/blackhole.png";
 
-jupiter.onload = () => {
-    console.log("🪐 Jupiter Loaded");
-};
+//////////////////////////////////////////////////
+// Planets
+//////////////////////////////////////////////////
 
-jupiter.onerror = () => {
-    console.error("❌ Jupiter Load Failed");
-};
+let jx=-120;
+let jy=10;
 
-let jupiterX = canvas.width - 30;
-const jupiterY = 5;
-let jupiterAngle = 0;   
-let glowPhase = 0;
-let moonAngle = 0;
-    
-// ===============================
-// Black Hole
-// ===============================
+let bx=canvas.width+120;
+let by=0;
 
-const blackhole = new Image();
-blackhole.src = "images/blackhole.png";
+let jAngle=0;
+let bAngle=0;
 
-blackhole.onload = () => {
-    console.log("🕳️ Black Hole Loaded");
-};
+let exploded=false;
 
-blackhole.onerror = () => {
-    console.error("❌ Black Hole Load Failed");
-};
+//////////////////////////////////////////////////
+// Explosion
+//////////////////////////////////////////////////
 
-let blackX = canvas.width * 0.55;
-let blackY = -140;
-let blackAngle = 0;
-        
+const particles=[];
 
-    
-let bruceX = -80;
-const bruceY = canvas.height - 70;    
-// ===============================
-// Shooting Star
-// ===============================
+function createExplosion(x,y){
 
-let meteorX = canvas.width - 120;
-let meteorY = 12;
-    
-function drawStars() {
+for(let i=0;i<300;i++){
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+particles.push({
 
-    ctx.fillStyle = "white";
+x:x,
+y:y,
 
-    for (const star of stars) {
+vx:(Math.random()-0.5)*10,
+vy:(Math.random()-0.5)*10,
 
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
+size:Math.random()*5+2,
 
-        star.x -= star.speed;
+life:100,
 
-        if (star.x < 0) {
+color:`hsl(${Math.random()*60},100%,60%)`
 
-            star.x = canvas.width;
-            star.y = Math.random() * canvas.height;
+});
 
-        }
+}
 
-    
-  }
+}
 
-// ===============================
-// Halley Comet
-// ===============================
+//////////////////////////////////////////////////
+// Loop
+//////////////////////////////////////////////////
 
-// Tail
-const g = ctx.createLinearGradient(
-    meteorX,
-    meteorY,
-    meteorX - 80,
-    meteorY + 40
-);
+function draw(){
 
-g.addColorStop(0, "rgba(255,255,255,1)");
-g.addColorStop(0.4, "rgba(120,220,255,0.8)");
-g.addColorStop(1, "rgba(255,255,255,0)");
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-ctx.strokeStyle = g;
-ctx.lineWidth = 8;
-ctx.lineCap = "round";
+//////////////////////////////////////////////////
+// Stars
+//////////////////////////////////////////////////
+
+ctx.fillStyle="white";
+
+for(const s of stars){
 
 ctx.beginPath();
-ctx.moveTo(meteorX, meteorY);
-ctx.lineTo(meteorX - 140, meteorY + 70);
-ctx.stroke();
-
-// Comet head
-ctx.beginPath();
-ctx.fillStyle = "#ffffff";
-ctx.arc(meteorX, meteorY, 8, 0, Math.PI * 2);
+ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
 ctx.fill();
 
-// Move
-meteorX -= 1.6;
-meteorY += 0.08;
+s.x-=s.s;
 
-// Restart
-if (meteorX < -100) {
-    meteorX = canvas.width + 200;
-    meteorY = 8 + Math.random() * 10;
-} 
+if(s.x<0){
 
-// ===============================
-// Black Hole
-// ===============================
+s.x=canvas.width;
+s.y=Math.random()*canvas.height;
 
-if (blackhole.complete) {
+}
 
-    ctx.save();
-glowPhase += 0.08;
+}
 
-const glow =
-    40 +
-    Math.sin(glowPhase) * 30;
+//////////////////////////////////////////////////
+// Before collision
+//////////////////////////////////////////////////
 
-ctx.shadowColor = "#fff6a0";
-ctx.shadowBlur = glow;
-    ctx.globalAlpha = 0.95;
+if(!exploded){
 
-    
+//////////////////////////////////////////////////
+// Jupiter
+//////////////////////////////////////////////////
 
 ctx.save();
 
-ctx.translate(
-    blackX + 120,
-    blackY + 120
-);
+ctx.translate(jx+55,jy+55);
 
-ctx.rotate(blackAngle);
+ctx.rotate(jAngle);
 
-ctx.drawImage(
-    blackhole,
-    -120,
-    -120,
-    240,
-    240
-);
+ctx.drawImage(jupiter,-55,-55,110,110);
 
 ctx.restore();
-   
 
-    ctx.restore();
-
-    // Giai đoạn 1: rơi xuống
-    if (blackY < 5) {
-
-        blackY += 1.0;
-
-    }
-    // Giai đoạn 2: bay ngang
-    else {
-
-    blackX -= 0.6;      // cùng tốc độ với Jupiter
-    blackAngle += 0.01; // quay vừa phải
-}
-
-    // Khi bay hết banner thì xuất hiện lại
-    if (blackX < -160) {
-
-    blackX = canvas.width + 140;
-    blackY = -140;
-
-}
-
-}
-// ===============================
-// Jupiter
-// ===============================
-
-if (jupiter.complete) {
+//////////////////////////////////////////////////
+// Black Hole
+//////////////////////////////////////////////////
 
 ctx.save();
-// ===============================
-// Jupiter Glow
-// ===============================
 
-// ===============================
-// Jupiter Glow (Strong)
-// ===============================
+ctx.translate(bx+55,by+55);
 
-glowPhase += 0.08;
+ctx.rotate(bAngle);
 
-const glowRadius = 130 + Math.sin(glowPhase) * 20;
+ctx.drawImage(black,-55,-55,110,110);
 
-const glow = ctx.createRadialGradient(
-    jupiterX + 60,
-    jupiterY + 60,
-    10,
-    jupiterX + 60,
-    jupiterY + 60,
-    glowRadius
+ctx.restore();
+
+jx+=1.5;
+bx-=1.5;
+
+jAngle+=0.01;
+bAngle-=0.02;
+
+let dx=jx-bx;
+let dy=jy-by;
+
+let d=Math.sqrt(dx*dx+dy*dy);
+
+if(d<90){
+
+exploded=true;
+
+createExplosion(
+canvas.width/2,
+canvas.height/2
 );
 
-glow.addColorStop(0.00, "rgba(255,255,240,0.75)");
-glow.addColorStop(0.25, "rgba(255,235,120,0.45)");
-glow.addColorStop(0.60, "rgba(255,190,40,0.18)");
-glow.addColorStop(1.00, "rgba(255,190,40,0.00)");
+}
 
-ctx.fillStyle = glow;
+}
+
+//////////////////////////////////////////////////
+// Explosion
+//////////////////////////////////////////////////
+
+for(let i=particles.length-1;i>=0;i--){
+
+let p=particles[i];
+
+ctx.fillStyle=p.color;
 
 ctx.beginPath();
+
 ctx.arc(
-    jupiterX + 60,
-    jupiterY + 60,
-    glowRadius,
-    0,
-    Math.PI * 2
+p.x,
+p.y,
+p.size,
+0,
+Math.PI*2
 );
 
-ctx.fill();  
-
-
-ctx.translate(jupiterX + 60, jupiterY + 60);
-ctx.rotate(jupiterAngle);
-
-ctx.drawImage(
-    jupiter,
-    -60,
-    -60,
-    120,
-    120
-);
-
-ctx.restore();
-// ===============================
-// Io & Europa
-// ===============================
-
-moonAngle += 0.03;
-
-// Europa
-const europaX =
-    jupiterX + 50 + Math.cos(moonAngle) * 72;
-
-const europaY =
-    jupiterY + 50 + Math.sin(moonAngle) * 26;
-
-ctx.beginPath();
-ctx.fillStyle = "#e8e8ff";
-ctx.arc(europaX, europaY, 4, 0, Math.PI * 2);
 ctx.fill();
 
-// Io
-const ioX =
-    jupiterX + 50 + Math.cos(moonAngle + Math.PI) * 58;
+p.x+=p.vx;
+p.y+=p.vy;
 
-const ioY =
-    jupiterY + 50 + Math.sin(moonAngle + Math.PI) * 20;
+p.vx*=0.98;
+p.vy*=0.98;
 
-ctx.beginPath();
-ctx.fillStyle = "#ffd37a";
-ctx.arc(ioX, ioY, 3.5, 0, Math.PI * 2);
-ctx.fill();
-    
-jupiterAngle += 0.05;
+p.size*=0.985;
 
-jupiterX -= 0.6;
-    
-    if (jupiterX < -120) {
-        jupiterX = canvas.width + 150;
-    }
+p.life--;
 
-}
-    
-// Bruce Lee
-if (bruce.complete) {
+if(p.life<=0){
 
-    ctx.drawImage(
-        bruce,
-        bruceX,
-        bruceY,
-        60,
-        60
-    );
-
-    bruceX += 0.8;
-
-    if (bruceX > canvas.width) {
-        bruceX = -60;
-    }
+particles.splice(i,1);
 
 }
 
-requestAnimationFrame(drawStars);
+}
+
+//////////////////////////////////////////////////
+// White Flash
+//////////////////////////////////////////////////
+
+if(exploded){
+
+ctx.fillStyle="rgba(255,255,255,0.06)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
 
 }
-drawStars();    
-console.log("⭐ Stars Animated");      
-  
+
+//////////////////////////////////////////////////
+// Restart
+//////////////////////////////////////////////////
+
+if(exploded && particles.length==0){
+
+exploded=false;
+
+jx=-120;
+jy=10;
+
+bx=canvas.width+120;
+by=0;
+
 }
+
+requestAnimationFrame(draw);
+
+}
+
+draw();
