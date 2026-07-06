@@ -195,9 +195,7 @@ ctx.shadowColor = "#fff6a0";
 ctx.shadowBlur = glow;
     ctx.globalAlpha = 0.95;
 
-    blackAngle += 0.10;
-
-ctx.rotate(blackAngle);
+    
 
 ctx.save();
 
@@ -230,9 +228,9 @@ ctx.restore();
     // Giai đoạn 2: bay ngang
     else {
 
-        blackX -= 1.0;
-        blackAngle += 0.50;
-    }
+    blackX -= 0.6;      // cùng tốc độ với Jupiter
+    blackAngle += 0.04; // quay vừa phải
+}
 
     // Khi bay hết banner thì xuất hiện lại
     if (blackX < -160) {
