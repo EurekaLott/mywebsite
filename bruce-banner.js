@@ -82,7 +82,27 @@ const jupiterY = 5;
 let jupiterAngle = 0;   
 let glowPhase = 0;
 let moonAngle = 0;
-    
+
+// ===============================
+// Neptune
+// ===============================
+
+const neptune = new Image();
+neptune.src = "images/Neptune.png";
+
+neptune.onload = () => {
+    console.log("🔵 Neptune Loaded");
+};
+
+neptune.onerror = () => {
+    console.error("❌ Neptune Load Failed");
+};
+
+let neptuneX = canvas.width / 2 - 60;
+let neptuneY = -140;
+let neptuneAngle = 0;
+let neptuneStarted = false;
+let neptuneDone = false;    
 // ===============================
 // Black Hole
 // ===============================
@@ -339,7 +359,56 @@ jupiterX -= 0.6;
     }
 
 }
-    
+
+// ===============================
+// Neptune
+// ===============================
+
+if (!neptuneDone && blackX < canvas.width / 2) {
+
+    neptuneStarted = true;
+
+}
+
+if (neptuneStarted && !neptuneDone && neptune.complete) {
+
+    ctx.save();
+
+    ctx.translate(
+        neptuneX + 60,
+        neptuneY + 60
+    );
+
+    ctx.rotate(neptuneAngle);
+
+    ctx.drawImage(
+        neptune,
+        -60,
+        -60,
+        120,
+        120
+    );
+
+    ctx.restore();
+
+    if (neptuneY < 5) {
+
+        neptuneY += 1;
+
+    } else {
+
+        neptuneX -= 0.6;
+        neptuneAngle += 0.05;
+
+    }
+
+    if (neptuneX < -140) {
+
+        neptuneDone = true;
+
+    }
+
+}    
 // Bruce Lee
 if (bruce.complete) {
 
