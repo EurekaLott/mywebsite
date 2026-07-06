@@ -1,94 +1,368 @@
-console.log("🌌 Black Hole 3D Spin");
+console.log("🥋 Bruce Banner Loaded");
 
 const banner = document.getElementById("bruce-banner");
 
+if (!banner) {
+    console.error("❌ #bruce-banner not found");
+} else {
+    console.log("🥋 Bruce Banner Ready");
+
 banner.style.width = "100%";
 banner.style.maxWidth = "1100px";
-banner.style.height = "260px";
+banner.style.height = "110px";
 banner.style.margin = "20px auto";
-banner.style.background = "#000814";
-banner.style.borderRadius = "12px";
+banner.style.borderRadius = "14px";
 banner.style.overflow = "hidden";
+banner.style.position = "relative";
+banner.style.background = "linear-gradient(180deg,#000814,#001d3d)";
+banner.style.border = "1px solid #5b21b6";
+banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
+    banner.innerHTML = `
+        <canvas id="bruceCanvas"></canvas>
+    `;
+// ===============================
+// Canvas
+// ===============================
 
-banner.innerHTML = "<canvas id='cv'></canvas>";
-
-const canvas = document.getElementById("cv");
+const canvas = document.getElementById("bruceCanvas");
 const ctx = canvas.getContext("2d");
 
-function resize() {
+function resizeCanvas() {
+
     canvas.width = banner.clientWidth;
     canvas.height = banner.clientHeight;
+
 }
 
-resize();
-window.addEventListener("resize", resize);
+resizeCanvas();
 
-//////////////////////////////////////////////////////
+window.addEventListener("resize", resizeCanvas);
+
+console.log("🌌 Canvas Ready");    
+const stars = [];
+
+for (let i = 0; i < 180; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 0.3,
+        speed: Math.random() * 0.8 + 0.2
+    });
+}
+// ===============================
+// Bruce Lee
+// ===============================
+
+const bruce = new Image();
+bruce.src = "images/bruce.png";
+    bruce.onload = () => {
+    console.log("🥋 Bruce Image Loaded");
+};
+
+bruce.onerror = () => {
+    console.error("❌ Bruce Image Load Failed");
+};
+// ===============================
+// Jupiter
+// ===============================
+
+const jupiter = new Image();
+jupiter.src = "images/Jupiter.png";
+
+jupiter.onload = () => {
+    console.log("🪐 Jupiter Loaded");
+};
+
+jupiter.onerror = () => {
+    console.error("❌ Jupiter Load Failed");
+};
+
+let jupiterX = canvas.width - 30;
+const jupiterY = 5;
+let jupiterAngle = 0;   
+let glowPhase = 0;
+let moonAngle = 0;
+    
+// ===============================
+// Black Hole
+// ===============================
 
 const blackhole = new Image();
 blackhole.src = "images/blackhole.png";
 
-//////////////////////////////////////////////////////
+blackhole.onload = () => {
+    console.log("🕳️ Black Hole Loaded");
+};
 
-let angle = 0;
+blackhole.onerror = () => {
+    console.error("❌ Black Hole Load Failed");
+};
 
-//////////////////////////////////////////////////////
+let blackX = 40;
+let blackY = -140;
+let blackAngle = 0;
+        
 
-function draw() {
+    
+let bruceX = -80;
+const bruceY = canvas.height - 70;    
+// ===============================
+// Shooting Star
+// ===============================
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+let meteorX = canvas.width - 120;
+let meteorY = 12;
+    
+function drawStars() {
 
-    // Sao nền
-    for(let i=0;i<150;i++){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+
+    for (const star of stars) {
 
         ctx.beginPath();
-
-        ctx.fillStyle="white";
-
-        ctx.arc(
-            (i*79)%canvas.width,
-            (i*47)%canvas.height,
-            1,
-            0,
-            Math.PI*2
-        );
-
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
 
-    }
+        star.x -= star.speed;
 
-    /////////////////////////////////////////
+        if (star.x < 0) {
 
-    // Giá trị từ 1 -> 0 -> -1 -> 0 -> 1
-    let scaleY = Math.cos(angle);
+            star.x = canvas.width;
+            star.y = Math.random() * canvas.height;
+
+        }
+
+    
+  }
+
+// ===============================
+// Halley Comet
+// ===============================
+
+// Tail
+const g = ctx.createLinearGradient(
+    meteorX,
+    meteorY,
+    meteorX - 80,
+    meteorY + 40
+);
+
+g.addColorStop(0, "rgba(255,255,255,1)");
+g.addColorStop(0.4, "rgba(120,220,255,0.8)");
+g.addColorStop(1, "rgba(255,255,255,0)");
+
+ctx.strokeStyle = g;
+ctx.lineWidth = 8;
+ctx.lineCap = "round";
+
+ctx.beginPath();
+ctx.moveTo(meteorX, meteorY);
+ctx.lineTo(meteorX - 140, meteorY + 70);
+ctx.stroke();
+
+// Comet head
+ctx.beginPath();
+ctx.fillStyle = "#ffffff";
+ctx.arc(meteorX, meteorY, 8, 0, Math.PI * 2);
+ctx.fill();
+
+// Move
+meteorX -= 1.6;
+meteorY += 0.08;
+
+// Restart
+if (meteorX < -100) {
+    meteorX = canvas.width + 200;
+    meteorY = 8 + Math.random() * 10;
+} 
+
+// ===============================
+// Black Hole
+// ===============================
+
+if (blackhole.complete) {
 
     ctx.save();
+glowPhase += 0.08;
 
-    ctx.translate(
-        canvas.width/2,
-        canvas.height/2
-    );
+const glow =
+    40 +
+    Math.sin(glowPhase) * 30;
 
-    // Giả lập quay theo trục ngang
-    ctx.scale(1, scaleY);
+ctx.shadowColor = "#fff6a0";
+ctx.shadowBlur = glow;
+    ctx.globalAlpha = 0.95;
 
-    ctx.shadowColor="#44ffff";
-    ctx.shadowBlur=40;
+    
 
-    ctx.drawImage(
-        blackhole,
-        -120,
-        -120,
-        240,
-        240
-    );
+ctx.save();
+
+ctx.translate(
+    blackX + 100,
+    blackY + 65
+);
+
+ctx.rotate(blackAngle);
+
+ctx.drawImage(
+    blackhole,
+    -100,
+    -65,
+    240,
+    160
+);
+
+ctx.restore();
+   
 
     ctx.restore();
 
-    angle += 0.04;
+    // Giai đoạn 1: rơi xuống
+    if (blackY < 5) {
 
-    requestAnimationFrame(draw);
+        blackY += 1.0;
+
+    }
+    // Giai đoạn 2: bay ngang
+    else {
+
+    blackX -= 0.6;      // cùng tốc độ với Jupiter
+    blackAngle += 0.04; // quay vừa phải
+}
+
+    // Khi bay hết banner thì xuất hiện lại
+    if (blackX < -160) {
+
+    blackX = canvas.width + 140;
+    blackY = -140;
 
 }
 
-blackhole.onload = draw;
+}
+// ===============================
+// Jupiter
+// ===============================
+
+if (jupiter.complete) {
+
+ctx.save();
+// ===============================
+// Jupiter Glow
+// ===============================
+
+// ===============================
+// Jupiter Glow (Strong)
+// ===============================
+
+glowPhase += 0.08;
+
+const glowRadius = 130 + Math.sin(glowPhase) * 20;
+
+const glow = ctx.createRadialGradient(
+    jupiterX + 60,
+    jupiterY + 60,
+    10,
+    jupiterX + 60,
+    jupiterY + 60,
+    glowRadius
+);
+
+glow.addColorStop(0.00, "rgba(255,255,240,0.75)");
+glow.addColorStop(0.25, "rgba(255,235,120,0.45)");
+glow.addColorStop(0.60, "rgba(255,190,40,0.18)");
+glow.addColorStop(1.00, "rgba(255,190,40,0.00)");
+
+ctx.fillStyle = glow;
+
+ctx.beginPath();
+ctx.arc(
+    jupiterX + 60,
+    jupiterY + 60,
+    glowRadius,
+    0,
+    Math.PI * 2
+);
+
+ctx.fill();  
+
+
+ctx.translate(jupiterX + 60, jupiterY + 60);
+ctx.rotate(jupiterAngle);
+
+ctx.drawImage(
+    jupiter,
+    -60,
+    -60,
+    120,
+    120
+);
+
+ctx.restore();
+// ===============================
+// Io & Europa
+// ===============================
+
+moonAngle += 0.03;
+
+// Europa
+const europaX =
+    jupiterX + 50 + Math.cos(moonAngle) * 72;
+
+const europaY =
+    jupiterY + 50 + Math.sin(moonAngle) * 26;
+
+ctx.beginPath();
+ctx.fillStyle = "#e8e8ff";
+ctx.arc(europaX, europaY, 4, 0, Math.PI * 2);
+ctx.fill();
+
+// Io
+const ioX =
+    jupiterX + 50 + Math.cos(moonAngle + Math.PI) * 58;
+
+const ioY =
+    jupiterY + 50 + Math.sin(moonAngle + Math.PI) * 20;
+
+ctx.beginPath();
+ctx.fillStyle = "#ffd37a";
+ctx.arc(ioX, ioY, 3.5, 0, Math.PI * 2);
+ctx.fill();
+    
+jupiterAngle += 0.05;
+
+jupiterX -= 0.6;
+    
+    if (jupiterX < -120) {
+        jupiterX = canvas.width + 150;
+    }
+
+}
+    
+// Bruce Lee
+if (bruce.complete) {
+
+    ctx.drawImage(
+        bruce,
+        bruceX,
+        bruceY,
+        60,
+        60
+    );
+
+    bruceX += 0.8;
+
+    if (bruceX > canvas.width) {
+        bruceX = -60;
+    }
+
+}
+
+requestAnimationFrame(drawStars);
+
+}
+drawStars();    
+console.log("⭐ Stars Animated");      
+  
+}
