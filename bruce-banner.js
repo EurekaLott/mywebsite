@@ -98,7 +98,7 @@ blackhole.onerror = () => {
     console.error("❌ Black Hole Load Failed");
 };
 
-let blackX = 40;
+let blackX = canvas.width * 0.55;
 let blackY = -140;
 let blackAngle = 0;
         
@@ -200,18 +200,18 @@ ctx.shadowBlur = glow;
 ctx.save();
 
 ctx.translate(
-    blackX + 100,
-    blackY + 65
+    blackX + 120,
+    blackY + 120
 );
 
 ctx.rotate(blackAngle);
 
 ctx.drawImage(
     blackhole,
-    -100,
-    -65,
+    -120,
+    -120,
     240,
-    160
+    240
 );
 
 ctx.restore();
@@ -229,7 +229,7 @@ ctx.restore();
     else {
 
     blackX -= 0.6;      // cùng tốc độ với Jupiter
-    blackAngle += 0.04; // quay vừa phải
+    blackAngle += 0.01; // quay vừa phải
 }
 
     // Khi bay hết banner thì xuất hiện lại
