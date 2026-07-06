@@ -1,21 +1,20 @@
-console.log("🌌 Black Hole Ferris Wheel");
+console.log("🌌 Black Hole Rotate");
 
 const banner = document.getElementById("bruce-banner");
 
 banner.style.width = "100%";
 banner.style.maxWidth = "1100px";
-banner.style.height = "220px";
+banner.style.height = "260px";
 banner.style.margin = "20px auto";
+banner.style.background = "#000";
 banner.style.borderRadius = "12px";
 banner.style.overflow = "hidden";
-banner.style.position = "relative";
-banner.style.background =
-"linear-gradient(180deg,#000814,#001d3d)";
-banner.style.border = "1px solid #4f46e5";
 
-banner.innerHTML = "<canvas id='canvas'></canvas>";
+banner.innerHTML = `
+<canvas id="cv"></canvas>
+`;
 
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("cv");
 const ctx = canvas.getContext("2d");
 
 function resize(){
@@ -29,111 +28,88 @@ resize();
 
 window.addEventListener("resize", resize);
 
-//////////////////////////////////////////////////////
+//////////////////////////////////////////////////
 // Black Hole
-//////////////////////////////////////////////////////
+//////////////////////////////////////////////////
 
 const blackhole = new Image();
 
 blackhole.src = "images/blackhole.png";
 
-blackhole.onload = () => {
+blackhole.onload = ()=>{
 
-    console.log("✅ Black Hole Loaded");
+    console.log("✅ image loaded");
 
-};
+}
 
-blackhole.onerror = () => {
-
-    console.log("❌ Image Not Found");
-
-};
-
-//////////////////////////////////////////////////////
-// Rotation
-//////////////////////////////////////////////////////
+//////////////////////////////////////////////////
 
 let angle = 0;
 
-let glow = 0;
-
-//////////////////////////////////////////////////////
-// Animation
-//////////////////////////////////////////////////////
+//////////////////////////////////////////////////
 
 function animate(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    //////////////////////////////////////////////////
-    // Background Stars
-    //////////////////////////////////////////////////
+    // nền sao
 
-    for(let i=0;i<120;i++){
+    for(let i=0;i<180;i++){
 
-        let x=(i*97)%canvas.width;
-        let y=(i*53)%canvas.height;
+        let x=(i*73)%canvas.width;
+        let y=(i*41)%canvas.height;
 
         ctx.beginPath();
-        ctx.fillStyle="rgba(255,255,255,0.8)";
+        ctx.fillStyle="white";
         ctx.arc(x,y,1.2,0,Math.PI*2);
         ctx.fill();
 
     }
 
-    //////////////////////////////////////////////////
-    // Glow
-    //////////////////////////////////////////////////
-
-    glow += 0.05;
-
-    let blur =
-        35 +
-        Math.sin(glow)*20;
+    ///////////////////////////////////////////////
 
     ctx.save();
 
-    ctx.shadowColor="#55ffff";
-    ctx.shadowBlur=blur;
+    // Glow
 
-    //////////////////////////////////////////////////
-    // Center
-    //////////////////////////////////////////////////
+    ctx.shadowColor="#44ffff";
+    ctx.shadowBlur=40;
+
+    // Đưa gốc tọa độ vào giữa banner
 
     ctx.translate(
+
         canvas.width/2,
+
         canvas.height/2
+
     );
 
-    //////////////////////////////////////////////////
-    // Rotate
-    //////////////////////////////////////////////////
+    // Quay quanh đúng tâm
 
     ctx.rotate(angle);
 
-    //////////////////////////////////////////////////
-    // Draw Image
-    //////////////////////////////////////////////////
+    // Vẽ ảnh đối xứng qua tâm
 
     ctx.drawImage(
 
         blackhole,
 
-        -110,
-        -110,
+        -120,
 
-        220,
-        220
+        -120,
+
+        240,
+
+        240
 
     );
 
     ctx.restore();
 
-    //////////////////////////////////////////////////
-    // Rotation Speed
-    //////////////////////////////////////////////////
+    ///////////////////////////////////////////////
 
-    angle += 0.006;
+    angle += 0.01;
 
     requestAnimationFrame(animate);
 
