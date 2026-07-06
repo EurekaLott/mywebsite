@@ -102,8 +102,7 @@ let blackX = 40;
 let blackY = -140;
 let blackAngle = 0;
         
-let blackAngle = 0;
-let flarePhase = 0;
+
     
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
@@ -198,11 +197,6 @@ ctx.shadowBlur = glow;
 
     blackAngle += 0.10;
 
-ctx.translate(
-    blackX + 70,
-    blackY + 70
-);
-
 ctx.rotate(blackAngle);
 
 ctx.save();
@@ -223,46 +217,7 @@ ctx.drawImage(
 );
 
 ctx.restore();
-flarePhase += 0.25;
-
-const flare =
-    40 +
-    Math.sin(flarePhase) * 12;
-
-const flareGradient =
-    ctx.createLinearGradient(
-        0,
-        -flare,
-        0,
-        flare
-    );
-
-flareGradient.addColorStop(
-    0,
-    "rgba(0,255,255,0)"
-);
-
-flareGradient.addColorStop(
-    0.5,
-    "rgba(0,255,255,0.95)"
-);
-
-flareGradient.addColorStop(
-    1,
-    "rgba(0,255,255,0)"
-);
-
-ctx.strokeStyle = flareGradient;
-
-ctx.lineWidth = 8;
-
-ctx.beginPath();
-
-ctx.moveTo(0,-flare);
-
-ctx.lineTo(0,flare);
-
-ctx.stroke();    
+   
 
     ctx.restore();
 
