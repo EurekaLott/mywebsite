@@ -132,7 +132,7 @@ let bigBang = false;
 let bigBangRadius = 0;
 let bigBangAlpha = 1;
 
-let burstReady = false;
+
     
 let jupiterHit = false;
 let jupiterScale = 1;
