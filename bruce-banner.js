@@ -128,6 +128,9 @@ let neptuneSpin = 0;
 let bigBang = false;
 let bigBangRadius = 0;
 let bigBangAlpha = 1;
+let blackScale = 1;
+let burstReady = false;
+    
 let jupiterHit = false;
 let jupiterScale = 1;
 let jupiterSpin = 0;
@@ -233,6 +236,8 @@ ctx.translate(
 );
 
 ctx.rotate(blackAngle);
+
+ctx.scale(blackScale, blackScale);
 
 ctx.drawImage(
     blackhole,
