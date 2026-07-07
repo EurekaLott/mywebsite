@@ -411,7 +411,19 @@ else{
 
     jupiterSpin += 0.25;
     jupiterScale *= 0.985;
+if (jupiterScale < 0.08) {
 
+    blackScale += 0.01;
+
+    if (blackScale > 1.6) {
+
+        burstReady = true;
+        bigBang = true;
+
+    }
+
+}
+    
 }
     
     if (jupiterX < -120) {
