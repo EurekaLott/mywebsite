@@ -139,7 +139,28 @@ let blackAngle = 0;
 let neptuneHit = false;
 let neptuneScale = 1;
 let neptuneSpin = 0;   
+// ===============================
 // Purple Planet
+// ===============================
+
+const purple = new Image();
+purple.src = "images/purple.png";
+
+purple.onload = () => {
+    console.log("🟣 Purple Loaded");
+};
+
+purple.onerror = () => {
+    console.error("❌ Purple Load Failed");
+};
+
+let purpleX = canvas.width + 180;
+let purpleY = 5;
+
+let purpleAngle = 0;
+let purpleStarted = false;
+    
+    // Purple Planet
 
 let purpleX = canvas.width + 180;
 let purpleY = 5;
