@@ -121,7 +121,9 @@ blackhole.onerror = () => {
 let blackX = 40;
 let blackY = -140;
 let blackAngle = 0;
-        
+let neptuneHit = false;
+let neptuneScale = 1;
+let neptuneSpin = 0;        
 
     
 let bruceX = -80;
@@ -248,7 +250,16 @@ ctx.restore();
     // Giai đoạn 2: bay ngang
     else {
 
-    blackX -= 0.6;      // cùng tốc độ với Jupiter
+    blackX += 0.6;      // cùng tốc độ với Jupiter
+    const dx = (blackX + 100) - (neptuneX + 60);
+const dy = (blackY + 65) - (neptuneY + 60);
+
+if (
+    !neptuneHit &&
+    Math.sqrt(dx * dx + dy * dy) < 90
+){
+    neptuneHit = true;
+}    
     blackAngle += 0.04; // quay vừa phải
 }
 
@@ -372,24 +383,33 @@ if (!neptuneDone && blackX < canvas.width / 2) {
 
 if (neptuneStarted && !neptuneDone && neptune.complete) {
 
-    ctx.save();
+   ctx.save();
 
-    ctx.translate(
-        neptuneX + 60,
-        neptuneY + 60
-    );
+ctx.translate(
+    neptuneX + 60,
+    neptuneY + 60
+);
 
-    ctx.rotate(neptuneAngle);
+ctx.rotate(
+    neptuneHit
+        ? neptuneSpin
+        : neptuneAngle
+);
 
-    ctx.drawImage(
-        neptune,
-        -60,
-        -60,
-        120,
-        120
-    );
+ctx.scale(
+    neptuneScale,
+    neptuneScale
+);
 
-    ctx.restore();
+ctx.drawImage(
+    neptune,
+    -60,
+    -60,
+    120,
+    120
+);
+
+ctx.restore();
 
     if (neptuneY < 5) {
 
@@ -397,7 +417,24 @@ if (neptuneStarted && !neptuneDone && neptune.complete) {
 
     } else {
 
-        neptuneX -= 0.6;
+       if(!neptuneHit){
+
+    neptuneX -= 0.6;
+
+}
+const dx =
+    (blackX + 100) - (neptuneX + 60);
+
+const dy =
+    (blackY + 65) - (neptuneY + 60);
+
+neptuneX += dx * 0.06;
+neptuneY += dy * 0.06;
+
+    neptuneSpin += 0.25;
+    neptuneScale *= 0.985;
+
+}
         neptuneAngle += 0.05;
 
     }
