@@ -49,6 +49,7 @@ for (let i = 0; i < 180; i++) {
         speed: Math.random() * 0.8 + 0.2
     });
 }
+    
 // ===============================
 // Bruce Lee
 // ===============================
@@ -439,6 +440,8 @@ ctx.restore();
     }
 
 }   
+
+}    
 // Bruce Lee
 if (bruce.complete) {
 
