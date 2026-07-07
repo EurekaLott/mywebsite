@@ -128,6 +128,9 @@ let neptuneSpin = 0;
 let bigBang = false;
 let bigBangRadius = 0;
 let bigBangAlpha = 1;
+let jupiterHit = false;
+let jupiterScale = 1;
+let jupiterSpin = 0;
     
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
@@ -256,7 +259,19 @@ ctx.restore();
     blackX += 0.6;      // cùng tốc độ với Jupiter
     const dx = (blackX + 100) - (neptuneX + 60);
 const dy = (blackY + 65) - (neptuneY + 60);
+const jdx =
+    (blackX + 100) - (jupiterX + 60);
 
+const jdy =
+    (blackY + 65) - (jupiterY + 60);
+
+if(
+    !jupiterHit &&
+    Math.sqrt(jdx*jdx + jdy*jdy) < 90
+){
+    jupiterHit = true;
+}
+        
 if (
     !neptuneHit &&
     Math.sqrt(dx * dx + dy * dy) < 90
@@ -323,7 +338,16 @@ ctx.fill();
 
 
 ctx.translate(jupiterX + 60, jupiterY + 60);
-ctx.rotate(jupiterAngle);
+ctx.rotate(
+    jupiterHit
+        ? jupiterSpin
+        : jupiterAngle
+);
+
+ctx.scale(
+    jupiterScale,
+    jupiterScale
+);
 
 ctx.drawImage(
     jupiter,
@@ -332,7 +356,6 @@ ctx.drawImage(
     120,
     120
 );
-
 ctx.restore();
 // ===============================
 // Io & Europa
@@ -364,9 +387,27 @@ ctx.fillStyle = "#ffd37a";
 ctx.arc(ioX, ioY, 3.5, 0, Math.PI * 2);
 ctx.fill();
     
-jupiterAngle += 0.05;
+if(!jupiterHit){
 
-jupiterX -= 0.6;
+    jupiterAngle += 0.05;
+    jupiterX -= 0.6;
+
+}
+else{
+
+    const jdx =
+        (blackX + 100) - (jupiterX + 60);
+
+    const jdy =
+        (blackY + 65) - (jupiterY + 60);
+
+    jupiterX += jdx * 0.06;
+    jupiterY += jdy * 0.06;
+
+    jupiterSpin += 0.25;
+    jupiterScale *= 0.985;
+
+}
     
     if (jupiterX < -120) {
         jupiterX = canvas.width + 150;
