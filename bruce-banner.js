@@ -127,8 +127,7 @@ let neptuneScale = 1;
 let neptuneSpin = 0;   
 let blackScale = 1;
 let burstReady = false;
-let bigBang = false;
-    
+
 let bigBang = false;
 let bigBangRadius = 0;
 let bigBangAlpha = 1;
