@@ -82,7 +82,27 @@ const jupiterY = 5;
 let jupiterAngle = 0;   
 let glowPhase = 0;
 let moonAngle = 0;
-    
+
+// ===============================
+// Neptune
+// ===============================
+
+const neptune = new Image();
+neptune.src = "images/Neptune.png";
+
+neptune.onload = () => {
+    console.log("🔵 Neptune Loaded");
+};
+
+neptune.onerror = () => {
+    console.error("❌ Neptune Load Failed");
+};
+
+let neptuneX = canvas.width / 2 - 60;
+let neptuneY = -140;
+let neptuneAngle = 0;
+let neptuneStarted = false;
+let neptuneDone = false;    
 // ===============================
 // Black Hole
 // ===============================
@@ -101,7 +121,9 @@ blackhole.onerror = () => {
 let blackX = 40;
 let blackY = -140;
 let blackAngle = 0;
-        
+let neptuneHit = false;
+let neptuneScale = 1;
+let neptuneSpin = 0;        
 
     
 let bruceX = -80;
@@ -228,7 +250,16 @@ ctx.restore();
     // Giai đoạn 2: bay ngang
     else {
 
-    blackX -= 0.6;      // cùng tốc độ với Jupiter
+    blackX += 0.6;      // cùng tốc độ với Jupiter
+    const dx = (blackX + 100) - (neptuneX + 60);
+const dy = (blackY + 65) - (neptuneY + 60);
+
+if (
+    !neptuneHit &&
+    Math.sqrt(dx * dx + dy * dy) < 90
+){
+    neptuneHit = true;
+}    
     blackAngle += 0.04; // quay vừa phải
 }
 
@@ -339,7 +370,75 @@ jupiterX -= 0.6;
     }
 
 }
-    
+
+// ===============================
+// Neptune
+// ===============================
+
+if (!neptuneDone && blackX < canvas.width / 2) {
+
+    neptuneStarted = true;
+
+}
+
+if (neptuneStarted && !neptuneDone && neptune.complete) {
+
+   ctx.save();
+
+ctx.translate(
+    neptuneX + 60,
+    neptuneY + 60
+);
+
+ctx.rotate(
+    neptuneHit
+        ? neptuneSpin
+        : neptuneAngle
+);
+
+ctx.scale(
+    neptuneScale,
+    neptuneScale
+);
+
+ctx.drawImage(
+    neptune,
+    -60,
+    -60,
+    120,
+    120
+);
+
+ctx.restore();
+
+    if (neptuneY < 5) {
+
+        neptuneY += 1;
+
+   } else {
+
+    if (!neptuneHit) {
+
+        neptuneX -= 0.6;
+        neptuneAngle += 0.05;
+
+    } else {
+
+        const dx =
+            (blackX + 100) - (neptuneX + 60);
+
+        const dy =
+            (blackY + 65) - (neptuneY + 60);
+
+        neptuneX += dx * 0.06;
+        neptuneY += dy * 0.06;
+
+        neptuneSpin += 0.25;
+        neptuneScale *= 0.985;
+
+    }
+
+}   
 // Bruce Lee
 if (bruce.complete) {
 
