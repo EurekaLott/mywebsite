@@ -124,7 +124,11 @@ let blackY = -140;
 let blackAngle = 0;
 let neptuneHit = false;
 let neptuneScale = 1;
-let neptuneSpin = 0;        
+let neptuneSpin = 0;   
+let blackScale = 1;
+let burstReady = false;
+let bigBang = false;
+    
 let bigBang = false;
 let bigBangRadius = 0;
 let bigBangAlpha = 1;
@@ -293,7 +297,42 @@ if (
     blackY = -140;
 
 }
+if (burstReady) {
 
+    ctx.save();
+
+    const burst =
+        ctx.createRadialGradient(
+            blackX + 100,
+            blackY + 65,
+            20,
+            blackX + 100,
+            blackY + 65,
+            220
+        );
+
+    burst.addColorStop(0, "rgba(255,255,255,1)");
+    burst.addColorStop(0.2, "rgba(180,240,255,0.95)");
+    burst.addColorStop(0.6, "rgba(120,180,255,0.35)");
+    burst.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = burst;
+
+    ctx.beginPath();
+    ctx.arc(
+        blackX + 100,
+        blackY + 65,
+        220,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+}
+    
 }
 // ===============================
 // Jupiter
@@ -411,14 +450,14 @@ else{
 
     jupiterSpin += 0.25;
     jupiterScale *= 0.985;
-if (jupiterScale < 0.08) {
+if (jupiterScale < 0.08 && !burstReady) {
 
     blackScale += 0.01;
 
-    if (blackScale > 1.6) {
+    if (blackScale >= 1.6) {
 
+        blackScale = 1.6;
         burstReady = true;
-        bigBang = true;
 
     }
 
