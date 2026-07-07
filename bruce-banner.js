@@ -79,7 +79,7 @@ jupiter.onerror = () => {
 };
 
 let jupiterX = canvas.width - 30;
-const jupiterY = 5;
+let jupiterY = 5;
 let jupiterAngle = 0;   
 let glowPhase = 0;
 let moonAngle = 0;
