@@ -125,7 +125,9 @@ let blackAngle = 0;
 let neptuneHit = false;
 let neptuneScale = 1;
 let neptuneSpin = 0;        
-
+let bigBang = false;
+let bigBangRadius = 0;
+let bigBangAlpha = 1;
     
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
@@ -437,6 +439,9 @@ ctx.restore();
         neptuneSpin += 0.25;
         neptuneScale *= 0.985;
 
+        if (neptuneScale < 0.08) {
+    bigBang = true;
+}
     }
 
 }   
