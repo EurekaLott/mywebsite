@@ -415,37 +415,30 @@ ctx.restore();
 
         neptuneY += 1;
 
-    } else {
+   } else {
 
-       if(!neptuneHit){
+    if (!neptuneHit) {
 
-    neptuneX -= 0.6;
-
-}
-const dx =
-    (blackX + 100) - (neptuneX + 60);
-
-const dy =
-    (blackY + 65) - (neptuneY + 60);
-
-neptuneX += dx * 0.06;
-neptuneY += dy * 0.06;
-
-    neptuneSpin += 0.25;
-    neptuneScale *= 0.985;
-
-}
+        neptuneX -= 0.6;
         neptuneAngle += 0.05;
 
+    } else {
+
+        const dx =
+            (blackX + 100) - (neptuneX + 60);
+
+        const dy =
+            (blackY + 65) - (neptuneY + 60);
+
+        neptuneX += dx * 0.06;
+        neptuneY += dy * 0.06;
+
+        neptuneSpin += 0.25;
+        neptuneScale *= 0.985;
+
     }
 
-    if (neptuneX < -140) {
-
-        neptuneDone = true;
-
-    }
-
-}    
+}   
 // Bruce Lee
 if (bruce.complete) {
 
