@@ -154,18 +154,7 @@ let purpleVisible = false;
 // Purple Planet
 // ===============================
 
-let purpleX = canvas.width + 180;
-let purpleY = 5;
 
-let purpleAngle = 0;
-let purpleStarted = false;
-    
-    // Purple Planet
-
-let purpleX = canvas.width + 180;
-let purpleY = 5;
-let purpleAngle = 0;
-let purpleVisible = false;
     
 let blackScale = 1;
 let burstReady = false;
