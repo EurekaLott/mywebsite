@@ -131,8 +131,8 @@ let burstReady = false;
 let bigBang = false;
 let bigBangRadius = 0;
 let bigBangAlpha = 1;
-
-
+let blackScale = 1;
+let burstReady = false;
     
 let jupiterHit = false;
 let jupiterScale = 1;
@@ -216,7 +216,8 @@ if (meteorX < -100) {
 // Black Hole
 // ===============================
 
-if (blackhole.complete && !bigBang) {
+if (blackhole.complete) {
+
     ctx.save();
 glowPhase += 0.08;
 
@@ -456,8 +457,7 @@ if (jupiterScale < 0.08 && !burstReady) {
 
         blackScale = 1.6;
         burstReady = true;
- // Kích hoạt Big Bang ngay khi đã phình cực đại
-        bigBang = true;
+
     }
 
 }
