@@ -216,8 +216,7 @@ if (meteorX < -100) {
 // Black Hole
 // ===============================
 
-if (blackhole.complete) {
-
+if (blackhole.complete && !bigBang) {
     ctx.save();
 glowPhase += 0.08;
 
@@ -457,7 +456,8 @@ if (jupiterScale < 0.08 && !burstReady) {
 
         blackScale = 1.6;
         burstReady = true;
-
+ // Kích hoạt Big Bang ngay khi đã phình cực đại
+        bigBang = true;
     }
 
 }
