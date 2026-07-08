@@ -432,8 +432,8 @@ ctx.fill();
     
 if(!jupiterHit){
 
-    jupiterAngle += 0.05;
-    jupiterX -= 0.6;
+    jupiterAngle += 0.10;   // x2 tốc độ quay (cũ: 0.05)
+    jupiterX -= 1.2;        // x2 tốc độ di chuyển (cũ: 0.6)
 
 }
 else{
@@ -518,8 +518,8 @@ ctx.restore();
 
     if (!neptuneHit) {
 
-        neptuneX -= 0.6;
-        neptuneAngle += 0.05;
+        neptuneX -= 1.2;        // x2 tốc độ di chuyển (cũ: 0.6)
+        neptuneAngle += 0.10;   // x2 tốc độ quay (cũ: 0.05)
 
     } else {
 
