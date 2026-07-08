@@ -566,8 +566,7 @@ ctx.restore();
 // Purple Planet - xuất hiện khi Black Hole đã phình thành quả cầu ánh sáng
 // ===============================
 
-if (burstReady && purple.complete) {
-
+if (purple.complete) {
     ctx.save();
     ctx.shadowColor = "#c084fc";
     ctx.shadowBlur = 25;
