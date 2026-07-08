@@ -74,6 +74,10 @@ if (!banner) {
     // ===============================
     // Scene state machine
     // space -> lightball -> bigbang2 -> empty -> purple -> prediction -> (reset) -> space
+    //
+    // QUAN TRỌNG: việc "bị hút" của Neptune và Jupiter giờ hoàn toàn dựa
+    // trên THỜI GIAN (không dựa vào khoảng cách pixel), nên hoạt động
+    // đúng như kịch bản bất kể banner rộng hay hẹp trên trang thật.
     // ===============================
     let scenePhase = "space";
     let phaseStart = Date.now();
@@ -85,6 +89,11 @@ if (!banner) {
         return Date.now() - phaseStart;
     }
 
+    const DRIFT_MS = 10000;      // thời gian trôi trước khi bị hút (10s)
+    const MAX_SPEED_MUL = 4;     // tăng tốc dần tới x4 ngay trước khi bị hút
+    const SHRINK_RATE = 0.965;   // tốc độ co lại khi bị hút vào hố đen
+    const HOMING_RATE = 0.08;    // tốc độ bay về phía hố đen khi bị hút
+
     // Shared animation vars
     let glowPhase = 0;
     let moonAngle = 0;
@@ -92,7 +101,7 @@ if (!banner) {
     const bruceY = canvas.height - 70;
 
     // Object state (all reset-able)
-    let jupiterX, jupiterY, jupiterAngle, jupiterHit, jupiterScale, jupiterSpin, jupiterSpeedMul, jupiterDriftStart;
+    let jupiterX, jupiterY, jupiterAngle, jupiterHit, jupiterScale, jupiterSpin, jupiterSpeedMul, jupiterArmed, jupiterDriftStart;
     let neptuneX, neptuneY, neptuneAngle, neptuneHit, neptuneScale, neptuneSpin, neptuneStarted, neptuneDone, neptuneSpeedMul, neptuneDriftStart;
     let blackX, blackY, blackAngle, blackScale, burstReady;
     let bigBang2Radius, bigBang2Alpha;
@@ -106,6 +115,7 @@ if (!banner) {
         jupiterScale = 1;
         jupiterSpin = 0;
         jupiterSpeedMul = 1;
+        jupiterArmed = false;
         jupiterDriftStart = null;
 
         neptuneX = canvas.width / 2 - 60;
@@ -199,22 +209,10 @@ if (!banner) {
             if (blackY < 5) {
                 blackY += 1.0;
             } else {
-                // Giai đoạn 2: bay ngang
+                // Giai đoạn 2: bay lượn nền (không cần "đuổi theo" ai,
+                // việc hút Neptune/Jupiter đã xử lý theo thời gian)
                 blackX += 0.6;
                 blackAngle += 0.04;
-
-                const jdx = (blackX + 100) - (jupiterX + 60);
-                const jdy = (blackY + 65) - (jupiterY + 60);
-                if (!jupiterHit && Math.sqrt(jdx * jdx + jdy * jdy) < 90) {
-                    jupiterHit = true;
-                }
-
-                const dx = (blackX + 100) - (neptuneX + 60);
-                const dy = (blackY + 65) - (neptuneY + 60);
-                if (!neptuneHit && Math.sqrt(dx * dx + dy * dy) < 90) {
-                    neptuneHit = true;
-                }
-
                 if (blackX < -160) {
                     blackX = canvas.width + 140;
                     blackY = -140;
@@ -245,6 +243,56 @@ if (!banner) {
         }
     }
 
+    function drawNeptune() {
+        if (neptuneDone) return;
+
+        if (!neptuneStarted) neptuneStarted = true;
+        if (!neptune.complete) return;
+
+        ctx.save();
+        ctx.translate(neptuneX + 60, neptuneY + 60);
+        ctx.rotate(neptuneHit ? neptuneSpin : neptuneAngle);
+        ctx.scale(neptuneScale, neptuneScale);
+        ctx.drawImage(neptune, -60, -60, 120, 120);
+        ctx.restore();
+
+        if (neptuneY < 5) {
+            // Giai đoạn rơi xuống
+            neptuneY += 1;
+            return;
+        }
+
+        if (neptuneDriftStart === null) neptuneDriftStart = Date.now();
+
+        if (!neptuneHit) {
+            const elapsed = Date.now() - neptuneDriftStart;
+            if (elapsed < DRIFT_MS) {
+                // Tăng tốc dần x1 -> x4 trong 10 giây trước khi bị hút
+                neptuneSpeedMul = 1 + (elapsed / DRIFT_MS) * (MAX_SPEED_MUL - 1);
+                neptuneX -= 0.6 * neptuneSpeedMul;
+                neptuneAngle += 0.05;
+            } else {
+                // Đủ 10 giây -> chính thức bị Black Hole hút
+                neptuneHit = true;
+            }
+        } else {
+            // Bị hút: bay về phía hố đen, xoay tròn, co nhỏ lại rồi biến mất
+            const dx = (blackX + 100) - (neptuneX + 60);
+            const dy = (blackY + 65) - (neptuneY + 60);
+            neptuneX += dx * HOMING_RATE;
+            neptuneY += dy * HOMING_RATE;
+            neptuneSpin += 0.3;
+            neptuneScale *= SHRINK_RATE;
+
+            if (neptuneScale < 0.05) {
+                neptuneDone = true; // Neptune biến mất hoàn toàn
+                // Ngay khi Neptune biến mất, "trao lượt" cho Jupiter
+                jupiterArmed = true;
+                jupiterDriftStart = Date.now();
+            }
+        }
+    }
+
     function drawJupiter() {
         if (!jupiter.complete) return;
 
@@ -270,41 +318,51 @@ if (!banner) {
         ctx.drawImage(jupiter, -60, -60, 120, 120);
         ctx.restore();
 
-        // Io & Europa
-        moonAngle += 0.03;
-        const europaX = jupiterX + 50 + Math.cos(moonAngle) * 72;
-        const europaY = jupiterY + 50 + Math.sin(moonAngle) * 26;
-        ctx.beginPath();
-        ctx.fillStyle = "#e8e8ff";
-        ctx.arc(europaX, europaY, 4, 0, Math.PI * 2);
-        ctx.fill();
+        // Io & Europa (chỉ hiện khi Jupiter chưa bị hút, cho đẹp)
+        if (!jupiterHit) {
+            moonAngle += 0.03;
+            const europaX = jupiterX + 50 + Math.cos(moonAngle) * 72;
+            const europaY = jupiterY + 50 + Math.sin(moonAngle) * 26;
+            ctx.beginPath();
+            ctx.fillStyle = "#e8e8ff";
+            ctx.arc(europaX, europaY, 4, 0, Math.PI * 2);
+            ctx.fill();
 
-        const ioX = jupiterX + 50 + Math.cos(moonAngle + Math.PI) * 58;
-        const ioY = jupiterY + 50 + Math.sin(moonAngle + Math.PI) * 20;
-        ctx.beginPath();
-        ctx.fillStyle = "#ffd37a";
-        ctx.arc(ioX, ioY, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+            const ioX = jupiterX + 50 + Math.cos(moonAngle + Math.PI) * 58;
+            const ioY = jupiterY + 50 + Math.sin(moonAngle + Math.PI) * 20;
+            ctx.beginPath();
+            ctx.fillStyle = "#ffd37a";
+            ctx.arc(ioX, ioY, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        if (!jupiterArmed) {
+            // Chưa tới lượt Jupiter (đang chờ Neptune biến mất trước)
+            jupiterAngle += 0.01;
+            return;
+        }
 
         if (!jupiterHit) {
-            // Bắt đầu đếm giờ trôi ngay khi Jupiter bắt đầu bay
-            if (jupiterDriftStart === null) jupiterDriftStart = Date.now();
-            // Sau 10 giây trôi mà chưa bị hút -> tăng tốc x2
-            if (Date.now() - jupiterDriftStart > 10000) {
-                jupiterSpeedMul = 2;
+            const elapsed = Date.now() - jupiterDriftStart;
+            if (elapsed < DRIFT_MS) {
+                // Tăng tốc dần x1 -> x4 trong 10 giây trước khi bị hút
+                jupiterSpeedMul = 1 + (elapsed / DRIFT_MS) * (MAX_SPEED_MUL - 1);
+                jupiterAngle += 0.05;
+                jupiterX -= 0.6 * jupiterSpeedMul;
+            } else {
+                // Đủ 10 giây -> chính thức bị Black Hole hút
+                jupiterHit = true;
             }
-            jupiterAngle += 0.05;
-            jupiterX -= 0.6 * jupiterSpeedMul;
         } else {
             const jdx = (blackX + 100) - (jupiterX + 60);
             const jdy = (blackY + 65) - (jupiterY + 60);
-            jupiterX += jdx * 0.06;
-            jupiterY += jdy * 0.06;
-            jupiterSpin += 0.25;
-            jupiterScale *= 0.985;
+            jupiterX += jdx * HOMING_RATE;
+            jupiterY += jdy * HOMING_RATE;
+            jupiterSpin += 0.3;
+            jupiterScale *= SHRINK_RATE;
 
             if (jupiterScale < 0.08 && !burstReady) {
-                blackScale += 0.01;
+                blackScale += 0.02;
                 if (blackScale >= 1.6) {
                     blackScale = 1.6;
                     burstReady = true;
@@ -312,50 +370,7 @@ if (!banner) {
             }
         }
 
-        if (jupiterX < -120) {
-            jupiterX = canvas.width + 150;
-        }
-    }
-
-    function drawNeptune() {
-        if (!neptuneDone && blackX < canvas.width / 2) {
-            neptuneStarted = true;
-        }
-        if (!(neptuneStarted && !neptuneDone && neptune.complete)) return;
-
-        ctx.save();
-        ctx.translate(neptuneX + 60, neptuneY + 60);
-        ctx.rotate(neptuneHit ? neptuneSpin : neptuneAngle);
-        ctx.scale(neptuneScale, neptuneScale);
-        ctx.drawImage(neptune, -60, -60, 120, 120);
-        ctx.restore();
-
-        if (neptuneY < 5) {
-            neptuneY += 1;
-        } else {
-            // Bắt đầu đếm giờ trôi ngay khi Neptune rơi xong
-            if (neptuneDriftStart === null) neptuneDriftStart = Date.now();
-
-            if (!neptuneHit) {
-                // Sau 10 giây trôi mà chưa bị hút -> tăng tốc x2.2
-                if (Date.now() - neptuneDriftStart > 10000) {
-                    neptuneSpeedMul = 2.2;
-                }
-                neptuneX -= 0.6 * neptuneSpeedMul;
-                neptuneAngle += 0.05;
-            } else {
-                const dx = (blackX + 100) - (neptuneX + 60);
-                const dy = (blackY + 65) - (neptuneY + 60);
-                neptuneX += dx * 0.06;
-                neptuneY += dy * 0.06;
-                neptuneSpin += 0.25;
-                neptuneScale *= 0.985;
-
-                if (neptuneScale < 0.05) {
-                    neptuneDone = true; // Neptune biến mất hoàn toàn
-                }
-            }
-        }
+        if (jupiterX < -120) jupiterX = canvas.width + 150;
     }
 
     function drawBigBang2() {
@@ -376,7 +391,7 @@ if (!banner) {
         ctx.fill();
         ctx.restore();
 
-        // 💥 Big Bang lần 2 hoàn tất -> không gian trống
+        // 💥 Big Bang lần 2 hoàn tất -> không gian trống hoàn toàn
         if (bigBang2Alpha <= 0 || bigBang2Radius > canvas.width) {
             setPhase("empty");
         }
@@ -403,9 +418,16 @@ if (!banner) {
         ctx.restore();
 
         if (!purpleMet) {
-            purpleX -= 1.2;
+            purpleX -= 1.4;
             const dx = (purpleX + 50) - (bruceX + 30);
             if (Math.abs(dx) < 70) {
+                purpleMet = true;
+                predictionText = PREDICTIONS[Math.floor(Math.random() * PREDICTIONS.length)];
+                setPhase("prediction");
+            }
+            // Phòng khi banner quá hẹp và Purple Planet trôi hết qua mà
+            // chưa "gặp" Bruce theo khoảng cách -> vẫn ép gặp nhau, tránh kẹt mãi.
+            if (purpleX < -100 && !purpleMet) {
                 purpleMet = true;
                 predictionText = PREDICTIONS[Math.floor(Math.random() * PREDICTIONS.length)];
                 setPhase("prediction");
@@ -451,8 +473,8 @@ if (!banner) {
         // Phase-specific content
         if (scenePhase === "space") {
             drawBlackHole();
-            drawJupiter();
             drawNeptune();
+            drawJupiter();
         } else if (scenePhase === "lightball") {
             drawBlackHole(); // giữ quả cầu ánh sáng, đứng yên
             if (phaseElapsed() > 5000) {
