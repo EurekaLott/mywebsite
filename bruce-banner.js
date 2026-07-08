@@ -137,7 +137,25 @@ let bigBangAlpha = 1;
 let jupiterHit = false;
 let jupiterScale = 1;
 let jupiterSpin = 0;
-    
+
+// ===============================
+// Purple Planet
+// ===============================
+
+const purple = new Image();
+purple.src = "images/purple.png";
+
+purple.onload = () => {
+    console.log("🟣 Purple Planet Loaded");
+};
+
+purple.onerror = () => {
+    console.error("❌ Purple Planet Load Failed");
+};
+
+let purpleX = canvas.width + 100;
+let purpleY = canvas.height / 2 - 50;
+
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
 // ===============================
@@ -543,6 +561,33 @@ ctx.restore();
 }   
 
 }    
+
+// ===============================
+// Purple Planet - xuất hiện khi Black Hole đã phình thành quả cầu ánh sáng
+// ===============================
+
+if (burstReady && purple.complete) {
+
+    ctx.save();
+    ctx.shadowColor = "#c084fc";
+    ctx.shadowBlur = 25;
+    ctx.drawImage(
+        purple,
+        purpleX,
+        purpleY,
+        100,
+        100
+    );
+    ctx.restore();
+
+    purpleX -= 1;
+
+    if (purpleX < -120) {
+        purpleX = canvas.width + 120;
+    }
+
+}
+
 // Bruce Lee
 if (bruce.complete) {
 
