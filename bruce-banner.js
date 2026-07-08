@@ -499,25 +499,7 @@ if (!banner) {
 
         // Bruce Lee - luôn đi bộ xuyên suốt mọi phase
         if (bruce.complete) {
-            walkTick++;
-
-if (walkTick > 10) {
-    walkTick = 0;
-    walkFrame = 1 - walkFrame;
-}
-
-const bruceImg =
-    walkFrame === 0
-        ? bruce1
-        : bruce2;
-
-ctx.drawImage(
-    bruceImg,
-    bruceX,
-    bruceY,
-    60,
-    60
-);
+            ctx.drawImage(bruce, bruceX, bruceY, 60, 60);
             bruceX += 0.8;
             if (bruceX > canvas.width) {
                 bruceX = -60;
