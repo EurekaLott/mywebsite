@@ -137,25 +137,7 @@ let bigBangAlpha = 1;
 let jupiterHit = false;
 let jupiterScale = 1;
 let jupiterSpin = 0;
-
-// ===============================
-// Purple Planet
-// ===============================
-
-const purple = new Image();
-purple.src = "images/purple.png";
-
-purple.onload = () => {
-    console.log("🟣 Purple Planet Loaded");
-};
-
-purple.onerror = () => {
-    console.error("❌ Purple Planet Load Failed");
-};
-
-let purpleX = canvas.width + 100;
-let purpleY = canvas.height / 2 - 50;
-
+    
 let bruceX = -80;
 const bruceY = canvas.height - 70;    
 // ===============================
@@ -450,8 +432,8 @@ ctx.fill();
     
 if(!jupiterHit){
 
-    jupiterAngle += 0.10;   // x2 tốc độ quay (cũ: 0.05)
-    jupiterX -= 1.2;        // x2 tốc độ di chuyển (cũ: 0.6)
+    jupiterAngle += 0.05;
+    jupiterX -= 0.6;
 
 }
 else{
@@ -536,8 +518,8 @@ ctx.restore();
 
     if (!neptuneHit) {
 
-        neptuneX -= 1.2;        // x2 tốc độ di chuyển (cũ: 0.6)
-        neptuneAngle += 0.10;   // x2 tốc độ quay (cũ: 0.05)
+        neptuneX -= 0.6;
+        neptuneAngle += 0.05;
 
     } else {
 
@@ -561,32 +543,6 @@ ctx.restore();
 }   
 
 }    
-
-// ===============================
-// Purple Planet - xuất hiện khi Black Hole đã phình thành quả cầu ánh sáng
-// ===============================
-
-if (purple.complete) {
-    ctx.save();
-    ctx.shadowColor = "#c084fc";
-    ctx.shadowBlur = 25;
-    ctx.drawImage(
-        purple,
-        purpleX,
-        purpleY,
-        100,
-        100
-    );
-    ctx.restore();
-
-    purpleX -= 1;
-
-    if (purpleX < -120) {
-        purpleX = canvas.width + 120;
-    }
-
-}
-
 // Bruce Lee
 if (bruce.complete) {
 
