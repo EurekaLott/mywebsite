@@ -229,8 +229,8 @@ if (orion.complete) {
         orion,
         orionX,
         orionY,
-        140,
-        70
+        30,
+        15
     );
 
     // bay sang trái
