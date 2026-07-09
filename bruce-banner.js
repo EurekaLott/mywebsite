@@ -453,7 +453,7 @@ ctx.fill();
 if(!jupiterHit){
 
     jupiterAngle += 0.05;
-    jupiterX -= 2.4;
+    jupiterX -= 1.1;
 }
 else{
 
@@ -555,18 +555,18 @@ ctx.shadowColor = "#d946ef";
 ctx.shadowBlur = 90;
     
     ctx.translate(
-        purpleX + 110,
-        purpleY + 110
+        purpleX + 70,
+        purpleY + 70
     );
 
     ctx.rotate(purpleAngle);
 
     ctx.drawImage(
         purple,
-        -110,
-        -110,
-         220,
-         220
+        -70,
+        -70,
+        140,
+        140
     );
 
     ctx.restore();
