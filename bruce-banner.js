@@ -701,15 +701,14 @@ if(bruceKungfu){
 
     }
 
-    if(bruceKungfuTimer>35)
+    if (bruceKungfuTimer > 35) {
 
-        bruceKungfu=false;
+    bruceKungfu = false;
 
-        bruceAttached=true;
+    bruceAttached = true;
 
-    }
-
-}
+     }    
+  }
     
     ctx.drawImage(
     bruce,
