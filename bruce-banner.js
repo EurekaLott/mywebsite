@@ -177,8 +177,19 @@ let aiPanel = false;
 // Shooting Star
 // ===============================
 
-let meteorX = canvas.width - 120;
-let meteorY = 12;
+const orion = new Image();
+orion.src = "images/Orion.png";
+
+orion.onload = () => {
+    console.log("🚀 Orion Loaded");
+};
+
+orion.onerror = () => {
+    console.error("❌ Orion Load Failed");
+};
+
+let orionX = canvas.width + 150;
+let orionY = 8;
     
 function drawStars() {
 
@@ -208,42 +219,34 @@ function drawStars() {
 // Halley Comet
 // ===============================
 
-// Tail
-const g = ctx.createLinearGradient(
-    meteorX,
-    meteorY,
-    meteorX - 80,
-    meteorY + 40
-);
+// ===============================
+// Orion Spacecraft
+// ===============================
 
-g.addColorStop(0, "rgba(255,255,255,1)");
-g.addColorStop(0.4, "rgba(120,220,255,0.8)");
-g.addColorStop(1, "rgba(255,255,255,0)");
+if (orion.complete) {
 
-ctx.strokeStyle = g;
-ctx.lineWidth = 8;
-ctx.lineCap = "round";
+    ctx.drawImage(
+        orion,
+        orionX,
+        orionY,
+        140,
+        70
+    );
 
-ctx.beginPath();
-ctx.moveTo(meteorX, meteorY);
-ctx.lineTo(meteorX - 140, meteorY + 70);
-ctx.stroke();
+    // bay sang trái
+    orionX -= 2.0;
 
-// Comet head
-ctx.beginPath();
-ctx.fillStyle = "#ffffff";
-ctx.arc(meteorX, meteorY, 8, 0, Math.PI * 2);
-ctx.fill();
+    // hơi lên xuống tự nhiên
+    orionY += Math.sin(orionX * 0.02) * 0.15;
 
-// Move
-meteorX -= 1.6;
-meteorY += 0.08;
+    if (orionX < -160) {
 
-// Restart
-if (meteorX < -100) {
-    meteorX = canvas.width + 200;
-    meteorY = 8 + Math.random() * 10;
-} 
+        orionX = canvas.width + 180;
+        orionY = 5 + Math.random() * 12;
+
+    }
+
+}
 
 // ===============================
 // Black Hole
