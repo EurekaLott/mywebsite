@@ -571,7 +571,7 @@ ctx.shadowBlur = 90;
 
     ctx.restore();
 
-    purpleX -= 0.8;
+    purpleX -= 1.1;
     purpleAngle += 0.02;
 
     if (purpleX < -120) {
