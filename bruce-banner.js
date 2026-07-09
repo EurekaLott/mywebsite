@@ -483,13 +483,14 @@ else{
     jupiterScale *= 0.985;
 if (jupiterScale < 0.08 && !burstReady) {
 
-    blackScale += 0.05;
+    blackScale += 0.35;
 
     if (blackScale >= 1.6) {
 
-        blackScale = 1.6;
+        blackScale = 2.0;
         burstReady = true;
-
+        bigBang = true;
+        
     }
 
 }
@@ -694,7 +695,7 @@ ctx.restore();
         neptuneSpin += 0.25;
         neptuneScale *= 0.985;
 
-        if (neptuneScale < 0.08) {
+        if(false){
     bigBang = true;
 }
     }
