@@ -555,23 +555,23 @@ ctx.shadowColor = "#d946ef";
 ctx.shadowBlur = 90;
     
     ctx.translate(
-        purpleX + 70,
-        purpleY + 70
+        purpleX + 55,
+        purpleY + 55
     );
 
     ctx.rotate(purpleAngle);
 
     ctx.drawImage(
         purple,
-        -70,
-        -70,
-        140,
-        140
+        -55,
+        -55,
+        110,
+        110
     );
 
     ctx.restore();
 
-    purpleX -= 0.18;
+    purpleX -= 0.8;
     purpleAngle += 0.02;
 
     if (purpleX < -120) {
