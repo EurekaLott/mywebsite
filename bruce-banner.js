@@ -453,7 +453,7 @@ ctx.fill();
 if(!jupiterHit){
 
     jupiterAngle += 0.05;
-    jupiterX -= 1.8;
+    jupiterX -= 2.2;
 }
 else{
 
