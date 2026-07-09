@@ -159,7 +159,19 @@ let jupiterScale = 1;
 let jupiterSpin = 0;
     
 let bruceX = -80;
-const bruceY = canvas.height - 70;    
+const bruceY = canvas.height - 70; 
+let bruceCurrentY = bruceY;
+
+let bruceAttached = false;
+
+let bruceKungfu = false;
+
+let bruceKungfuTimer = 0;
+
+let purpleDone = false;
+
+let aiSignal = false;
+    
 // ===============================
 // Shooting Star
 // ===============================
@@ -571,12 +583,31 @@ ctx.shadowBlur = 90;
 
     ctx.restore();
 
-    purpleX -= 1.1;
-    purpleAngle += 0.02;
+    if(!purpleDone){
 
+    purpleX -= 1.1;
+
+}
+    purpleAngle += 0.02;
+const dxBruce = (purpleX + 55) - (bruceX + 30);
+
+if(
+    !bruceAttached &&
+    !bruceKungfu &&
+    Math.abs(dxBruce) < 80
+){
+
+    bruceKungfu = true;
+
+    aiSignal = true;
+
+}
+    
     if (purpleX < -120) {
-        purpleX = canvas.width + 150;
-    }
+
+    purpleDone = true;
+
+}
 
 }
 
@@ -656,20 +687,72 @@ ctx.restore();
 }    
 // Bruce Lee
 if (bruce.complete) {
+if(bruceKungfu){
 
+    bruceKungfuTimer++;
+
+    if(bruceKungfuTimer<18){
+
+        bruceCurrentY-=1.4;
+
+    }else if(bruceKungfuTimer<36){
+
+        bruceCurrentY+=1.4;
+
+    }
+
+    if(bruceKungfuTimer>160){
+
+        bruceKungfu=false;
+
+        bruceAttached=true;
+
+    }
+
+}
+    
     ctx.drawImage(
-        bruce,
-        bruceX,
-        bruceY,
-        60,
-        60
+    bruce,
+    bruceX,
+    bruceCurrentY,
+    60,
+    60
+);
+if(bruceKungfu){
+
+    ctx.strokeStyle="#00ffff";
+
+    ctx.lineWidth=4;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        bruceX+46,
+        bruceCurrentY+22
     );
+
+    ctx.lineTo(
+        bruceX+90,
+        bruceCurrentY+6
+    );
+
+    ctx.stroke();
+
+}
+if(bruceAttached){
+
+    bruceX=purpleX+20;
+
+    bruceCurrentY=purpleY+70;
+
+}
+
+    
+    if (!bruceAttached && !bruceKungfu){
 
     bruceX += 0.8;
 
-    if (bruceX > canvas.width) {
-        bruceX = -60;
-    }
+}
 
 }
 
