@@ -453,8 +453,7 @@ ctx.fill();
 if(!jupiterHit){
 
     jupiterAngle += 0.05;
-    jupiterX -= 0.6;
-
+    jupiterX -= 2.4;
 }
 else{
 
@@ -496,7 +495,65 @@ if (jupiterScale < 0.08 && !burstReady) {
 if (purple.complete) {
 
     ctx.save();
+// ===============================
+// Purple Sun Glow
+// ===============================
 
+const purpleGlow =
+    260 + Math.sin(glowPhase) * 30;
+
+const purpleLight =
+    ctx.createRadialGradient(
+        purpleX + 110,
+        purpleY + 110,
+        20,
+        purpleX + 110,
+        purpleY + 110,
+        purpleGlow
+    );
+
+purpleLight.addColorStop(
+    0,
+    "rgba(255,255,255,1)"
+);
+
+purpleLight.addColorStop(
+    0.12,
+    "rgba(255,180,255,.95)"
+);
+
+purpleLight.addColorStop(
+    0.35,
+    "rgba(210,80,255,.75)"
+);
+
+purpleLight.addColorStop(
+    0.65,
+    "rgba(140,0,255,.30)"
+);
+
+purpleLight.addColorStop(
+    1,
+    "rgba(140,0,255,0)"
+);
+
+ctx.fillStyle = purpleLight;
+
+ctx.beginPath();
+
+ctx.arc(
+    purpleX + 110,
+    purpleY + 110,
+    purpleGlow,
+    0,
+    Math.PI * 2
+);
+
+ctx.fill();
+
+ctx.shadowColor = "#d946ef";
+ctx.shadowBlur = 90;
+    
     ctx.translate(
         purpleX + 110,
         purpleY + 110
@@ -514,7 +571,7 @@ if (purple.complete) {
 
     ctx.restore();
 
-    purpleX -= 0.5;
+    purpleX -= 0.18;
     purpleAngle += 0.02;
 
     if (purpleX < -120) {
@@ -572,7 +629,7 @@ ctx.restore();
 
     if (!neptuneHit) {
 
-        neptuneX -= 0.6;
+        neptuneX -= 2.4;
         neptuneAngle += 0.05;
 
     } else {
