@@ -171,6 +171,7 @@ let bruceKungfuTimer = 0;
 let purpleDone = false;
 
 let aiSignal = false;
+let aiPanel = false;    
     
 // ===============================
 // Shooting Star
@@ -701,13 +702,16 @@ if(bruceKungfu){
 
     }
 
-    if (bruceKungfuTimer > 35) {
+   if (bruceKungfuTimer > 35) {
 
     bruceKungfu = false;
 
     bruceAttached = true;
 
-     }    
+    aiPanel = true;
+
+}
+    
   }
     
     ctx.drawImage(
@@ -745,7 +749,47 @@ if(bruceAttached){
     bruceCurrentY = purpleY + 25;
 
 }
+if (aiPanel) {
 
+    const panelX = purpleX + 140;
+    const panelY = 18;
+
+    // Khung mờ
+    ctx.fillStyle = "rgba(20,20,40,0.55)";
+    ctx.fillRect(panelX, panelY, 250, 72);
+
+    ctx.strokeStyle = "#d946ef";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(panelX, panelY, 250, 72);
+
+    // Tiêu đề
+    ctx.fillStyle = "#FFD700";
+    ctx.font = "bold 16px Arial";
+    ctx.fillText(
+        "Powerball USA",
+        panelX + 12,
+        panelY + 22
+    );
+
+    // Ngày
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "14px Arial";
+    ctx.fillText(
+        "2026 July 9",
+        panelX + 12,
+        panelY + 44
+    );
+
+    // Prediction tạm
+    ctx.fillStyle = "#00ffff";
+    ctx.font = "bold 18px Consolas";
+    ctx.fillText(
+        "xx xx xx xx xx xx",
+        panelX + 12,
+        panelY + 66
+    );
+
+}
     
     if (!bruceAttached && !bruceKungfu){
 
