@@ -701,7 +701,7 @@ if(bruceKungfu){
 
     }
 
-    if(bruceKungfuTimer>160){
+    if(bruceKungfuTimer>35)
 
         bruceKungfu=false;
 
@@ -741,9 +741,9 @@ if(bruceKungfu){
 }
 if(bruceAttached){
 
-    bruceX=purpleX+20;
+    bruceX = purpleX + 25;
 
-    bruceCurrentY=purpleY+70;
+    bruceCurrentY = purpleY + 25;
 
 }
 
