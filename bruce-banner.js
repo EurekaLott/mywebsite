@@ -105,6 +105,26 @@ let neptuneAngle = 0;
 let neptuneStarted = false;
 let neptuneDone = false;    
 // ===============================
+// Purple Planet
+// ===============================
+
+const purple = new Image();
+purple.src = "images/purple.png";
+
+purple.onload = () => {
+    console.log("🟣 Purple Loaded");
+};
+
+purple.onerror = () => {
+    console.error("❌ Purple Load Failed");
+};
+
+let purpleX = canvas.width + 140;
+let purpleY = 10;
+let purpleAngle = 0;
+
+    
+// ===============================
 // Black Hole
 // ===============================
 
@@ -469,7 +489,41 @@ if (jupiterScale < 0.08 && !burstReady) {
     }
 
 }
+// ===============================
+// Purple Planet
+// ===============================
 
+if (purple.complete) {
+
+    ctx.save();
+
+    ctx.translate(
+        purpleX + 50,
+        purpleY + 50
+    );
+
+    ctx.rotate(purpleAngle);
+
+    ctx.drawImage(
+        purple,
+        -50,
+        -50,
+        100,
+        100
+    );
+
+    ctx.restore();
+
+    purpleX -= 0.5;
+    purpleAngle += 0.02;
+
+    if (purpleX < -120) {
+        purpleX = canvas.width + 150;
+    }
+
+}
+
+    
 // ===============================
 // Neptune
 // ===============================
