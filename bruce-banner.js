@@ -498,18 +498,18 @@ if (purple.complete) {
     ctx.save();
 
     ctx.translate(
-        purpleX + 50,
-        purpleY + 50
+        purpleX + 110,
+        purpleY + 110
     );
 
     ctx.rotate(purpleAngle);
 
     ctx.drawImage(
         purple,
-        -50,
-        -50,
-        100,
-        100
+        -110,
+        -110,
+         220,
+         220
     );
 
     ctx.restore();
