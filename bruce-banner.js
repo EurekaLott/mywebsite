@@ -470,7 +470,7 @@ else{
     jupiterScale *= 0.985;
 if (jupiterScale < 0.08 && !burstReady) {
 
-    blackScale += 0.01;
+    blackScale += 0.05;
 
     if (blackScale >= 1.6) {
 
