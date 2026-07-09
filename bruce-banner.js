@@ -604,9 +604,25 @@ if(
 
 }
     
-    if (purpleX < -120) {
+    if (purpleX < -260) {
 
     purpleDone = true;
+
+    aiPanel = false;
+
+    bruceAttached = false;
+
+    bruceX = -80;
+
+    bruceCurrentY = bruceY;
+
+    bruceKungfu = false;
+
+    bruceKungfuTimer = 0;
+
+    purpleX = canvas.width + 140;
+
+    purpleDone = false;
 
 }
 
