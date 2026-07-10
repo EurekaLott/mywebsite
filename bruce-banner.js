@@ -829,91 +829,158 @@ if(bruceAttached){
     bruceCurrentY = purpleY + 25;
 
 }
+
 if (aiPanel) {
 
-    const panelX = purpleX + 120;
-    const panelY = 14;
-    const panelW = 360;
-    const panelH = 74;
+    // ===========================
+    // WALL STREET / LAS VEGAS LED
+    // ===========================
 
-    // Khung LED
-    ctx.fillStyle = "rgba(15,15,25,.75)";
-    ctx.fillRect(panelX,panelY,panelW,panelH);
+    const left = 20;
+    const right = canvas.width - 20;
+    const textY = canvas.height / 2;
 
-    ctx.strokeStyle="#d946ef";
-    ctx.lineWidth=2;
-    ctx.strokeRect(panelX,panelY,panelW,panelH);
+    // ===========================
+    // lấy dữ liệu forecast
+    // ===========================
 
-    // ===== dữ liệu forecast =====
+    if (typeof forecastIndex === "undefined")
+        forecastIndex = 0;
 
-    if(typeof forecastData!=="undefined"
-       && forecastData.length){
+    if (typeof ledOffset === "undefined")
+        ledOffset = 0;
 
-        if(ledText===""){
+    if (typeof ledText === "undefined")
+        ledText = "";
 
-            ledText=forecastData
-            .map(x=>x.date+"   "+
-                    x.numbers.join(" "))
-            .join("        ");
+    if (ledText === "") {
+
+        if (
+            typeof forecastData !== "undefined" &&
+            forecastData.length > 0 &&
+            forecastIndex < forecastData.length
+        ) {
+
+            const row = forecastData[forecastIndex];
+
+            ledText =
+                row.date +
+                "     " +
+                row.numbers.join("   ");
+
+        }
+        else {
+
+            const d = new Date();
+
+            const month = [
+                "January","February","March",
+                "April","May","June",
+                "July","August","September",
+                "October","November","December"
+            ];
+
+            ledText =
+                d.getFullYear() + " " +
+                month[d.getMonth()] + " " +
+                d.getDate() +
+                "     Today's Status Prediction Engine : Inactive";
 
         }
 
-    }else{
-
-        const d=new Date();
-
-        const month=[
-            "January","February","March",
-            "April","May","June",
-            "July","August","September",
-            "October","November","December"
-        ];
-
-        ledText=
-        d.getFullYear()+" "
-        +month[d.getMonth()]
-        +" "
-        +d.getDate()
-        +"     Today's Status Prediction Engine : Inactive";
-
     }
 
-    // ===== chạy ngang =====
+    // ===========================
+    // vùng hiển thị
+    // ===========================
 
     ctx.save();
 
     ctx.beginPath();
     ctx.rect(
-        panelX+6,
-        panelY+6,
-        panelW-12,
-        panelH-12
+        left,
+        0,
+        right-left,
+        canvas.height
     );
     ctx.clip();
 
-    ctx.fillStyle="#FFD700";
-    ctx.font="bold 18px Consolas";
+    // ===========================
+    // FONT LED
+    // ===========================
+
+    const fontSize =
+        Math.floor(canvas.height * 0.60);
+
+    ctx.font =
+        "900 " +
+        fontSize +
+        "px Arial Black";
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+
+    // ===========================
+    // LED Glow
+    // ===========================
+
+    ctx.shadowBlur = 28;
+    ctx.shadowColor = "#ffd700";
+
+    ctx.fillStyle = "#ffe800";
+
+    const startX =
+        canvas.width - ledOffset;
 
     ctx.fillText(
         ledText,
-        panelX+panelW-ledOffset,
-        panelY+46
+        startX,
+        textY
     );
 
     ctx.restore();
 
-    ledOffset+=2;
+    // ===========================
+    // tốc độ chạy
+    // ===========================
 
-    const w=
-    ctx.measureText(ledText).width;
+    ledOffset += 2.4;
 
-    if(ledOffset>w+panelW){
+    const textWidth =
+        ctx.measureText(ledText).width;
 
-        ledOffset=0;
+    // ===========================
+    // chạy hết mé trái
+    // ===========================
+
+    if (
+        startX < -textWidth
+    ) {
+
+        ledOffset = 0;
+
+        ledText = "";
+
+        if (
+            typeof forecastData !== "undefined" &&
+            forecastData.length > 0
+        ) {
+
+            forecastIndex++;
+
+            if (
+                forecastIndex >= forecastData.length
+            ) {
+
+                forecastIndex = 0;
+
+            }
+
+        }
 
     }
 
-}
+}    
     
     if (!bruceAttached && !bruceKungfu){
 
