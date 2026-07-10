@@ -174,6 +174,57 @@ let aiSignal = false;
 let aiPanel = false;    
 let ledOffset = 0;
 let ledText = "";    
+let forecastIndex = 0;
+let restartScene = false;
+function resetScene(){
+
+    // LED
+    ledOffset = 0;
+    ledText = "";
+
+    // Black Hole
+    blackX = 40;
+    blackY = -140;
+    blackAngle = 0;
+    blackScale = 1;
+    burstReady = false;
+
+    // Jupiter
+    jupiterX = canvas.width - 30;
+    jupiterY = 5;
+    jupiterAngle = 0;
+    jupiterScale = 1;
+    jupiterSpin = 0;
+    jupiterHit = false;
+
+    // Neptune
+    neptuneX = canvas.width / 2 - 60;
+    neptuneY = -140;
+    neptuneAngle = 0;
+    neptuneScale = 1;
+    neptuneSpin = 0;
+    neptuneHit = false;
+    neptuneStarted = false;
+    neptuneDone = false;
+
+    // Purple
+    purpleX = canvas.width + 140;
+    purpleDone = false;
+
+    // Bruce
+    bruceX = -80;
+    bruceCurrentY = bruceY;
+    bruceAttached = false;
+    bruceKungfu = false;
+    bruceKungfuTimer = 0;
+
+    aiPanel = false;
+    aiSignal = false;
+
+    bigBang = false;
+    bigBangRadius = 0;
+    bigBangAlpha = 1;
+}
     
 // ===============================
 // Shooting Star
@@ -197,6 +248,13 @@ function drawStars() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    if (restartScene) {
+
+    restartScene = false;
+
+    resetScene();
+
+}
     ctx.fillStyle = "white";
 
     for (const star of stars) {
@@ -539,15 +597,31 @@ else{
     jupiterX += jdx * 0.06;
     jupiterY += jdy * 0.06;
 
-    jupiterSpin += 0.25;
-    jupiterScale *= 0.985;
-if(jupiterScale<0.08){
+    jupiterSpin += 0.35;
 
-    blackScale=2.4;
+// Jupiter co nhanh hơn
+jupiterScale *= 0.94;
 
-    burstReady=true;
+// Black Hole phình ngay lập tức
+blackScale += 0.10;
 
-    bigBang=true;
+if(blackScale > 2.8){
+
+    blackScale = 2.8;
+
+}
+
+// Ánh sáng xuất hiện sớm
+if(jupiterScale < 0.55){
+
+    burstReady = true;
+
+}
+
+// Big Bang sớm hơn
+if(jupiterScale < 0.22){
+
+    bigBang = true;
 
 }
     
@@ -953,32 +1027,26 @@ if (aiPanel) {
     // chạy hết mé trái
     // ===========================
 
+  if (startX < -textWidth) {
+
     if (
-        startX < -textWidth
+        typeof forecastData !== "undefined" &&
+        forecastData.length > 0
     ) {
 
-        ledOffset = 0;
+        forecastIndex++;
 
-        ledText = "";
+        if (forecastIndex >= forecastData.length) {
 
-        if (
-            typeof forecastData !== "undefined" &&
-            forecastData.length > 0
-        ) {
-
-            forecastIndex++;
-
-            if (
-                forecastIndex >= forecastData.length
-            ) {
-
-                forecastIndex = 0;
-
-            }
+            forecastIndex = 0;
 
         }
 
     }
+
+    resetScene();
+
+}
 
 }    
     
