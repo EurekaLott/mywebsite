@@ -305,18 +305,6 @@ if (orion.complete){
 
 }
 
-    // hơi lên xuống tự nhiên
-    orionY += Math.sin(orionX * 0.02) * 0.15;
-
-    if (orionX < -160) {
-
-        orionX = canvas.width + 180;
-        orionY = 5 + Math.random() * 12;
-
-    }
-
-}
-
 // ===============================
 // Black Hole
 // ===============================
