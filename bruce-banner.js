@@ -172,6 +172,8 @@ let purpleDone = false;
 
 let aiSignal = false;
 let aiPanel = false;    
+let ledOffset = 0;
+let ledText = "";    
     
 // ===============================
 // Shooting Star
@@ -223,18 +225,85 @@ function drawStars() {
 // Orion Spacecraft
 // ===============================
 
-if (orion.complete) {
+if (orion.complete){
+
+    ctx.save();
+
+    ctx.translate(
+        orionX+30,
+        orionY+15
+    );
+
+    // ===== Engine Flame =====
+
+    const fire=
+    18+Math.sin(Date.now()*0.03)*6;
+
+    const g=
+    ctx.createLinearGradient(
+        -45,0,
+        -10,0
+    );
+
+    g.addColorStop(0,"rgba(255,80,0,0)");
+    g.addColorStop(.3,"#ff5500");
+    g.addColorStop(.7,"#ffee55");
+    g.addColorStop(1,"#ffffff");
+
+    ctx.fillStyle=g;
+
+    ctx.beginPath();
+    ctx.moveTo(-28,-4);
+    ctx.lineTo(-28-fire,0);
+    ctx.lineTo(-28,4);
+    ctx.fill();
+
+    // ===== Blue Plasma =====
+
+    ctx.strokeStyle="#66ffff";
+    ctx.lineWidth=1.5;
+
+    for(let i=0;i<3;i++){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            -30,
+            -5+i*5
+        );
+
+        ctx.lineTo(
+            -48-fire*0.6,
+            -5+i*5
+        );
+
+        ctx.stroke();
+
+    }
 
     ctx.drawImage(
         orion,
-        orionX,
-        orionY,
+        -30,
+        -15,
         60,
         30
     );
 
-    // bay sang trái
-    orionX -= 2.0;
+    ctx.restore();
+
+    orionX-=2.0;
+
+    orionY+=Math.sin(orionX*0.02)*0.15;
+
+    if(orionX<-160){
+
+        orionX=canvas.width+180;
+
+        orionY=5+Math.random()*12;
+
+    }
+
+}
 
     // hơi lên xuống tự nhiên
     orionY += Math.sin(orionX * 0.02) * 0.15;
@@ -484,17 +553,13 @@ else{
 
     jupiterSpin += 0.25;
     jupiterScale *= 0.985;
-if (jupiterScale < 0.08 && !burstReady) {
+if(jupiterScale<0.08){
 
-    blackScale += 0.35;
+    blackScale=2.4;
 
-    if (blackScale >= 1.6) {
+    burstReady=true;
 
-        blackScale = 2.0;
-        burstReady = true;
-        bigBang = true;
-        
-    }
+    bigBang=true;
 
 }
     
@@ -749,16 +814,23 @@ if(bruceKungfu){
 
     ctx.beginPath();
 
-    ctx.moveTo(
-        bruceX+46,
-        bruceCurrentY+22
-    );
+    ctx.lineWidth=5;
 
-    ctx.lineTo(
-        bruceX+90,
-        bruceCurrentY+6
-    );
+ctx.strokeStyle="#00ffff";
 
+ctx.beginPath();
+
+ctx.moveTo(
+    bruceX+54,
+    bruceCurrentY+27
+);
+
+ctx.lineTo(
+    bruceX+115,
+    bruceCurrentY+27
+);
+
+ctx.stroke();
     ctx.stroke();
 
 }
@@ -771,43 +843,87 @@ if(bruceAttached){
 }
 if (aiPanel) {
 
-    const panelX = purpleX + 140;
-    const panelY = 18;
+    const panelX = purpleX + 120;
+    const panelY = 14;
+    const panelW = 360;
+    const panelH = 74;
 
-    // Khung mờ
-    ctx.fillStyle = "rgba(20,20,40,0.55)";
-    ctx.fillRect(panelX, panelY, 250, 72);
+    // Khung LED
+    ctx.fillStyle = "rgba(15,15,25,.75)";
+    ctx.fillRect(panelX,panelY,panelW,panelH);
 
-    ctx.strokeStyle = "#d946ef";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(panelX, panelY, 250, 72);
+    ctx.strokeStyle="#d946ef";
+    ctx.lineWidth=2;
+    ctx.strokeRect(panelX,panelY,panelW,panelH);
 
-    // Tiêu đề
-    ctx.fillStyle = "#FFD700";
-    ctx.font = "bold 16px Arial";
+    // ===== dữ liệu forecast =====
+
+    if(typeof forecastData!=="undefined"
+       && forecastData.length){
+
+        if(ledText===""){
+
+            ledText=forecastData
+            .map(x=>x.date+"   "+
+                    x.numbers.join(" "))
+            .join("        ");
+
+        }
+
+    }else{
+
+        const d=new Date();
+
+        const month=[
+            "January","February","March",
+            "April","May","June",
+            "July","August","September",
+            "October","November","December"
+        ];
+
+        ledText=
+        d.getFullYear()+" "
+        +month[d.getMonth()]
+        +" "
+        +d.getDate()
+        +"     Today's Status Prediction Engine : Inactive";
+
+    }
+
+    // ===== chạy ngang =====
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.rect(
+        panelX+6,
+        panelY+6,
+        panelW-12,
+        panelH-12
+    );
+    ctx.clip();
+
+    ctx.fillStyle="#FFD700";
+    ctx.font="bold 18px Consolas";
+
     ctx.fillText(
-        "Powerball USA",
-        panelX + 12,
-        panelY + 22
+        ledText,
+        panelX+panelW-ledOffset,
+        panelY+46
     );
 
-    // Ngày
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "14px Arial";
-    ctx.fillText(
-        "2026 July 9",
-        panelX + 12,
-        panelY + 44
-    );
+    ctx.restore();
 
-    // Prediction tạm
-    ctx.fillStyle = "#00ffff";
-    ctx.font = "bold 18px Consolas";
-    ctx.fillText(
-        "xx xx xx xx xx xx",
-        panelX + 12,
-        panelY + 66
-    );
+    ledOffset+=2;
+
+    const w=
+    ctx.measureText(ledText).width;
+
+    if(ledOffset>w+panelW){
+
+        ledOffset=0;
+
+    }
 
 }
     
