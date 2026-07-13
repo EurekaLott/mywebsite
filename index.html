@@ -158,65 +158,7 @@ body{
       </div>
     </div>
 
-    <div class="dropdown">
-  <button class="btn-results" id="btnNN" onclick="toggleNNDropdown()">
-    🧠 Neural Networks for Jackpot Games <span class="arrow">▾</span>
-  </button>
-
-  <div class="dropdown-menu" id="nnMenu">
-
-    <div class="dd-item"
-         onclick="location.href='powerball1.html'">
-      🟢 Powerball 1
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 2
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 3
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 4
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 5
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 6
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 7
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 8
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 9
-      <span class="coming">Coming Soon</span>
-    </div>
-
-    <div class="dd-item disabled">
-      ⚪ Powerball 10
-      <span class="coming">Coming Soon</span>
-    </div>
-
-  </div>
-</div>
+    <a href="powerball.html">🎯 Powerball Prediction</a>
     <a href="community.html">💬 Community</a>
     <a href="https://www.facebook.com/groups/1243032744487699" target="_blank">📘 Facebook</a>
     <a onclick="setLang('en')">🇺🇸 English</a>
@@ -275,33 +217,10 @@ function fmtDate(str){
 
 /* ── DROPDOWN ── */
 function toggleDropdown(){
-  function toggleNNDropdown(){
-
-  document
-    .getElementById("btnNN")
-    .classList.toggle("open");
-
-  document
-    .getElementById("nnMenu")
-    .classList.toggle("open");
-
-}
   document.getElementById('btnResults').classList.toggle('open');
   document.getElementById('dropdownMenu').classList.toggle('open');
 }
-document.addEventListener("click", function(e){
-
-  const dd1=document.querySelector(".dropdown");
-
-  if(dd1 && !dd1.contains(e.target)){
-      document.getElementById("btnResults")?.classList.remove("open");
-      document.getElementById("dropdownMenu")?.classList.remove("open");
-
-      document.getElementById("btnNN")?.classList.remove("open");
-      document.getElementById("nnMenu")?.classList.remove("open");
-  }
-
-});
+document.addEventListener('click',function(e){
   const dd=document.querySelector('.dropdown');
   if(!dd.contains(e.target)){
     document.getElementById('btnResults').classList.remove('open');
