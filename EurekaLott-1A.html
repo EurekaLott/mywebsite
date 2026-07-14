@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<title>Neural Networks for Jackpot Game | EurekaLott</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<style>
+  :root { --bg: #07131a; --card: #0f2330; --muted: #8fb2c1; --accent: #ff2a6d; --ok: #3ad29f; }
+  body { margin:0; font-family:Inter,system-ui,sans-serif; color:#e8f6ff; background:var(--bg); }
+  header { padding:12px 18px; background:#071e29; border-bottom:1px solid #123; }
+  h1 { margin:0; font-size:16px; }
+  main { padding:14px; display:grid; grid-template-columns:420px 1fr; gap:14px; }
+  .card { background:var(--card); border:1px solid #123545; border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
+  label { font-size:12px; color:var(--muted); font-weight:700; }
+  input, button, textarea, select { width:100%; padding:8px 10px; margin:6px 0; border-radius:8px; border:1px solid #204454; background:#0c1e29; color:#e8f6ff; font-size:13px; }
+  textarea { min-height:160px; font-family:monospace; }
+  button { cursor:pointer; background:var(--accent); color:#062430; font-weight:800; border:0; }
+  button:active { transform:translateY(1px); }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  #status { font-size:12px; color:#aee6ff; margin-top:6px; white-space:pre-line; }
+  pre { background:#06151d; padding:10px; border-radius:8px; border:1px solid #10394b; min-height:80px; overflow:auto; white-space:pre-wrap; }
+  canvas { background:#06151d; border:1px solid #10394b; border-radius:8px; width:100% !important; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  #finalPrediction { margin-top:20px; padding:20px; background:linear-gradient(135deg,#0a2a3f,#071e29); border:2px solid #ff2a6d; border-radius:12px; text-align:center; box-shadow:0 8px 25px rgba(255,42,109,0.25); }
+  #finalNumbers { font-size:32px; letter-spacing:6px; font-family:monospace; color:#ffd700; font-weight:bold; min-height:48px; }
+  @keyframes pulse { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.04);opacity:0.92} 100%{transform:scale(1);opacity:1} }
+  #finalNumbers.ready { animation:pulse 2s infinite; }
+  .nav{margin:14px 18px 0;display:flex;flex-wrap:wrap;gap:10px;}
+  .nav a{text-decoration:none;background:white;color:#0a2e73;padding:8px 16px;border-radius:10px;font-weight:700;font-size:13px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠 Neural Networks for Jackpot Game — EurekaLott Ken v344 MotoGP</h1>
+</header>
+<div class="nav">
+  <a href="index.html">🏠 Home</a>
+  <a href="powerball.html">🎯 Powerball USA Forecast</a>
+</div>
+<main>
+  <section class="card">
+    <label>Dữ liệu (mỗi dòng 6 hoặc 7 số, hoặc dán thẳng CSV Texas Lottery)</label>
+    <textarea id="dataInput">41 42 46 11 29 09 07
+37 15 22 29 17 24 54
+26 15 45 55 52 11 36
+09 01 44 37 18 12 11
+10 21 20 03 24 19 07
+27 30 14 53 54 02 16
+49 13 32 16 51 39 11
+51 04 35 16 29 30 48</textarea>
+
+    <!-- ⚔️ Chỉ giữ lại 2 ô nhập cho người dùng: MAX_NUM và Vô Chỉ Thiền — Output Mode.
+         Mọi tham số huấn luyện khác (SEQ_LEN, Epochs, Pos A/B...) đã chuyển hẳn
+         vào Worker bí mật — trình duyệt không còn biết gì về chúng nữa. -->
+    <div class="row">
+      <div><label>MAX_NUM</label><input id="maxNum" type="number" value="55"/></div>
+      <div>
+        <label>⚔️ Vô Chỉ Thiền — Output Mode</label>
+        <select id="outputMode">
+          <option value="10" selected>Mode 10</option>
+          <option value="9">Mode 9</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div><button id="autoRunBtn">⚡ Powerball USA — Auto Run</button></div>
+    </div>
+    <div class="row">
+      <div><button id="trainBtn">🏎️ Train & Predict</button></div>
+    </div>
+    <div id="status">Sẵn sàng...</div>
+    <pre id="result"></pre>
+    <div id="finalPrediction">
+      <div style="font-size:12px;color:#8fb2c1;margin-bottom:4px;">🌟 KẾT QUẢ DỰ ĐOÁN — chỉ hiện pos2 • pos4 • pos5 • pos7</div>
+      <div id="finalNumbers">— chưa chạy —</div>
+    </div>
+  </section>
+  <section class="card">
+    <label>Loss Chart (Xanh: Smoothed E_e • Đỏ: R_e)</label>
+    <canvas id="lossChart" height="260"></canvas>
+  </section>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TESLA 369 VORTEX MATH — CANVAS MINH HỌA + HƯỚNG DẪN SỬ DỤNG
+     (Thuần trang trí/hướng dẫn — không đụng gì tới logic dự đoán)
+     ═══════════════════════════════════════════════════════════ -->
+<div style="display:flex; flex-direction:column; align-items:center; padding:20px 0; background:#030a16;">
+  <canvas id="networkCanvas" width="800" height="600" style="background:radial-gradient(circle,#081b33 0%,#020710 100%); box-shadow:0 0 20px rgba(0,0,0,0.8); border-radius:4px; max-width:100%;"></canvas>
+
+  <div style="width:780px; max-width:100%; box-sizing:border-box; padding:20px; border-radius:6px; margin-top:15px; background:#0a1f2e; border:1px solid #ff2a6d;">
+    <label style="color:#ffd700; font-weight:bold; font-size:16px; display:block;">📜 CORE SYSTEM RULES &amp; VORTEX MATH PRINCIPLES</label>
+    <div style="font-size:13.5px; line-height:1.6; color:#a8d4ff; margin-top:10px;">
+      <strong>• MAX_NUM</strong><br>
+      Set MAX_NUM according to the maximum value used by your lottery system.<br><br>
+
+      <strong>• Vortex Math 369 (Marko Rodin • Nikola Tesla)</strong><br>
+      This Neural Network analyzes numerical relationships through two primary Vortex Math branches: Left Branch = 69 and Right Branch = 39. Based on these two mathematical vectors, the system generates four core prediction numbers, representing the fundamental 369 energy structure within the network.<br><br>
+
+      <strong>• Operational Guide (How to Use)</strong><br>
+      Due to the mathematical relationships within the model, matching any one of the four predicted numbers is considered a successful alignment. The center node of the diamond matrix represents the primary convergence point of the 369 energy field.<br><br>
+
+      <strong>• Output Mode Strategy</strong><br>
+      • <strong>Default Operating Mode:</strong><br>
+      Always use Mode 10 during normal operation. Since both the natural number system and modern lottery matrices include the digit 0, Mode 10 provides the most stable and reliable operating environment for everyday predictions.<br><br>
+      • <strong>Mode 9 Verification:</strong><br>
+      On rare occasions, the network's energy flow may temporarily lose its natural balance. When this happens, the internal vector alignment may shift from Mode 10 to Mode 9. If the prediction generated in Mode 10 appears inconsistent, it does not necessarily indicate an error. Instead, switch to Mode 9 to verify the current alignment. Once the network returns to its normal state, resume operation in Mode 10.<br><br>
+      <em>Note: Mode 10 is the standard operating mode. Mode 9 should only be used as a verification mode when necessary.</em><br><br>
+
+      <strong>• Input Rule (3 Checkpoints Strategy - Example):</strong><br>
+      If today is Monday and you want to play:<br>
+      • Take the latest 24 raw draws from the <strong>previous Monday</strong> Powerball from Texas website: <a href="https://www.texaslottery.com/export/sites/lottery/Games/Powerball/Winning_Numbers/download.html" target="_blank" style="color:#ff2a6d; font-weight:bold; text-decoration:underline;">https://www.texaslottery.com/export/sites/lottery/Games/Powerball/Winning_Numbers/download.html</a><br>
+      • Check whether Wednesday and Saturday draws from last week have already come out.<br>
+      • If they have <strong>not yet appeared</strong> → Today (Monday) is the final time you can use this prediction.<br>
+      <em>This is the 3-checkpoint method: Previous Monday data → Check Wed &amp; Sat → Final decision on current Monday.</em><br><br>
+
+      <strong>• ⚡ Auto CSV Format Support</strong><br>
+      You can now paste the raw file directly from the Texas Lottery export link above — no manual formatting needed.
+      Lines like <code style="color:#ffd700;">Powerball,6,15,2026,62,55,60,57,25,23,2</code> are automatically detected and converted to the 6 real drawn numbers (5 white balls + 1 red Powerball), ignoring the game name, date, and Power Play multiplier at the end.<br><br>
+
+      <strong>• ⚠️ Powerball USA — Auto Run Button (Important)</strong><br>
+      The <strong>"⚡ Powerball USA — Auto Run"</strong> button is built <strong>ONLY for Powerball USA</strong>. Do <strong>NOT</strong> use it for Mega Millions or any other lottery game — the draw schedule, number range, and data format are different, and using this button for a different game will produce incorrect results.<br><br>
+      This button already automatically fetches <strong>last week's archive</strong> for you (following the 3-Checkpoint rule above), so before using it, just do one quick check:<br>
+      • Look at the <strong>2 most recent past Powerball drawings</strong> (the two draw days right before today).<br>
+      • If both of those results have <strong>already been announced/appeared</strong> → <strong>Cancel</strong> (do not use today — the data window has moved past this checkpoint, wait for the next cycle).<br>
+      • If they have <strong>NOT appeared yet</strong> → You're safe to <strong>use it today</strong>.<br>
+      <em>Example: if today is Tuesday, check last week's Monday and Saturday drawings. If those numbers already came out → Cancel. If not yet out → Use it today.</em>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   ⚔️ FRONTEND MỎNG — KHÔNG CÒN 1 DÒNG THUẬT TOÁN NÀO Ở ĐÂY.
+   Toàn bộ TitanRNN / BPTT / EBM Contrastive / Self-Curriculum /
+   ASP / Gap Discovery / Fibonacci True Search đã chuyển hẳn vào
+   Worker bí mật (eurekalott-engine...). Trang này CHỈ:
+     1. Thu thập input (dataInput, maxNum, outputMode)
+     2. Gửi lên /api/predict (same-origin, Worker frontend sẽ
+        tự relay sang Worker bí mật — trình duyệt không bao giờ
+        thấy URL hay code thật của Worker bí mật)
+     3. Nhận JSON kết quả ĐÃ CHE SỐ về, hiển thị lên màn hình
+   ══════════════════════════════════════════════════════════ */
+
+const qs = id => document.getElementById(id);
+const setStatus = (text, append = false) => {
+  const el = qs('status');
+  if (!append) el.innerText = text;
+  else el.innerText += '\n' + text;
+};
+
+let chart = null;
+function renderChart(history) {
+  if (chart) chart.destroy();
+  chart = new Chart(qs('lossChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: history.map(h => h.epoch),
+      datasets: [
+        { label: 'Smoothed E_e', data: history.map(h => h.e), borderColor: '#3ad29f', tension: 0.2, borderWidth: 2 },
+        { label: 'Reference R_e', data: history.map(h => h.r), borderColor: '#ff4444', tension: 0.2, borderWidth: 2 }
+      ]
+    },
+    options: { scales: { y: { beginAtZero: false } } }
+  });
+}
+
+async function runPredict() {
+  qs('result').innerText = '';
+  qs('finalNumbers').innerText = '— đang xử lý —';
+  qs('finalNumbers').classList.remove('ready');
+  setStatus('🔄 Đang gửi dữ liệu lên server để huấn luyện... (có thể mất vài chục giây, xin đừng tắt trang)');
+
+  const payload = {
+    dataInput: qs('dataInput').value,
+    maxNum: +qs('maxNum').value,
+    outputMode: +qs('outputMode').value,
+  };
+
+  const resp = await fetch('/api/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const errBody = await resp.json().catch(() => ({}));
+    throw new Error(errBody.error || `Server trả lỗi HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+
+  qs('result').innerText =
+    `WF-CV MAE: ${data.wfMAE.toFixed(4)}\n` +
+    `Baseline MAE: ${data.baseMAE.toFixed(4)}\n` +
+    `${data.beatBase ? '✅ Beat baseline' : '⚠️ Thua baseline'}\n` +
+    `WF Variance: ${data.wfVariance.toFixed(4)}\n` +
+    `Smoothed Loss: ${data.smoothedLoss.toFixed(6)}\n` +
+    `Epochs: ${data.epochsCompleted}/${data.epochsRequested}${data.truncatedByDeadline ? ' (dừng sớm do hết ngân sách thời gian server)' : ''}\n` +
+    `Gap: ${data.gapReport}\n` +
+    `${data.aspReport}\n` +
+    `Curriculum: ${data.curriculumReport}\n` +
+    `Dự đoán: ${data.maskedPrediction}`;
+
+  setStatus(`🌟 **Dự đoán cuối cùng**: ${data.maskedPrediction}`, true);
+  qs('finalNumbers').innerText = data.maskedPrediction;
+  qs('finalNumbers').classList.add('ready');
+  if (data.chartHistory && data.chartHistory.length) renderChart(data.chartHistory);
+  setStatus('✅ Hoàn tất.', true);
+}
+
+async function autoFetchAndRun() {
+  setStatus('🔄 Đang tự động lấy 24 draws mới nhất từ Texas Lottery...');
+  const resp = await fetch('/api/powerball');
+  if (!resp.ok) throw new Error(`Không lấy được dữ liệu (HTTP ${resp.status}).`);
+  const rawText = await resp.text();
+
+  // ⚔️ Logic ngày/cutoff (3-Checkpoint) — thuần tiện ích lấy dữ liệu, không
+  // phải thuật toán dự đoán, nên an toàn để giữ ở frontend.
+  const POWERBALL_DRAW_DAYS = [1, 3, 6];
+  function getNextDrawDate(today) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    for (let i = 0; i < 7; i++) {
+      if (POWERBALL_DRAW_DAYS.includes(d.getDay())) return d;
+      d.setDate(d.getDate() + 1);
+    }
+    return d;
+  }
+  function getCutoffDate(today) {
+    const nextDraw = getNextDrawDate(today);
+    const cutoff = new Date(nextDraw);
+    cutoff.setDate(cutoff.getDate() - 7);
+    return cutoff;
+  }
+  function parsePowerballCSV(rawText) {
+    const lines = rawText.split(/\r?\n/);
+    const rows = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!/^powerball\s*,/i.test(trimmed)) continue;
+      const f = trimmed.split(',').map(s => s.trim());
+      if (f.length < 10) continue;
+      const month = parseInt(f[1], 10), day = parseInt(f[2], 10), year = parseInt(f[3], 10);
+      if (!month || !day || !year) continue;
+      const nums6 = f.slice(4, 10);
+      if (nums6.length !== 6 || !nums6.every(n => /^\d+$/.test(n))) continue;
+      rows.push({ date: new Date(year, month - 1, day), nums6 });
+    }
+    rows.sort((a, b) => a.date - b.date);
+    return rows;
+  }
+
+  const rows = parsePowerballCSV(rawText);
+  if (rows.length === 0) throw new Error('Không parse được dòng nào từ dữ liệu Texas Lottery trả về.');
+
+  const today = new Date();
+  const nextDraw = getNextDrawDate(today);
+  const cutoff = getCutoffDate(today);
+  const selected = rows.filter(r => r.date <= cutoff).slice(-24);
+  if (selected.length === 0) throw new Error('Không có draw nào trước cutoff — kiểm tra lại dữ liệu nguồn.');
+
+  qs('dataInput').value = selected.map(r => r.nums6.join(' ')).join('\n');
+  setStatus(
+    `✅ Đã tự động cập nhật ${selected.length} draws (tính đến ${cutoff.toDateString()}) ` +
+    `— chuẩn bị cho kỳ mở thưởng ${nextDraw.toDateString()}.`, true
+  );
+
+  await runPredict();
+}
+
+qs('trainBtn').addEventListener('click', () => {
+  runPredict().catch(e => setStatus('❌ Lỗi: ' + (e.message || String(e))));
+});
+
+qs('autoRunBtn').addEventListener('click', async () => {
+  qs('autoRunBtn').disabled = true;
+  try {
+    await autoFetchAndRun();
+  } catch (e) {
+    console.error(e);
+    setStatus(
+      '❌ Không tự lấy được dữ liệu: ' + (e.message || String(e)) +
+      '\n👉 Dán dữ liệu thủ công rồi bấm "Train & Predict" bên dưới.'
+    );
+  } finally {
+    qs('autoRunBtn').disabled = false;
+  }
+});
+</script>
+
+<script>
+(function(){
+  // ⚔️ Canvas minh họa Vortex Math 369 — thuần hiệu ứng hình ảnh, không liên quan
+  // đến logic dự đoán thật (nay đã nằm hoàn toàn trên Worker bí mật).
+  const canvas = document.getElementById('networkCanvas');
+  const ctx = canvas.getContext('2d');
+  const nodes = {
+    1: { x: 500, y: 190 }, 2: { x: 550, y: 280 }, 3: { x: 540, y: 440, label: "+ 3" },
+    4: { x: 450, y: 510 }, 5: { x: 350, y: 510 }, 6: { x: 260, y: 440, label: "+ 6" },
+    7: { x: 250, y: 280 }, 8: { x: 300, y: 190 }
+  };
+  const centerNode = { x: 400, y: 400, label: "9" };
+  const lines = [
+    [nodes[1], nodes[2]], [nodes[4], centerNode], [nodes[5], centerNode], [nodes[7], nodes[8]],
+    [nodes[1], centerNode], [nodes[8], centerNode], [nodes[4], nodes[2]], [nodes[5], nodes[7]]
+  ];
+  const particles = [];
+  lines.forEach(line => {
+    for (let i = 0; i < 30; i++) {
+      particles.push({
+        start: line[0], end: line[1], progress: Math.random(),
+        speed: 0.002 + Math.random() * 0.003, size: 1 + Math.random() * 3,
+        color: Math.random() > 0.5 ? '#ff7700' : '#ffcc00'
+      });
+    }
+  });
+  function setGlow(color, blur) { ctx.shadowBlur = blur; ctx.shadowColor = color; }
+  function drawVortex() {
+    ctx.fillStyle = 'rgba(3, 10, 22, 0.3)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.progress += p.speed;
+      if (p.progress > 1) p.progress = 0;
+      const cx = p.start.x + (p.end.x - p.start.x) * p.progress;
+      const cy = p.start.y + (p.end.y - p.start.y) * p.progress;
+      setGlow(p.color, 8); ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(cx, cy, p.size, 0, Math.PI * 2); ctx.fill();
+    });
+    setGlow('#ffffaa', 35);
+    ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
+    ctx.beginPath(); ctx.arc(centerNode.x, centerNode.y, 35, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(centerNode.x, centerNode.y, 14, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let key in nodes) {
+      const node = nodes[key];
+      if (node.label) {
+        setGlow('#00ffff', 25); ctx.fillStyle = '#00ffff';
+        ctx.font = 'bold 32px Arial'; ctx.fillText(node.label, node.x, node.y);
+      } else {
+        setGlow('#77bbff', 10); ctx.fillStyle = '#aaddff'; ctx.font = 'bold 24px Arial';
+        let offsetY = 0;
+        if (key == 1 || key == 8) offsetY = -25;
+        if (key == 4 || key == 5) offsetY = 25;
+        if (key == 2) offsetY = -5;
+        if (key == 7) offsetY = -5;
+        ctx.fillText(key, node.x, node.y + offsetY);
+      }
+    }
+    setGlow('#ff3333', 15); ctx.fillStyle = '#ff3333'; ctx.fillRect(385, 95, 30, 15);
+    setGlow('#000000', 0); ctx.fillStyle = '#111111'; ctx.font = 'bold 22px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(centerNode.label, centerNode.x, centerNode.y);
+    requestAnimationFrame(drawVortex);
+  }
+  drawVortex();
+})();
+</script>
+</body>
+</html>
