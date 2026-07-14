@@ -1,0 +1,16 @@
+# ⚔️ Cấu hình cho Worker "mywebsite" — cho Cloudflare biết:
+#    1. Code chính nằm ở file nào (worker.js)
+#    2. Tự động phục vụ mọi file tĩnh trong repo (index.html, powerball.html,
+#       EurekaLott-1A.html, community.html, bruce-banner.js, images/, các
+#       file *-data.js...) mà KHÔNG cần viết route thủ công cho từng file
+#
+# Đặt file này ở NGOÀI CÙNG (root) của repo mywebsite, cùng cấp với worker.js
+
+name = "mywebsite"
+main = "worker.js"
+compatibility_date = "2026-07-14"
+
+[assets]
+directory = "./"
+binding = "ASSETS"
+not_found_handling = "404-page"
