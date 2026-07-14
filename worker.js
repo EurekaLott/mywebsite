@@ -2,39 +2,40 @@
  * ⚔️ FRONTEND WORKER — mywebsite.trongcuong-org.workers.dev
  * ============================================================
  * Đây là Worker CÔNG KHAI — phục vụ toàn bộ file tĩnh của website
- * (index.html, powerball.html, community.html, EurekaLott 1A.html,
+ * (index.html, powerball.html, community.html, EurekaLott-1A.html,
  * bruce-banner.js, CSS, images...) VÀ đóng vai trò "trạm trung
  * chuyển" (relay) cho 2 route API sang Worker bí mật
- * (eurekalott-engine.trongcuong-org.workers.dev).
+ * (eurekalott-engine) — qua Service Binding NỘI BỘ, không qua
+ * Internet công khai (Cloudflare chặn Worker fetch() trực tiếp
+ * sang Worker *.workers.dev khác — lỗi 1042).
  *
  * Khách hàng CHỈ thấy: fetch('/api/predict') — cùng domain với
- * chính họ đang đứng, không hề biết URL hay code thật của Worker
- * bí mật nằm ở đâu (vì lời gọi sang đó xảy ra ở ĐÂY, phía server,
- * không phải trong trình duyệt của họ).
+ * chính họ đang đứng, không hề biết Worker bí mật nằm ở đâu.
  * ============================================================
  *
  * CÁCH DÙNG:
- * 1. Nếu ngài deploy qua Wrangler + Static Assets (khuyến nghị,
- *    xem wrangler.toml mẫu bên dưới): file này CHỈ cần xử lý
- *    /api/predict và /api/powerball, còn lại để static assets tự
- *    phục vụ toàn bộ file HTML/CSS/JS/images khác trong repo.
- * 2. Nếu ngài dùng Cloudflare Pages + Pages Functions: đặt file
- *    này vào functions/api/[[path]].js với logic tương tự.
+ * 1. Cần khai báo Service Binding trong wrangler.toml (xem ghi chú
+ *    cuối file) để env.ENGINE hoạt động.
+ * 2. File này CHỈ cần xử lý /api/predict và /api/powerball, còn
+ *    lại để static assets tự phục vụ toàn bộ file HTML/CSS/JS/images
+ *    khác trong repo.
  * ============================================================
  */
 
-// ⚠️ SỬA ĐÚNG URL Worker bí mật thật của ngài ở đây
-const ENGINE_URL = 'https://eurekalott-engine.trongcuong-org.workers.dev';
+// ⚔️ KHÔNG dùng URL công khai nữa — Cloudflare chặn Worker fetch() sang
+// Worker *.workers.dev khác (lỗi 1042). Dùng env.ENGINE (Service Binding
+// khai báo trong wrangler.toml) để gọi trực tiếp nội bộ, không qua Internet.
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // ── /api/predict — relay POST sang Worker bí mật ──────────
-    const match = url.pathname.match(/^\/api\/predict\/([a-zA-Z0-9_-]+)$/);
-if (match && request.method === 'POST') {
-  const body = await request.text();
-  const upstream = await fetch(`${ENGINE_URL}/api/predict/${match[1]}`, {
+    // ── /api/predict/<gameKey> — relay POST sang Worker bí mật qua Service Binding ──
+    const predictMatch = url.pathname.match(/^\/api\/predict\/([a-zA-Z0-9_-]+)$/);
+    if (predictMatch && request.method === 'POST') {
+      const gameKey = predictMatch[1];
+      const body = await request.text();
+      const upstream = await env.ENGINE.fetch(`https://engine/api/predict/${gameKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
@@ -48,21 +49,23 @@ if (match && request.method === 'POST') {
 
     // ── /api/powerball — relay GET sang Worker bí mật (Texas Proxy) ──
     if (url.pathname === '/api/powerball' && request.method === 'GET') {
-      const upstream = await fetch(`${ENGINE_URL}/api/powerball`);
+      const upstream = await env.ENGINE.fetch('https://engine/api/powerball');
       const respBody = await upstream.text();
       return new Response(respBody, {
         status: upstream.status,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          // ⚠️ CHỈ cache khi thành công — tránh giữ lại lỗi cũ suốt 1 giờ
+          'Cache-Control': upstream.ok ? 'public, max-age=3600' : 'no-store',
+        },
       });
     }
 
     // ── Mọi request khác — phục vụ file tĩnh (Static Assets) ──
-    // Yêu cầu cấu hình [assets] trong wrangler.toml (xem ghi chú cuối file).
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
 
-    // Fallback nếu chưa cấu hình Static Assets — báo lỗi rõ ràng thay vì im lặng
     return new Response(
       'Static Assets chưa được cấu hình. Xem ghi chú wrangler.toml ở cuối file worker.js.',
       { status: 501 }
@@ -75,18 +78,20 @@ if (match && request.method === 'POST') {
  *
  * name = "mywebsite"
  * main = "worker.js"
- * compatibility_date = "2026-01-01"
+ * compatibility_date = "2026-07-14"
  *
  * [assets]
- * directory = "./"          # thư mục chứa index.html, powerball.html, images/...
+ * directory = "./"
  * binding = "ASSETS"
  * not_found_handling = "404-page"
+ * run_worker_first = ["/api/*"]
+ *
+ * [[services]]
+ * binding = "ENGINE"
+ * service = "eurekalott-engine"
  *
  * ── Nếu ngài dùng Cloudflare Dashboard (không dùng Wrangler CLI) ──
- * Vào Workers & Pages → chọn Worker "mywebsite" → Settings → Bindings
- * → Add Binding → "Assets" → trỏ vào repo GitHub đã kết nối, hoặc
- * upload trực tiếp thư mục chứa các file HTML/CSS/JS/images.
+ * Service Binding cũng có thể cấu hình qua Dashboard: vào Worker
+ * "mywebsite" → Settings → Bindings → Add Binding → "Service Binding"
+ * → chọn Worker "eurekalott-engine" → đặt tên biến "ENGINE".
  */
-
-
-// force github deploy test
