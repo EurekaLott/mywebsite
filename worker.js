@@ -31,9 +31,10 @@ export default {
     const url = new URL(request.url);
 
     // ── /api/predict — relay POST sang Worker bí mật ──────────
-    if (url.pathname === '/api/predict' && request.method === 'POST') {
-      const body = await request.text();
-      const upstream = await fetch(`${ENGINE_URL}/api/predict`, {
+    const match = url.pathname.match(/^\/api\/predict\/([a-zA-Z0-9_-]+)$/);
+if (match && request.method === 'POST') {
+  const body = await request.text();
+  const upstream = await fetch(`${ENGINE_URL}/api/predict/${match[1]}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
