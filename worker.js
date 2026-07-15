@@ -34,17 +34,27 @@ export default {
     const predictMatch = url.pathname.match(/^\/api\/predict\/([a-zA-Z0-9_-]+)$/);
     if (predictMatch && request.method === 'POST') {
       const gameKey = predictMatch[1];
-      const body = await request.text();
-      const upstream = await env.ENGINE.fetch(`https://engine/api/predict/${gameKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      });
-      const respBody = await upstream.text();
-      return new Response(respBody, {
-        status: upstream.status,
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      });
+      try {
+        const body = await request.text();
+        const upstream = await env.ENGINE.fetch(`https://engine/api/predict/${gameKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
+        const respBody = await upstream.text();
+        return new Response(respBody, {
+          status: upstream.status,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        });
+      } catch (err) {
+        // ⚠️ Bắt mọi exception ném ra từ Service Binding (ví dụ engine vượt
+        // CPU limit, hoặc lỗi runtime nội bộ) — trả JSON rõ ràng thay vì để
+        // Worker crash (Cloudflare error 1101 "Worker threw exception").
+        return new Response(
+          JSON.stringify({ error: `Relay tới engine thất bại: ${err.message || String(err)}` }),
+          { status: 502, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
+        );
+      }
     }
 
     // ── /api/powerball — relay GET sang Worker bí mật (Texas Proxy) ──
