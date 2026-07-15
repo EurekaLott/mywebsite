@@ -1,31 +1,40 @@
 /**
  * ⚔️ FRONTEND WORKER — mywebsite.trongcuong-org.workers.dev
  * ============================================================
- * Đây là Worker CÔNG KHAI — phục vụ toàn bộ file tĩnh của website
- * (index.html, powerball.html, community.html, EurekaLott-1A.html,
- * bruce-banner.js, CSS, images...) VÀ đóng vai trò "trạm trung
- * chuyển" (relay) cho 2 route API sang server engine thật
- * (chạy trên Render.com — https://eurekalott-engine-render.onrender.com).
- *
- * ⚔️ LÝ DO ĐỔI SANG RENDER (thay vì Cloudflare eurekalott-engine):
- * Cloudflare Workers Free giới hạn 10ms CPU time/request — không đủ
- * để train TitanRNN nhiều epoch (luôn bị lỗi "exceeded CPU time limit").
- * Render.com free tier không giới hạn CPU kiểu đó, phù hợp cho tính
- * toán nặng. Đây là cách MIỄN PHÍ, không cần nâng cấp gói Cloudflare.
- *
- * Khách hàng CHỈ thấy: fetch('/api/predict/powerball1') — cùng domain
- * với chính họ đang đứng, không hề biết URL server thật nằm ở Render.
+ * ⚔️ MÔ HÌNH JOB BẤT ĐỒNG BỘ — relay 2 route mới sang Render:
+ *   1. POST /api/predict/<gameKey>        → tạo job, trả jobId NGAY
+ *   2. GET  /api/predict/status/<jobId>   → hỏi thăm tiến độ, cực nhanh
+ * Cả 2 route đều rất nhanh (dưới 1 giây), không bao giờ chạm giới hạn
+ * 100 giây cứng của Cloudflare — dù thuật toán thật chạy nền bên Render
+ * có thể mất vài phút cho đủ 12 epoch cấu hình chuẩn.
  * ============================================================
  */
 
-// ⚠️ SỬA ĐÚNG URL Render thật của ngài ở đây nếu có thay đổi
 const ENGINE_URL = 'https://eurekalott-engine-render.onrender.com';
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // ── /api/predict/<gameKey> — relay POST sang Render ──
+    // ── GET /api/predict/status/<jobId> — hỏi thăm tiến độ ──
+    const statusMatch = url.pathname.match(/^\/api\/predict\/status\/([a-zA-Z0-9-]+)$/);
+    if (statusMatch && request.method === 'GET') {
+      try {
+        const upstream = await fetch(`${ENGINE_URL}/api/predict/status/${statusMatch[1]}`);
+        const respBody = await upstream.text();
+        return new Response(respBody, {
+          status: upstream.status,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        });
+      } catch (err) {
+        return new Response(
+          JSON.stringify({ error: `Relay tới engine thất bại: ${err.message || String(err)}` }),
+          { status: 502, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
+        );
+      }
+    }
+
+    // ── POST /api/predict/<gameKey> — tạo job train, trả jobId NGAY LẬP TỨC ──
     const predictMatch = url.pathname.match(/^\/api\/predict\/([a-zA-Z0-9_-]+)$/);
     if (predictMatch && request.method === 'POST') {
       const gameKey = predictMatch[1];
@@ -42,8 +51,6 @@ export default {
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
         });
       } catch (err) {
-        // ⚠️ Bắt mọi exception (ví dụ Render đang "ngủ" — free tier ngủ sau
-        // 15 phút không có request, lần gọi đầu có thể mất 30-50s để "thức dậy")
         return new Response(
           JSON.stringify({ error: `Relay tới engine thất bại: ${err.message || String(err)}` }),
           { status: 502, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
@@ -82,19 +89,3 @@ export default {
     );
   },
 };
-
-/**
- * ⚠️ CẤU HÌNH wrangler.toml MẪU (đặt cùng thư mục với worker.js):
- * KHÔNG CẦN Service Binding [[services]] nữa — đã bỏ, vì không còn gọi
- * sang Worker Cloudflare khác nữa, chỉ gọi ra Internet bình thường tới Render.
- *
- * name = "mywebsite"
- * main = "worker.js"
- * compatibility_date = "2026-07-14"
- *
- * [assets]
- * directory = "./"
- * binding = "ASSETS"
- * not_found_handling = "404-page"
- * run_worker_first = ["/api/*"]
- */
