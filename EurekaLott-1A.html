@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8" />
 <title>Neural Networks for Jackpot Game | EurekaLott</title>
@@ -38,50 +38,75 @@
   <a href="index.html">🏠 Home</a>
   <a href="powerball.html">🎯 Powerball USA Forecast</a>
 </div>
+<main>
+  <section class="card">
+    <label>Dữ liệu (mỗi dòng 6 hoặc 7 số, hoặc dán thẳng CSV Texas Lottery)</label>
+    <textarea id="dataInput">41 42 46 11 29 09 07
+37 15 22 29 17 24 54
+26 15 45 55 52 11 36
+09 01 44 37 18 12 11
+10 21 20 03 24 19 07
+27 30 14 53 54 02 16
+49 13 32 16 51 39 11
+51 04 35 16 29 30 48</textarea>
 
-<!-- ═══════════════════════════════════════════════════════════
-     TESLA 369 VORTEX MATH — CANVAS THU NHỎ + HƯỚNG DẪN SỬ DỤNG
-     ⚔️ ĐẶT LÊN ĐẦU TRANG (trước phần nhập liệu/kết quả) — người
-     chơi BẮT BUỘC đọc qua phần này trước khi cuộn xuống phần
-     tính toán, tránh trường hợp bấm "Train & Predict" ngay với
-     MAX_NUM mặc định sai, dẫn tới kết quả lỗi rồi đánh giá oan
-     chất lượng hệ thống.
-     ═══════════════════════════════════════════════════════════ -->
-<div style="display:flex; flex-direction:column; align-items:center; padding:16px 18px 8px; background:#030a16;">
-  <!-- ⚔️ Canvas thu nhỏ: giữ nguyên toán học vẽ hoạt hình gốc (800x600),
-       chỉ bọc trong khung max-width để hiển thị nhỏ gọn hơn hẳn, không
-       chiếm hết màn hình như bản cũ. -->
-  <div style="width:100%; max-width:420px; margin:0 auto;">
-    <canvas id="networkCanvas" width="800" height="600" style="width:100% !important; height:auto; background:radial-gradient(circle,#081b33 0%,#020710 100%); box-shadow:0 0 20px rgba(0,0,0,0.8); border-radius:4px;"></canvas>
-  </div>
-
-  <div style="width:100%; max-width:780px; box-sizing:border-box; padding:18px; border-radius:6px; margin-top:14px; background:#0a1f2e; border:1px solid #ff2a6d;">
-
-    <!-- ⚔️ Notice tài trợ — đặt ngay đầu khối hướng dẫn -->
-    <div style="background:#071826; border:1px solid #2a6b8f; border-radius:6px; padding:12px 14px; margin-bottom:16px;">
-      <label style="color:#5ec9ff; font-weight:bold; font-size:14px; display:block; margin-bottom:6px;">📢 Notice from EurekaLott</label>
-      <div style="font-size:13px; line-height:1.6; color:#c8e6ff;">
-        EurekaLott is currently operating on a completely free platform. As a result, response speeds may occasionally be slower than expected. We sincerely appreciate our valued users' understanding and patience.<br><br>
-        Once we receive contributions to secure a dedicated domain and hosting plan, EurekaLott will upgrade its infrastructure. This will enable more extensive training cycles, resulting in higher-quality predictions. At present, the system is optimized to run as efficiently and quickly as possible within strict time-out constraints.
+    <!-- ⚔️ Chỉ giữ lại 2 ô nhập cho người dùng: MAX_NUM và Vô Chỉ Thiền — Output Mode.
+         Mọi tham số huấn luyện khác (SEQ_LEN, Epochs, Pos A/B...) đã chuyển hẳn
+         vào Worker bí mật — trình duyệt không còn biết gì về chúng nữa. -->
+    <div class="row">
+      <div><label>MAX_NUM</label><input id="maxNum" type="number" value="55"/></div>
+      <div>
+        <label>⚔️ Vô Chỉ Thiền — Output Mode</label>
+        <select id="outputMode">
+          <option value="10" selected>Mode 10</option>
+          <option value="9">Mode 9</option>
+        </select>
       </div>
     </div>
+    <div class="row">
+      <div><button id="autoRunBtn">⚡ Powerball USA — Auto Run</button></div>
+    </div>
+    <div class="row">
+      <div><button id="trainBtn">🏎️ Train & Predict</button></div>
+    </div>
+    <div id="status">Sẵn sàng...</div>
+    <pre id="result"></pre>
+    <div id="finalPrediction">
+      <div style="font-size:12px;color:#8fb2c1;margin-bottom:4px;">🌟 KẾT QUẢ DỰ ĐOÁN — chỉ hiện pos2 • pos4 • pos5 • pos7</div>
+      <div id="finalNumbers">— chưa chạy —</div>
+    </div>
+  </section>
+  <section class="card">
+    <label>Loss Chart (Xanh: Smoothed E_e • Đỏ: R_e)</label>
+    <canvas id="lossChart" height="260"></canvas>
+  </section>
+</main>
 
+<!-- ═══════════════════════════════════════════════════════════
+     TESLA 369 VORTEX MATH — CANVAS MINH HỌA + HƯỚNG DẪN SỬ DỤNG
+     (Thuần trang trí/hướng dẫn — không đụng gì tới logic dự đoán)
+     ═══════════════════════════════════════════════════════════ -->
+<div style="display:flex; flex-direction:column; align-items:center; padding:20px 0; background:#030a16;">
+  <canvas id="networkCanvas" width="800" height="600" style="background:radial-gradient(circle,#081b33 0%,#020710 100%); box-shadow:0 0 20px rgba(0,0,0,0.8); border-radius:4px; max-width:100%;"></canvas>
+
+  <div style="width:780px; max-width:100%; box-sizing:border-box; padding:20px; border-radius:6px; margin-top:15px; background:#0a1f2e; border:1px solid #ff2a6d;">
     <label style="color:#ffd700; font-weight:bold; font-size:16px; display:block;">📜 CORE SYSTEM RULES &amp; VORTEX MATH PRINCIPLES</label>
     <div style="font-size:13.5px; line-height:1.6; color:#a8d4ff; margin-top:10px;">
       <strong>• MAX_NUM</strong><br>
-      Set MAX_NUM according to the maximum value utilized by your lottery system.<br><br>
+      Set MAX_NUM according to the maximum value used by your lottery system.<br><br>
 
       <strong>• Vortex Math 369 (Marko Rodin • Nikola Tesla)</strong><br>
-      This neural network is founded upon the principle that the Big Bang occurs at the center (369) of the canvas. For instance, the emergence of 9 attracts 6 or 3 in accordance with vortex dynamics.<br>
-      Left Branch = 69 and Right Branch = 39.<br>
-      Based on this foundational event, the system generates four core prediction numbers representing the Left Branch (69) and the Right Branch (39).<br>
-      It is not necessary for all four Big Bang numbers to appear at the center of the canvas model. Users need only select one number. The model is considered successful when even a single number representing the Big Bang 369 manifests at the center.<br><br>
+      This Neural Network analyzes numerical relationships through two primary Vortex Math branches: Left Branch = 69 and Right Branch = 39. Based on these two mathematical vectors, the system generates four core prediction numbers, representing the fundamental 369 energy structure within the network.<br><br>
+
+      <strong>• Operational Guide (How to Use)</strong><br>
+      Due to the mathematical relationships within the model, matching any one of the four predicted numbers is considered a successful alignment. The center node of the diamond matrix represents the primary convergence point of the 369 energy field.<br><br>
 
       <strong>• Output Mode Strategy</strong><br>
       • <strong>Default Operating Mode:</strong><br>
-      Always operate in Mode 10 under normal conditions. This is because both natural number systems and modern lottery matrices include the digit 0.<br><br>
-      In rare instances, the network's energy flow may temporarily fall out of natural balance. During such periods, the internal vector alignment may shift from Mode 10 to Mode 9.<br><br>
-      <em>Note: Mode 10 is the standard operating mode. Mode 9 should be used solely as a verification mode when Mode 10 produces inconsistent or inaccurate results.</em><br><br>
+      Always use Mode 10 during normal operation. Since both the natural number system and modern lottery matrices include the digit 0, Mode 10 provides the most stable and reliable operating environment for everyday predictions.<br><br>
+      • <strong>Mode 9 Verification:</strong><br>
+      On rare occasions, the network's energy flow may temporarily lose its natural balance. When this happens, the internal vector alignment may shift from Mode 10 to Mode 9. If the prediction generated in Mode 10 appears inconsistent, it does not necessarily indicate an error. Instead, switch to Mode 9 to verify the current alignment. Once the network returns to its normal state, resume operation in Mode 10.<br><br>
+      <em>Note: Mode 10 is the standard operating mode. Mode 9 should only be used as a verification mode when necessary.</em><br><br>
 
       <strong>• Input Rule (3 Checkpoints Strategy - Example):</strong><br>
       If today is Monday and you want to play:<br>
@@ -105,72 +130,16 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     KHU VỰC NHẬP LIỆU + TRAIN/PREDICT — nằm SAU phần hướng dẫn
-     ═══════════════════════════════════════════════════════════ -->
-<main>
-  <section class="card">
-    <label>Data (each line has 6 or 7 numbers, or paste raw Texas Lottery CSV directly)</label>
-    <textarea id="dataInput">41 42 46 11 29 09 07
-37 15 22 29 17 24 54
-26 15 45 55 52 11 36
-09 01 44 37 18 12 11
-10 21 20 03 24 19 07
-27 30 14 53 54 02 16
-49 13 32 16 51 39 11
-51 04 35 16 29 30 48</textarea>
-
-    <!-- ⚔️ Chỉ giữ lại 2 ô nhập cho người dùng: MAX_NUM và Vô Chỉ Thiền — Output Mode.
-         Mọi tham số huấn luyện khác (SEQ_LEN, Epochs, Pos A/B...) đã chuyển hẳn
-         vào server bí mật — trình duyệt không còn biết gì về chúng nữa. -->
-    <div class="row">
-      <div><label>MAX_NUM</label><input id="maxNum" type="number" value="69"/></div>
-      <div>
-        <label>⚔️ Vô Chỉ Thiền — Output Mode</label>
-        <select id="outputMode">
-          <option value="10" selected>Mode 10</option>
-          <option value="9">Mode 9</option>
-        </select>
-      </div>
-    </div>
-    <div class="row">
-      <div><button id="autoRunBtn">⚡ Powerball USA — Auto Run</button></div>
-    </div>
-    <div class="row">
-      <div><button id="trainBtn">🏎️ Train &amp; Predict</button></div>
-    </div>
-    <div id="status">Ready...</div>
-    <pre id="result"></pre>
-  </section>
-  <section class="card">
-    <label>Loss Chart (Green: Smoothed E_e • Red: R_e)</label>
-    <canvas id="lossChart" height="260"></canvas>
-  </section>
-</main>
-
-<!-- ═══════════════════════════════════════════════════════════
-     🌟 KẾT QUẢ DỰ ĐOÁN — ĐẶT XUỐNG DƯỚI CÙNG TRANG (theo yêu cầu:
-     bắt buộc người chơi đọc hướng dẫn + nhập/train trước khi thấy
-     kết quả, tránh lướt quá nhanh rồi đánh giá oan chất lượng hệ
-     thống nếu chưa hiểu cách vận hành).
-     ═══════════════════════════════════════════════════════════ -->
-<div style="padding:0 14px 24px;">
-  <div id="finalPrediction">
-    <div style="font-size:12px;color:#8fb2c1;margin-bottom:4px;">🌟 FINAL PREDICTION — only pos2 • pos4 • pos5 • pos7 shown</div>
-    <div id="finalNumbers">— not run yet —</div>
-  </div>
-</div>
-
 <script>
 /* ══════════════════════════════════════════════════════════
    ⚔️ FRONTEND MỎNG — KHÔNG CÒN 1 DÒNG THUẬT TOÁN NÀO Ở ĐÂY.
    Toàn bộ TitanRNN / BPTT / EBM Contrastive / Self-Curriculum /
    ASP / Gap Discovery / Fibonacci True Search đã chuyển hẳn vào
-   server bí mật (Render). Trang này CHỈ:
+   Worker bí mật (eurekalott-engine...). Trang này CHỈ:
      1. Thu thập input (dataInput, maxNum, outputMode)
-     2. Gửi lên /api/predict/powerball1 (same-origin, Worker frontend
-        sẽ tự relay sang server bí mật — trình duyệt không bao giờ
-        thấy URL hay code thật của server bí mật)
+     2. Gửi lên /api/predict (same-origin, Worker frontend sẽ
+        tự relay sang Worker bí mật — trình duyệt không bao giờ
+        thấy URL hay code thật của Worker bí mật)
      3. Nhận JSON kết quả ĐÃ CHE SỐ về, hiển thị lên màn hình
    ══════════════════════════════════════════════════════════ */
 
@@ -197,14 +166,11 @@ function renderChart(history) {
   });
 }
 
-// ⚔️ Chờ ms mili-giây (dùng cho khoảng nghỉ giữa các lần poll)
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 async function runPredict() {
   qs('result').innerText = '';
-  qs('finalNumbers').innerText = '— processing —';
+  qs('finalNumbers').innerText = '— đang xử lý —';
   qs('finalNumbers').classList.remove('ready');
-  setStatus('🔄 Sending data to the server for training... (this may take a few minutes on our free server — please do not close this page)');
+  setStatus('🔄 Đang gửi dữ liệu lên server để huấn luyện... (có thể mất vài chục giây, xin đừng tắt trang)');
 
   const payload = {
     dataInput: qs('dataInput').value,
@@ -212,7 +178,6 @@ async function runPredict() {
     outputMode: +qs('outputMode').value,
   };
 
-  // ── BƯỚC 1 — Tạo job, nhận jobId gần như ngay lập tức ──
   const resp = await fetch('/api/predict/powerball1', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -221,69 +186,34 @@ async function runPredict() {
 
   if (!resp.ok) {
     const errBody = await resp.json().catch(() => ({}));
-    throw new Error(errBody.error || `Server error HTTP ${resp.status}`);
+    throw new Error(errBody.error || `Server trả lỗi HTTP ${resp.status}`);
   }
 
-  const { jobId } = await resp.json();
-  if (!jobId) throw new Error('Server did not return a jobId.');
-
-  // ── BƯỚC 2 — Hỏi thăm tiến độ mỗi 2.5 giây cho tới khi xong ──
-  let data = null;
-  const maxPolls = 240; // tối đa ~10 phút (240 * 2.5s) trước khi bỏ cuộc
-  for (let i = 0; i < maxPolls; i++) {
-    await sleep(2500);
-    const pollResp = await fetch(`/api/predict/status/${jobId}`);
-    if (!pollResp.ok) {
-      const errBody = await pollResp.json().catch(() => ({}));
-      throw new Error(errBody.error || `Status check failed HTTP ${pollResp.status}`);
-    }
-    const pollData = await pollResp.json();
-
-    if (pollData.status === 'running') {
-      const p = pollData.progress || {};
-      setStatus(
-        `🔄 Training in progress... epoch ${p.epochsCompleted ?? 0}/${p.epochsTotal ?? '?'} ` +
-        `(this may take a few minutes on our free server — please do not close this page)`
-      );
-      continue;
-    }
-    if (pollData.status === 'error') {
-      throw new Error(pollData.error || 'Unknown error during training.');
-    }
-    if (pollData.status === 'not_found') {
-      throw new Error('The job expired or was lost (server may have restarted). Please try again.');
-    }
-    if (pollData.status === 'done') {
-      data = pollData.result;
-      break;
-    }
-  }
-
-  if (!data) throw new Error('Training took too long and timed out on the client side. Please try again.');
+  const data = await resp.json();
 
   qs('result').innerText =
     `WF-CV MAE: ${data.wfMAE.toFixed(4)}\n` +
     `Baseline MAE: ${data.baseMAE.toFixed(4)}\n` +
-    `${data.beatBase ? '✅ Beat baseline' : '⚠️ Below baseline'}\n` +
+    `${data.beatBase ? '✅ Beat baseline' : '⚠️ Thua baseline'}\n` +
     `WF Variance: ${data.wfVariance.toFixed(4)}\n` +
     `Smoothed Loss: ${data.smoothedLoss.toFixed(6)}\n` +
-    `Epochs: ${data.epochsCompleted}/${data.epochsRequested}${data.truncatedByDeadline ? ' (stopped early — server time budget reached)' : ''}\n` +
+    `Epochs: ${data.epochsCompleted}/${data.epochsRequested}${data.truncatedByDeadline ? ' (dừng sớm do hết ngân sách thời gian server)' : ''}\n` +
     `Gap: ${data.gapReport}\n` +
     `${data.aspReport}\n` +
     `Curriculum: ${data.curriculumReport}\n` +
-    `Prediction: ${data.maskedPrediction}`;
+    `Dự đoán: ${data.maskedPrediction}`;
 
-  setStatus(`🌟 **Final prediction**: ${data.maskedPrediction}`, true);
+  setStatus(`🌟 **Dự đoán cuối cùng**: ${data.maskedPrediction}`, true);
   qs('finalNumbers').innerText = data.maskedPrediction;
   qs('finalNumbers').classList.add('ready');
   if (data.chartHistory && data.chartHistory.length) renderChart(data.chartHistory);
-  setStatus('✅ Done.', true);
+  setStatus('✅ Hoàn tất.', true);
 }
 
 async function autoFetchAndRun() {
-  setStatus('🔄 Automatically fetching the latest 24 draws from Texas Lottery...');
+  setStatus('🔄 Đang tự động lấy 24 draws mới nhất từ Texas Lottery...');
   const resp = await fetch('/api/powerball');
-  if (!resp.ok) throw new Error(`Could not fetch data (HTTP ${resp.status}).`);
+  if (!resp.ok) throw new Error(`Không lấy được dữ liệu (HTTP ${resp.status}).`);
   const rawText = await resp.text();
 
   // ⚔️ Logic ngày/cutoff (3-Checkpoint) — thuần tiện ích lấy dữ liệu, không
@@ -322,25 +252,25 @@ async function autoFetchAndRun() {
   }
 
   const rows = parsePowerballCSV(rawText);
-  if (rows.length === 0) throw new Error('Could not parse any rows from the Texas Lottery data returned.');
+  if (rows.length === 0) throw new Error('Không parse được dòng nào từ dữ liệu Texas Lottery trả về.');
 
   const today = new Date();
   const nextDraw = getNextDrawDate(today);
   const cutoff = getCutoffDate(today);
   const selected = rows.filter(r => r.date <= cutoff).slice(-24);
-  if (selected.length === 0) throw new Error('No draws found before the cutoff — please check the source data.');
+  if (selected.length === 0) throw new Error('Không có draw nào trước cutoff — kiểm tra lại dữ liệu nguồn.');
 
   qs('dataInput').value = selected.map(r => r.nums6.join(' ')).join('\n');
   setStatus(
-    `✅ Automatically updated ${selected.length} draws (up to ${cutoff.toDateString()}) ` +
-    `— preparing for the ${nextDraw.toDateString()} drawing.`, true
+    `✅ Đã tự động cập nhật ${selected.length} draws (tính đến ${cutoff.toDateString()}) ` +
+    `— chuẩn bị cho kỳ mở thưởng ${nextDraw.toDateString()}.`, true
   );
 
   await runPredict();
 }
 
 qs('trainBtn').addEventListener('click', () => {
-  runPredict().catch(e => setStatus('❌ Error: ' + (e.message || String(e))));
+  runPredict().catch(e => setStatus('❌ Lỗi: ' + (e.message || String(e))));
 });
 
 qs('autoRunBtn').addEventListener('click', async () => {
@@ -350,8 +280,8 @@ qs('autoRunBtn').addEventListener('click', async () => {
   } catch (e) {
     console.error(e);
     setStatus(
-      '❌ Could not auto-fetch data: ' + (e.message || String(e)) +
-      '\n👉 Please paste the data manually, then click "Train & Predict" below.'
+      '❌ Không tự lấy được dữ liệu: ' + (e.message || String(e)) +
+      '\n👉 Dán dữ liệu thủ công rồi bấm "Train & Predict" bên dưới.'
     );
   } finally {
     qs('autoRunBtn').disabled = false;
@@ -362,9 +292,7 @@ qs('autoRunBtn').addEventListener('click', async () => {
 <script>
 (function(){
   // ⚔️ Canvas minh họa Vortex Math 369 — thuần hiệu ứng hình ảnh, không liên quan
-  // đến logic dự đoán thật (nằm hoàn toàn trên server bí mật). Toán học vẽ giữ
-  // nguyên 100% so với bản gốc (canvas nội bộ vẫn 800x600) — CHỈ hiển thị nhỏ
-  // hơn nhờ khung bọc max-width:420px ở phần HTML phía trên.
+  // đến logic dự đoán thật (nay đã nằm hoàn toàn trên Worker bí mật).
   const canvas = document.getElementById('networkCanvas');
   const ctx = canvas.getContext('2d');
   const nodes = {
