@@ -178,7 +178,7 @@ async function runPredict() {
     outputMode: +qs('outputMode').value,
   };
 
-  const resp = await fetch('/api/predict/powerball1', {
+  const resp = await fetch('/api/predict', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
