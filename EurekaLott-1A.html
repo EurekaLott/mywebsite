@@ -197,11 +197,14 @@ function renderChart(history) {
   });
 }
 
+// ⚔️ Chờ ms mili-giây (dùng cho khoảng nghỉ giữa các lần poll)
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 async function runPredict() {
   qs('result').innerText = '';
   qs('finalNumbers').innerText = '— processing —';
   qs('finalNumbers').classList.remove('ready');
-  setStatus('🔄 Sending data to the server for training... (this may take a few dozen seconds, please do not close this page)');
+  setStatus('🔄 Sending data to the server for training... (this may take a few minutes on our free server — please do not close this page)');
 
   const payload = {
     dataInput: qs('dataInput').value,
@@ -209,6 +212,7 @@ async function runPredict() {
     outputMode: +qs('outputMode').value,
   };
 
+  // ── BƯỚC 1 — Tạo job, nhận jobId gần như ngay lập tức ──
   const resp = await fetch('/api/predict/powerball1', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -220,7 +224,42 @@ async function runPredict() {
     throw new Error(errBody.error || `Server error HTTP ${resp.status}`);
   }
 
-  const data = await resp.json();
+  const { jobId } = await resp.json();
+  if (!jobId) throw new Error('Server did not return a jobId.');
+
+  // ── BƯỚC 2 — Hỏi thăm tiến độ mỗi 2.5 giây cho tới khi xong ──
+  let data = null;
+  const maxPolls = 240; // tối đa ~10 phút (240 * 2.5s) trước khi bỏ cuộc
+  for (let i = 0; i < maxPolls; i++) {
+    await sleep(2500);
+    const pollResp = await fetch(`/api/predict/status/${jobId}`);
+    if (!pollResp.ok) {
+      const errBody = await pollResp.json().catch(() => ({}));
+      throw new Error(errBody.error || `Status check failed HTTP ${pollResp.status}`);
+    }
+    const pollData = await pollResp.json();
+
+    if (pollData.status === 'running') {
+      const p = pollData.progress || {};
+      setStatus(
+        `🔄 Training in progress... epoch ${p.epochsCompleted ?? 0}/${p.epochsTotal ?? '?'} ` +
+        `(this may take a few minutes on our free server — please do not close this page)`
+      );
+      continue;
+    }
+    if (pollData.status === 'error') {
+      throw new Error(pollData.error || 'Unknown error during training.');
+    }
+    if (pollData.status === 'not_found') {
+      throw new Error('The job expired or was lost (server may have restarted). Please try again.');
+    }
+    if (pollData.status === 'done') {
+      data = pollData.result;
+      break;
+    }
+  }
+
+  if (!data) throw new Error('Training took too long and timed out on the client side. Please try again.');
 
   qs('result').innerText =
     `WF-CV MAE: ${data.wfMAE.toFixed(4)}\n` +
