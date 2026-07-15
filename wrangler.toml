@@ -4,6 +4,10 @@
 #       EurekaLott-1A.html, community.html, bruce-banner.js, images/, các
 #       file *-data.js...) mà KHÔNG cần viết route thủ công cho từng file
 #
+# ⚔️ ĐÃ BỎ [[services]] Service Binding — không còn gọi sang Worker Cloudflare
+# khác nữa. Engine thật giờ chạy trên Render.com (xem ENGINE_URL trong worker.js),
+# gọi ra bằng fetch() bình thường như gọi bất kỳ API bên ngoài nào.
+#
 # Đặt file này ở NGOÀI CÙNG (root) của repo mywebsite, cùng cấp với worker.js
 
 name = "mywebsite"
@@ -15,13 +19,3 @@ directory = "./"
 binding = "ASSETS"
 not_found_handling = "404-page"
 run_worker_first = ["/api/*"]
-
-# ⚔️ Service Binding — nối trực tiếp sang Worker "eurekalott-engine" NỘI BỘ
-# trong tài khoản Cloudflare, KHÔNG đi qua Internet công khai. Đây là cách
-# BẮT BUỘC phải dùng vì Cloudflare chặn 1 Worker fetch() trực tiếp sang
-# Worker *.workers.dev khác (lỗi 1042) — Service Binding né được giới hạn
-# này hoàn toàn, đồng thời còn AN TOÀN HƠN (Worker bí mật không cần lộ ra
-# ngoài Internet nữa).
-[[services]]
-binding = "ENGINE"
-service = "eurekalott-engine"
