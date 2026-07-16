@@ -174,10 +174,12 @@
      3. Nhận JSON kết quả ĐÃ CHE SỐ về, hiển thị lên màn hình
    ══════════════════════════════════════════════════════════ */
 
-// ⚔️ Trang này được phục vụ bởi Cloudflare Worker "mywebsite" (luôn nhanh,
-// không bao giờ ngủ). Cloudflare tự relay các route /api/* sang backend
-// Render phía sau — trình duyệt CHỈ gọi đường dẫn tương đối, cùng domain,
-// không hề biết URL thật của Render nằm ở đâu.
+// ⚔️ Trang này giờ được phục vụ bởi Render "Static Site" (luôn nhanh, không
+// ngủ) — còn API/thuật toán thật nằm ở Render "Web Service" riêng (có ngủ,
+// chỉ thức khi gọi tới). Vì 2 domain khác nhau, phải gọi bằng URL đầy đủ.
+// ⚠️ SỬA ĐÚNG URL Web Service thật của ngài ở đây nếu có thay đổi
+const API_BASE = 'https://eurekalott-engine-render.onrender.com';
+
 const qs = id => document.getElementById(id);
 const setStatus = (text, append = false) => {
   const el = qs('status');
@@ -217,7 +219,7 @@ async function runPredict() {
   };
 
   // ── BƯỚC 1 — Tạo job, nhận jobId gần như ngay lập tức ──
-  const resp = await fetch('/api/predict/powerball1', {
+  const resp = await fetch(`${API_BASE}/api/predict/powerball1`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -236,7 +238,7 @@ async function runPredict() {
   const maxPolls = 240; // tối đa ~10 phút (240 * 2.5s) trước khi bỏ cuộc
   for (let i = 0; i < maxPolls; i++) {
     await sleep(2500);
-    const pollResp = await fetch(`/api/predict/status/${jobId}`);
+    const pollResp = await fetch(`${API_BASE}/api/predict/status/${jobId}`);
     if (!pollResp.ok) {
       const errBody = await pollResp.json().catch(() => ({}));
       throw new Error(errBody.error || `Status check failed HTTP ${pollResp.status}`);
@@ -293,7 +295,7 @@ async function runPredict() {
 
 async function autoFetchAndRun() {
   setStatus('🔄 Automatically fetching the latest 24 draws from Texas Lottery...');
-  const resp = await fetch('/api/powerball');
+  const resp = await fetch(`${API_BASE}/api/powerball`);
   if (!resp.ok) throw new Error(`Could not fetch data (HTTP ${resp.status}).`);
   const rawText = await resp.text();
 
