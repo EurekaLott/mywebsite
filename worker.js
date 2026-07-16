@@ -1,31 +1,44 @@
 /**
  * ⚔️ FRONTEND WORKER — mywebsite.trongcuong-org.workers.dev
  * ============================================================
- * Đây là Worker CÔNG KHAI — phục vụ toàn bộ file tĩnh của website
- * (index.html, powerball.html, community.html, EurekaLott-1A.html,
- * bruce-banner.js, CSS, images...) VÀ đóng vai trò "trạm trung
- * chuyển" (relay) cho 2 route API sang server engine thật
- * (chạy trên Render.com — https://eurekalott-engine-render.onrender.com).
+ * ⚔️ QUAY LẠI DÙNG CLOUDFLARE LÀM "CỬA CHÍNH" — vì Cloudflare Workers
+ * KHÔNG BAO GIỜ ngủ đông (khác hẳn Render Web Service free, có sleep).
+ * Trước đây từng rời Cloudflare vì lỗi 524 (timeout 100 giây) khi 1
+ * request phải "đợi" cả thuật toán chạy xong. Giờ vấn đề đó ĐÃ HẾT vì
+ * backend Render dùng mô hình JOB + POLLING — mỗi lần Cloudflare gọi
+ * sang Render đều rất nhanh (dưới 1 giây: tạo job, hoặc hỏi tiến độ),
+ * không bao giờ "đợi" thuật toán chạy trực tiếp trong 1 request nữa.
  *
- * ⚔️ LÝ DO ĐỔI SANG RENDER (thay vì Cloudflare eurekalott-engine):
- * Cloudflare Workers Free giới hạn 10ms CPU time/request — không đủ
- * để train TitanRNN nhiều epoch (luôn bị lỗi "exceeded CPU time limit").
- * Render.com free tier không giới hạn CPU kiểu đó, phù hợp cho tính
- * toán nặng. Đây là cách MIỄN PHÍ, không cần nâng cấp gói Cloudflare.
- *
- * Khách hàng CHỈ thấy: fetch('/api/predict/powerball1') — cùng domain
- * với chính họ đang đứng, không hề biết URL server thật nằm ở Render.
+ * Khách hàng CHỈ thấy: fetch('/api/predict/powerball1') — cùng domain,
+ * không hề biết URL thật của Render nằm ở đâu.
  * ============================================================
  */
 
-// ⚠️ SỬA ĐÚNG URL Render thật của ngài ở đây nếu có thay đổi
 const ENGINE_URL = 'https://eurekalott-engine-render.onrender.com';
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // ── /api/predict/<gameKey> — relay POST sang Render ──
+    // ── GET /api/predict/status/<jobId> — hỏi thăm tiến độ, RẤT nhanh ──
+    const statusMatch = url.pathname.match(/^\/api\/predict\/status\/([a-zA-Z0-9-]+)$/);
+    if (statusMatch && request.method === 'GET') {
+      try {
+        const upstream = await fetch(`${ENGINE_URL}/api/predict/status/${statusMatch[1]}`);
+        const respBody = await upstream.text();
+        return new Response(respBody, {
+          status: upstream.status,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        });
+      } catch (err) {
+        return new Response(
+          JSON.stringify({ error: `Relay tới engine thất bại: ${err.message || String(err)}` }),
+          { status: 502, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
+        );
+      }
+    }
+
+    // ── POST /api/predict/<gameKey> — tạo job, trả jobId NGAY (dưới 1 giây) ──
     const predictMatch = url.pathname.match(/^\/api\/predict\/([a-zA-Z0-9_-]+)$/);
     if (predictMatch && request.method === 'POST') {
       const gameKey = predictMatch[1];
@@ -42,8 +55,6 @@ export default {
           headers: { 'Content-Type': 'application/json; charset=utf-8' },
         });
       } catch (err) {
-        // ⚠️ Bắt mọi exception (ví dụ Render đang "ngủ" — free tier ngủ sau
-        // 15 phút không có request, lần gọi đầu có thể mất 30-50s để "thức dậy")
         return new Response(
           JSON.stringify({ error: `Relay tới engine thất bại: ${err.message || String(err)}` }),
           { status: 502, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
@@ -71,30 +82,11 @@ export default {
       }
     }
 
-    // ── Mọi request khác — phục vụ file tĩnh (Static Assets) ──
+    // ── Mọi request khác — phục vụ file tĩnh, LUÔN NHANH, không ngủ ──
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
 
-    return new Response(
-      'Static Assets chưa được cấu hình. Xem ghi chú wrangler.toml.',
-      { status: 501 }
-    );
+    return new Response('Static Assets chưa được cấu hình.', { status: 501 });
   },
 };
-
-/**
- * ⚠️ CẤU HÌNH wrangler.toml MẪU (đặt cùng thư mục với worker.js):
- * KHÔNG CẦN Service Binding [[services]] nữa — đã bỏ, vì không còn gọi
- * sang Worker Cloudflare khác nữa, chỉ gọi ra Internet bình thường tới Render.
- *
- * name = "mywebsite"
- * main = "worker.js"
- * compatibility_date = "2026-07-14"
- *
- * [assets]
- * directory = "./"
- * binding = "ASSETS"
- * not_found_handling = "404-page"
- * run_worker_first = ["/api/*"]
- */
