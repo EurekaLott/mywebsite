@@ -174,6 +174,10 @@
      3. Nhận JSON kết quả ĐÃ CHE SỐ về, hiển thị lên màn hình
    ══════════════════════════════════════════════════════════ */
 
+// ⚔️ Trang này được phục vụ bởi Cloudflare Worker "mywebsite" (luôn nhanh,
+// không bao giờ ngủ). Cloudflare tự relay các route /api/* sang backend
+// Render phía sau — trình duyệt CHỈ gọi đường dẫn tương đối, cùng domain,
+// không hề biết URL thật của Render nằm ở đâu.
 const qs = id => document.getElementById(id);
 const setStatus = (text, append = false) => {
   const el = qs('status');
@@ -239,6 +243,13 @@ async function runPredict() {
     }
     const pollData = await pollResp.json();
 
+    if (pollData.status === 'queued') {
+      setStatus(
+        `⏳ Our free server is busy right now — you're #${pollData.queuePosition} in line ` +
+        `(${pollData.queueLength} people waiting). Your training will start automatically once it's your turn.`
+      );
+      continue;
+    }
     if (pollData.status === 'running') {
       const p = pollData.progress || {};
       setStatus(
