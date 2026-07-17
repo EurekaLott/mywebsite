@@ -43,6 +43,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "✅ No changes — draws and forecasts already up to date."
           else
-            git commit -m "🔄 Auto-update draws & verify forecasts [skip ci]"
+           git commit -m "🔄 Auto-update draws & verify forecasts"
             git push origin main
           fi
