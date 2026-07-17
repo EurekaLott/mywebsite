@@ -110,10 +110,12 @@ body{
   color:#cfe0ff;
 }
 .recent-table tr:hover td{background:rgba(255,255,255,.04);}
-.recent-table td:first-child{
-  color:#667;opacity:.4;font-weight:400;font-size:11px;
-  user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;
+.recent-table td:first-child{color:#8fa0b8;font-weight:400;font-size:13px;}
+.btn-copy{
+  background:#1a2a40;color:#ffd700;border:1px solid #2a4058;
+  border-radius:6px;padding:6px 10px;font-size:15px;cursor:pointer;
 }
+.btn-copy.copied{background:#2ecc71;color:#071528;border-color:#2ecc71;}
   
 .pb-num{color:#ff6b60;font-weight:900;}
 
@@ -250,15 +252,19 @@ body{
     <div class="result-error" id="resultError"></div>
   </div>
 
-  <!-- Recent 12 draws table -->
+<!-- Recent 30 draws table -->
   <div class="recent-section">
-    <h4>📋 RECENT 30 DRAWS</h4>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <h4 style="margin:0;">📋 RECENT 30 DRAWS</h4>
+      <button id="copyLast24Btn" class="btn-copy" style="font-size:13px;padding:8px 14px;">📋 Copy 24 kỳ gần nhất (dán vào Neural Network)</button>
+    </div>
     <table class="recent-table">
       <thead>
         <tr>
           <th>Date</th>
           <th>White Balls</th>
           <th>PB</th>
+          <th>Copy</th>
         </tr>
       </thead>
       <tbody id="recentBody"></tbody>
@@ -349,20 +355,108 @@ function renderRecent30(data){
   tbody.innerHTML='';
   const src=data||(typeof draws!=='undefined'?draws:[]);
   if(!src.length){
-    tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No data</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" style="color:#778;">No data</td></tr>';
     return;
   }
   const recent=src.slice(-30).reverse();
   recent.forEach(d=>{
     const row=document.createElement('tr');
     const whites=d.white||[];
+    const pb=d.pb||d.powerball;
+    const fullLine=[...whites,pb].join(' ');
     row.innerHTML=`
       <td>${fmtDate(d.date)}</td>
       <td>${whites.join(' &nbsp; ')}</td>
-      <td class="pb-num">${d.pb||d.powerball}</td>`;
+      <td class="pb-num">${pb}</td>
+      <td><button class="btn-copy" data-line="${fullLine}">📋</button></td>`;
     tbody.appendChild(row);
   });
+  tbody.querySelectorAll('.btn-copy').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      copyText(this.dataset.line).then(ok=>{
+        const original=this.textContent;
+        this.textContent=ok?'✅':'⚠️';
+        if(ok) this.classList.add('copied');
+        setTimeout(()=>{ this.textContent=original; this.classList.remove('copied'); }, 1200);
+      });
+    });
+  });
 }
+
+/* ── COPY — an toàn cho cả iPhone đời cũ (không có navigator.clipboard) ── */
+function copyText(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text).then(()=>true).catch(()=>fallbackCopy(text));
+  }
+  return Promise.resolve(fallbackCopy(text));
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.setAttribute('readonly','');
+  ta.style.position='absolute';
+  ta.style.left='0';
+  ta.style.top='0';
+  ta.style.fontSize='16px';
+  ta.style.opacity='0';
+  document.body.appendChild(ta);
+  const range=document.createRange();
+  range.selectNodeContents(ta);
+  const selection=window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  ta.setSelectionRange(0, text.length);
+  let success=false;
+  try{ success=document.execCommand('copy'); }catch(e){ success=false; }
+  selection.removeAllRanges();
+  document.body.removeChild(ta);
+  return success;
+}
+
+/* ── 3-CHECKPOINT LOGIC — y hệt autoFetchAndRun() trong EurekaLott-1A.html ── */
+const POWERBALL_DRAW_DAYS = [1, 3, 6];
+function getNextDrawDate(today) {
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  for (let i = 0; i < 7; i++) {
+    if (POWERBALL_DRAW_DAYS.includes(d.getDay())) return d;
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+function getCutoffDate(today) {
+  const nextDraw = getNextDrawDate(today);
+  const cutoff = new Date(nextDraw);
+  cutoff.setDate(cutoff.getDate() - 7);
+  return cutoff;
+}
+
+/* ── COPY 24 KỲ — đúng mốc 3-Checkpoint, không phải 24 kỳ mới nhất thô ── */
+function copyLast24(){
+  const src=typeof draws!=='undefined'?draws:[];
+  if(!src.length){ alert('Chưa có dữ liệu.'); return; }
+  const today=new Date();
+  const cutoff=getCutoffDate(today);
+  const eligible=src.filter(d => new Date(d.date+'T00:00:00') <= cutoff);
+  const last24=eligible.slice(-24);
+  const btn=document.getElementById('copyLast24Btn');
+  const original=btn.textContent;
+  if(last24.length===0){
+    alert('⚠️ Chưa đủ dữ liệu hợp lệ theo mốc 3-Checkpoint (cutoff: '+cutoff.toDateString()+').');
+    return;
+  }
+  const lines=last24.map(d=>{
+    const whites=d.white||[];
+    const pb=d.pb||d.powerball;
+    return [...whites,pb].join(' ');
+  });
+  copyText(lines.join('\n')).then(ok=>{
+    btn.textContent = ok ? ('✅ Đã copy '+last24.length+' kỳ (tới '+cutoff.toDateString()+')') : '⚠️ Trình duyệt chặn copy';
+    if(ok) btn.classList.add('copied');
+    else alert(lines.join('\n'));
+    setTimeout(()=>{ btn.textContent=original; btn.classList.remove('copied'); }, 2500);
+  });
+}
+document.getElementById('copyLast24Btn').addEventListener('click', copyLast24);
 /* ── RENDER BALLS (latest) ── */
 function renderBalls(white,pb,dateStr,source){
   document.getElementById('latestBalls').innerHTML=
