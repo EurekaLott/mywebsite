@@ -110,7 +110,11 @@ body{
   color:#cfe0ff;
 }
 .recent-table tr:hover td{background:rgba(255,255,255,.04);}
-.recent-table td:first-child{color:#778;font-weight:400;font-size:13px;}
+.recent-table td:first-child{
+  color:#667;opacity:.4;font-weight:400;font-size:11px;
+  user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;
+}
+  
 .pb-num{color:#ff6b60;font-weight:900;}
 
 /* LED BOARD */
@@ -248,7 +252,7 @@ body{
 
   <!-- Recent 12 draws table -->
   <div class="recent-section">
-    <h4>📋 RECENT 12 DRAWS</h4>
+    <h4>📋 RECENT 30 DRAWS</h4>
     <table class="recent-table">
       <thead>
         <tr>
@@ -317,7 +321,7 @@ function selectLottery(type){
     /* latest ball từ draws-data.js */
     fetchLatestDraw();
     /* recent 12 từ draws-data.js — raw order như Texas CSV */
-    renderRecent12(null);
+    renderRecent30(null);
   }
   panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -339,8 +343,8 @@ function parseTexasCSV(text){
     });
 }
 
-/* ── RENDER RECENT 12 ── */
-function renderRecent12(data){
+/* ── RENDER RECENT 30 ── */
+function renderRecent30(data){
   const tbody=document.getElementById('recentBody');
   tbody.innerHTML='';
   const src=data||(typeof draws!=='undefined'?draws:[]);
@@ -348,7 +352,7 @@ function renderRecent12(data){
     tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No data</td></tr>';
     return;
   }
-  const recent=src.slice(-12).reverse();
+  const recent=src.slice(-30).reverse();
   recent.forEach(d=>{
     const row=document.createElement('tr');
     const whites=d.white||[];
@@ -359,7 +363,6 @@ function renderRecent12(data){
     tbody.appendChild(row);
   });
 }
-
 /* ── RENDER BALLS (latest) ── */
 function renderBalls(white,pb,dateStr,source){
   document.getElementById('latestBalls').innerHTML=
