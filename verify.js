@@ -2,21 +2,21 @@
  * verify.js
  * Apply EurekaLott Rule to the forecast in forecast-data.js
  * → write verified-data.js
+ *
+ * ⚔️ BẢN CỨNG CÁP HƠN — không bao giờ làm crash toàn bộ workflow nữa,
+ * dù forecast-data.js trống / hỏng / thiếu dòng LATEST. Nếu forecast
+ * không có dòng LATEST hợp lệ, tự động lấy kỳ quay GẦN NHẤT trong
+ * draws-data.js (nguồn Texas Lottery) làm mốc — không cần nhập tay nữa.
  */
 
 const fs = require('fs');
-const { draws: rawDraws } = require('./draws-data.js');
-const draws = rawDraws.slice().sort((a, b) => a.date.localeCompare(b.date));
 
-// Đọc forecast-data.js như TEXT THUẦN, không require() — vì file này còn được
-// browser load trực tiếp qua <script src="forecast-data.js">, không có module.exports
-const forecastText = fs.readFileSync('./forecast-data.js', 'utf8');
-const forecastMatch = forecastText.match(/`([\s\S]*?)`/);
-const forecast = forecastMatch ? forecastMatch[1] : null;
-
-if (!forecast) {
-  console.error('❌ Không tìm thấy nội dung forecast trong forecast-data.js (thiếu cặp dấu ` `)');
-  process.exit(1);
+let draws = [];
+try {
+  const { draws: rawDraws } = require('./draws-data.js');
+  draws = (rawDraws || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+} catch (err) {
+  console.error('⚠️  Không đọc được draws-data.js:', err.message);
 }
 
 function all6(draw) {
@@ -28,204 +28,87 @@ function anyHit(draw, signals) {
   return signals.filter(s => nums.includes(s));
 }
 
-function parseForecast(raw){
+function parseForecast(raw) {
+  const lines = raw.trim().split(/\r?\n/).map(x => x.trim()).filter(x => x !== "");
+  if (!lines.length) return null;
 
-    const lines = raw
-        .trim()
-        .split(/\r?\n/)
-        .map(x => x.trim())
-        .filter(x => x !== "");
+  const finalDate = lines[0].replace(/ /g, "-");
+  const rows = [];
+  let mode = "";
+  let latestCode = "";
 
-    if(!lines.length){
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line === "LATEST") { latestCode = lines[++i] || ""; continue; }
+    if (line === "LEFT") { mode = "LEFT"; continue; }
+    if (line === "RIGHT") { mode = "RIGHT"; continue; }
 
-        return null;
+    const nums = line.split(/\s+/).map(Number);
+    if (nums.length !== 4) continue;
 
-    }
+    if (mode === "LEFT") rows.push({ side: "LEFT", latestPair: [nums[2], nums[3]], ai: [nums[0], nums[1]] });
+    if (mode === "RIGHT") rows.push({ side: "RIGHT", latestPair: [nums[0], nums[1]], ai: [nums[2], nums[3]] });
+  }
 
-    const finalDate = lines[0].replace(/ /g,"-");
-
-    const rows = [];
-
-    let mode = "";
-
-let latestCode = "";
-
-    for(let i=1;i<lines.length;i++){
-
-        const line = lines[i];
-
-        if(line === "LATEST"){
-
-    latestCode = lines[++i];
-
-    continue;
-
+  if (rows.length === 0) return null;
+  const allSignals = rows.flatMap(r => r.ai);
+  return { finalDate, rows, allSignals, latestCode };
 }
 
-if(line === "LEFT"){
-
-    mode = "LEFT";
-
-    continue;
-
-}
-
-if(line === "RIGHT"){
-
-    mode = "RIGHT";
-
-    continue;
-
-}
-
-        const nums = line
-            .split(/\s+/)
-            .map(Number);
-
-        if(nums.length !== 4){
-
-            continue;
-
-        }
-
-        if(mode === "LEFT"){
-
-            rows.push({
-
-                side: "LEFT",
-
-                latestPair: [nums[2], nums[3]],
-
-                ai: [nums[0], nums[1]]
-
-            });
-
-        }
-
-        if(mode === "RIGHT"){
-
-            rows.push({
-
-                side: "RIGHT",
-
-                latestPair: [nums[0], nums[1]],
-
-                ai: [nums[2], nums[3]]
-
-            });
-
-        }
-
+function resolveLatestDraw(latestCode) {
+  // ⚔️ Ưu tiên: nếu forecast có dòng LATEST hợp lệ và khớp với 1 kỳ quay
+  // thật trong draws-data.js → dùng kỳ đó.
+  if (latestCode) {
+    const nums = latestCode.match(/\d{2}/g);
+    if (nums) {
+      const arr = nums.map(Number);
+      const found = draws.find(d => d.white.length === arr.length && arr.every(n => d.white.includes(n)));
+      if (found) return found;
     }
-
-    if(rows.length === 0){
-
-        return null;
-
-    }
-
-    const allSignals = rows.flatMap(r => r.ai);
-
-    return {
-
-    finalDate,
-
-    rows,
-
-    allSignals,
-
-    latestCode
-
-};
-
+  }
+  // ⚔️ Không có / không khớp → tự động lấy kỳ quay MỚI NHẤT trong
+  // draws-data.js (nguồn Texas Lottery) làm mốc — khỏi cần nhập tay.
+  return draws.length ? draws[draws.length - 1] : null;
 }
 
 function verify(raw) {
   const f = parseForecast(raw);
   if (!f) return null;
 
-  const {
+  const { finalDate, rows, allSignals, latestCode } = f;
+  const latestDraw = resolveLatestDraw(latestCode);
 
-    finalDate,
+  if (!latestDraw) {
+    return { finalDate, rows, status: 'PENDING', reason: 'Chưa có dữ liệu draws-data.js', cp1: null, cp2: null, finalDraw: null };
+  }
 
-    rows,
-
-    allSignals,
-
-    latestCode
-
-} = f;
-
- const latest = latestCode
-    .match(/\d{2}/g)
-    .map(Number);
-
-const latestDraw = draws.find(draw =>
-
-    draw.white.length === latest.length &&
-    latest.every(n => draw.white.includes(n))
-
-);
-
-if(!latestDraw){
-
-    return {
-
-        finalDate,
-
-        rows,
-
-        status: "PENDING",
-
-        reason: "Latest pair not found in draws-data.js",
-
-        cp1: null,
-
-        cp2: null,
-
-        finalDraw: null
-
-    };
-
-}
-
-  const after = draws
-    .filter(d => d.date > latestDraw.date)
-    .sort((a, b) => a.date.localeCompare(b.date));
-
+  const after = draws.filter(d => d.date > latestDraw.date).sort((a, b) => a.date.localeCompare(b.date));
   const cp1Draw = after[0] || null;
   const cp2Draw = after[1] || null;
   const finalDraw = after[2] || null;
 
   if (!cp1Draw) {
-    return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'PENDING',
-      reason: 'Waiting for CP1 draw', cp1: null, cp2: null, finalDraw: null };
+    return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'PENDING', reason: 'Waiting for CP1 draw', cp1: null, cp2: null, finalDraw: null };
   }
-
   const cp1Hits = anyHit(cp1Draw, allSignals);
   const cp1 = { date: cp1Draw.date, white: cp1Draw.white, pb: cp1Draw.powerball, hits: cp1Hits };
   if (cp1Hits.length > 0) {
     return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'DEAD',
-      reason: `Enemy escaped at CP1 (${cp1Draw.date}): signal(s) [${cp1Hits.join(', ')}] appeared`,
-      cp1, cp2: null, finalDraw: null };
+      reason: `Enemy escaped at CP1 (${cp1Draw.date}): signal(s) [${cp1Hits.join(', ')}] appeared`, cp1, cp2: null, finalDraw: null };
   }
 
   if (!cp2Draw) {
-    return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'PENDING',
-      reason: 'Waiting for CP2 draw', cp1, cp2: null, finalDraw: null };
+    return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'PENDING', reason: 'Waiting for CP2 draw', cp1, cp2: null, finalDraw: null };
   }
-
   const cp2Hits = anyHit(cp2Draw, allSignals);
   const cp2 = { date: cp2Draw.date, white: cp2Draw.white, pb: cp2Draw.powerball, hits: cp2Hits };
   if (cp2Hits.length > 0) {
     return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'DEAD',
-      reason: `Enemy escaped at CP2 (${cp2Draw.date}): signal(s) [${cp2Hits.join(', ')}] appeared`,
-      cp1, cp2, finalDraw: null };
+      reason: `Enemy escaped at CP2 (${cp2Draw.date}): signal(s) [${cp2Hits.join(', ')}] appeared`, cp1, cp2, finalDraw: null };
   }
 
   if (!finalDraw) {
-    return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'PENDING',
-      reason: 'Waiting for Final Destination draw', cp1, cp2, finalDraw: null };
+    return { finalDate, rows, latestDrawDate: latestDraw.date, status: 'PENDING', reason: 'Waiting for Final Destination draw', cp1, cp2, finalDraw: null };
   }
 
   if (finalDraw.date !== finalDate) {
@@ -239,9 +122,20 @@ if(!latestDraw){
   };
 }
 
-// Chỉ 1 forecast trong file → kết quả là mảng 1 phần tử
-const result = verify(forecast);
-const results = result ? [result] : [];
+let results = [];
+try {
+  const forecastText = fs.readFileSync('./forecast-data.js', 'utf8');
+  const forecastMatch = forecastText.match(/`([\s\S]*?)`/);
+  const forecast = forecastMatch ? forecastMatch[1] : null;
+  if (forecast && forecast.trim()) {
+    const result = verify(forecast);
+    if (result) results = [result];
+  } else {
+    console.log('ℹ️  forecast-data.js trống — bỏ qua, không lỗi (feature Powerball Prediction hiện không hoạt động).');
+  }
+} catch (err) {
+  console.error('⚠️  Lỗi khi xử lý forecast-data.js (bỏ qua, không làm hỏng cả workflow):', err.message);
+}
 
 const alive   = results.filter(r => r.status === 'ALIVE').length;
 const dead    = results.filter(r => r.status === 'DEAD').length;
