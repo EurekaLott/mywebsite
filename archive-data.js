@@ -1,6 +1,18 @@
 const archive = [
 
 {
+date: "const forecast =",
+
+rows: `
+
+
+
+`
+},
+
+
+
+{
 date: "2026 06 22",
 
 rows: `
