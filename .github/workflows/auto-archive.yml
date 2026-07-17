@@ -39,6 +39,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No archive changes."
           else
-            git commit -m "🥋 Auto archive previous forecast [skip ci]"
+            git commit -m "🥋 Auto archive previous forecast"
             git push
           fi
