@@ -22,7 +22,8 @@
   pre { background:#06151d; padding:10px; border-radius:8px; border:1px solid #10394b; min-height:80px; overflow:auto; white-space:pre-wrap; }
   canvas { background:#06151d; border:1px solid #10394b; border-radius:8px; width:100% !important; }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  #finalPrediction { margin-top:20px; padding:20px; background:linear-gradient(135deg,#0a2a3f,#071e29); border:2px solid #ff2a6d; border-radius:12px; text-align:center; box-shadow:0 8px 25px rgba(255,42,109,0.25); }
+  #finalPrediction { position:relative; margin-top:20px; padding:20px; background:linear-gradient(135deg,#0a2a3f,#071e29); border:2px solid #ff2a6d; border-radius:12px; text-align:center; box-shadow:0 8px 25px rgba(255,42,109,0.25); }
+  #finalPrediction.cancelled #finalNumbers { opacity:.35; }
   #finalNumbers { font-size:32px; letter-spacing:6px; font-family:monospace; color:#ffd700; font-weight:bold; min-height:48px; }
   @keyframes pulse { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.04);opacity:0.92} 100%{transform:scale(1);opacity:1} }
   #finalNumbers.ready { animation:pulse 2s infinite; }
@@ -154,6 +155,11 @@
   <div id="finalPrediction">
     <div style="font-size:12px;color:#8fb2c1;margin-bottom:4px;">🌟 FINAL PREDICTION — only pos2 • pos4 • pos5 • pos7 shown</div>
     <div id="finalNumbers">— not run yet —</div>
+    <svg id="cancelXOverlay" viewBox="0 0 100 100" preserveAspectRatio="none"
+         style="position:absolute; inset:0; width:100%; height:100%; display:none; pointer-events:none;">
+      <line x1="2" y1="2" x2="98" y2="98" stroke="#ff2a6d" stroke-width="3" />
+      <line x1="98" y1="2" x2="2" y2="98" stroke="#ff2a6d" stroke-width="3" />
+    </svg>
   </div>
 
   <!-- ⚔️ Trạng thái Checkpoint (Latest / CP1 / CP2) — dùng màu SÁNG (hồng/vàng)
@@ -246,7 +252,12 @@ function parsePowerballCSV(rawText) {
   rows.sort((a, b) => a.date - b.date);
   return rows;
 }
-function dateKey(d) { return d.toISOString().slice(0, 10); }
+function dateKey(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
 
 // ══════════════════════════════════════════════════════════
 // ⚔️ CHECKPOINT STATUS — sau khi dự đoán ra 4 số, kiểm tra xem chúng
@@ -284,6 +295,8 @@ async function checkAndRenderCheckpoints() {
   const entry = loadSavedPrediction();
   if (!entry) {
     qs('checkpointBox').style.display = 'none';
+    qs('finalPrediction').classList.remove('cancelled');
+    qs('cancelXOverlay').style.display = 'none';
     return;
   }
   qs('checkpointBox').style.display = 'block';
@@ -295,7 +308,7 @@ async function checkAndRenderCheckpoints() {
     if (resp.ok) rows = parsePowerballCSV(await resp.text());
   } catch (e) { /* để rows rỗng, vẫn hiển thị được trạng thái "đang chờ" */ }
 
-  const latestDrawDate = new Date(entry.latestDrawDate);
+  const latestDrawDate = new Date(entry.latestDrawDate + 'T00:00:00');
   const latestRow = rows.find(r => dateKey(r.date) === entry.latestDrawDate);
   const afterLatest = rows.filter(r => r.date > latestDrawDate).sort((a, b) => a.date - b.date);
   const cp1 = afterLatest[0] || null;
@@ -310,10 +323,16 @@ async function checkAndRenderCheckpoints() {
     return null;
   }
 
-  // ⚔️ Vẽ lại khung FINAL PREDICTION: số nào đã nổ → thêm dấu ❌ MÀU SÁNG
-  // (hồng #ff2a6d) ngay bên dưới số đó, kèm rõ checkpoint + ngày nổ.
-  const cells = entry.numbers.map(num => {
-    const hit = findHitCheckpoint(num);
+  const hits = entry.numbers.map(num => ({ num, hit: findHitCheckpoint(num) }));
+  const anyHit = hits.some(h => h.hit);
+
+  // ⚔️ Chỉ cần 1/4 số đã nổ ở BẤT KỲ checkpoint nào → HUỶ TOÀN BỘ, vẽ dấu X
+  // to đè lên cả khung FINAL PREDICTION — không để khách phổ thông hiểu lầm
+  // "còn số sạch thì vẫn dùng được" (sai tinh thần spec 3-Checkpoint).
+  qs('finalPrediction').classList.toggle('cancelled', anyHit);
+  qs('cancelXOverlay').style.display = anyHit ? 'block' : 'none';
+
+  const cells = hits.map(({ num, hit }) => {
     if (hit) {
       return `<div style="display:inline-block; text-align:center; margin:0 6px;">
         <div>${String(num).padStart(2, '0')}</div>
@@ -322,7 +341,7 @@ async function checkAndRenderCheckpoints() {
     }
     return `<div style="display:inline-block; text-align:center; margin:0 6px;">
       <div>${String(num).padStart(2, '0')}</div>
-      <div style="font-size:11px; color:#3ad29f;">✅ clean</div>
+      <div style="font-size:11px; color:#8fb2c1;">— chưa nổ —</div>
     </div>`;
   }).join('');
 
@@ -330,7 +349,15 @@ async function checkAndRenderCheckpoints() {
     ? `<div style="margin-top:8px; font-size:11px; color:#8fb2c1;">⏳ CP2 chưa tới ngày quay số — kết quả có thể còn thay đổi.</div>`
     : '';
 
+  const verdict = anyHit
+    ? `<div style="font-size:15px; font-weight:900; color:#ff2a6d; margin-bottom:8px;">
+         🔴 HUỶ — KHÔNG DÙNG DỰ ĐOÁN NÀY NỮA<br>
+         <span style="font-size:11px;font-weight:400;color:#ffb3c6;">Chỉ cần 1 trong 4 số đã xuất hiện ở Latest/CP1/CP2 là toàn bộ dự đoán bị huỷ, dù các số còn lại chưa nổ.</span>
+       </div>`
+    : `<div style="font-size:15px; font-weight:900; color:#3ad29f; margin-bottom:8px;">🟢 CÒN HIỆU LỰC — chưa số nào xuất hiện</div>`;
+
   qs('checkpointStatus').innerHTML = `
+    ${verdict}
     <div style="font-size:11px; color:#8fb2c1; margin-bottom:6px;">
       Reference: Latest ${entry.latestDrawDate}${cp1 ? ` • CP1 ${dateKey(cp1.date)}` : ''}${cp2 ? ` • CP2 ${dateKey(cp2.date)}` : ''}
     </div>
