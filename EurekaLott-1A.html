@@ -249,50 +249,45 @@ function parsePowerballCSV(rawText) {
 function dateKey(d) { return d.toISOString().slice(0, 10); }
 
 // ══════════════════════════════════════════════════════════
-// ⚔️ CHECKPOINT STATUS — lưu mỗi lần dự đoán, tự kiểm tra xem 4 số
-// hiện ra có "nổ" (trùng) ở draw Latest / CP1 / CP2 hay chưa.
-// Lưu trong trình duyệt (localStorage) — KHÔNG gửi lên server nào,
-// hoàn toàn riêng tư cho từng người dùng trên máy của họ.
+// ⚔️ CHECKPOINT STATUS — sau khi dự đoán ra 4 số, kiểm tra xem chúng
+// có "nổ" (trùng) ở draw Latest / CP1 / CP2 hay chưa — hiển thị dấu ❌
+// TRỰC TIẾP lên từng số trong khung FINAL PREDICTION (không phải danh
+// sách riêng dài dòng). Chỉ áp dụng cho Auto Run (Powerball USA) — vì
+// đây là chế độ DUY NHẤT biết chắc chắn "latest" là draw thật ngày nào.
+// Lưu trong trình duyệt (localStorage), không gửi lên server.
 // ══════════════════════════════════════════════════════════
-const CHECKPOINT_STORAGE_KEY = 'eurekalott_powerball1_predictions';
+const CHECKPOINT_STORAGE_KEY = 'eurekalott_powerball1_latest_prediction';
 
-function loadSavedPredictions() {
+function loadSavedPrediction() {
   try {
-    return JSON.parse(localStorage.getItem(CHECKPOINT_STORAGE_KEY) || '[]');
-  } catch (e) { return []; }
+    return JSON.parse(localStorage.getItem(CHECKPOINT_STORAGE_KEY) || 'null');
+  } catch (e) { return null; }
 }
-function saveSavedPredictions(list) {
-  localStorage.setItem(CHECKPOINT_STORAGE_KEY, JSON.stringify(list.slice(0, 20))); // giữ tối đa 20 dự đoán gần nhất
-}
-
-async function saveNewPrediction(revealedNumbers) {
-  try {
-    const resp = await fetch(`${API_BASE}/api/powerball`);
-    if (!resp.ok) return; // không lấy được dữ liệu thật thì thôi, không chặn luồng chính
-    const rows = parsePowerballCSV(await resp.text());
-    if (rows.length === 0) return;
-    const latestDraw = rows[rows.length - 1]; // draw thật gần nhất tính tới lúc dự đoán
-
-    const list = loadSavedPredictions();
-    list.unshift({
-      createdAt: new Date().toISOString(),
-      numbers: revealedNumbers,
-      latestDrawDate: dateKey(latestDraw.date),
-    });
-    saveSavedPredictions(list);
-  } catch (e) {
-    console.warn('Không lưu được prediction để check checkpoint sau:', e);
-  }
+function saveSavedPrediction(entry) {
+  localStorage.setItem(CHECKPOINT_STORAGE_KEY, JSON.stringify(entry));
 }
 
-async function checkAllPredictions() {
-  const list = loadSavedPredictions();
-  if (list.length === 0) {
+// ⚔️ trueLatestDrawDate PHẢI là draw THẬT MÀ THUẬT TOÁN ĐÃ DÙNG LÀM INPUT
+// (tức draw cuối cùng trong 24 draws đã cutoff theo luật 3-Checkpoint) —
+// KHÔNG được lấy nhầm draw mới nhất tuyệt đối trong toàn bộ CSV (đó chính
+// là bug gây sai ngày ở bản trước, khiến bỏ sót các lần trùng thật).
+function saveNewPrediction(revealedNumbers, trueLatestDrawDate) {
+  if (!trueLatestDrawDate) return; // chế độ "Other Lottery" thủ công — không có ngày thật để đối chiếu, bỏ qua
+  saveSavedPrediction({
+    createdAt: new Date().toISOString(),
+    numbers: revealedNumbers,
+    latestDrawDate: dateKey(trueLatestDrawDate),
+  });
+}
+
+async function checkAndRenderCheckpoints() {
+  const entry = loadSavedPrediction();
+  if (!entry) {
     qs('checkpointBox').style.display = 'none';
     return;
   }
   qs('checkpointBox').style.display = 'block';
-  qs('checkpointStatus').innerText = '🔄 Checking checkpoints...';
+  qs('checkpointStatus').innerHTML = '🔄 Checking...';
 
   let rows = [];
   try {
@@ -300,54 +295,59 @@ async function checkAllPredictions() {
     if (resp.ok) rows = parsePowerballCSV(await resp.text());
   } catch (e) { /* để rows rỗng, vẫn hiển thị được trạng thái "đang chờ" */ }
 
-  const html = list.map(entry => {
-    const latestDrawDate = new Date(entry.latestDrawDate);
-    const afterLatest = rows.filter(r => r.date > latestDrawDate).sort((a, b) => a.date - b.date);
-    const cp1 = afterLatest[0] || null;
-    const cp2 = afterLatest[1] || null;
+  const latestDrawDate = new Date(entry.latestDrawDate);
+  const latestRow = rows.find(r => dateKey(r.date) === entry.latestDrawDate);
+  const afterLatest = rows.filter(r => r.date > latestDrawDate).sort((a, b) => a.date - b.date);
+  const cp1 = afterLatest[0] || null;
+  const cp2 = afterLatest[1] || null;
 
-    // ⚔️ Với mỗi checkpoint, kiểm tra xem có SỐ NÀO trong 4 số dự đoán trùng không
-    function hitInfo(draw) {
-      if (!draw) return null;
-      const hits = entry.numbers.filter(n => draw.nums6.includes(n));
-      return { date: dateKey(draw.date), hits };
-    }
-    const cp1Info = hitInfo(cp1);
-    const cp2Info = hitInfo(cp2);
-    // "Latest" — draw thật đã dùng làm input, kiểm tra luôn cho đủ 3 checkpoint
-    const latestRow = rows.find(r => dateKey(r.date) === entry.latestDrawDate);
-    const latestInfo = latestRow ? { date: entry.latestDrawDate, hits: entry.numbers.filter(n => latestRow.nums6.includes(n)) } : null;
+  // ⚔️ Với mỗi số trong 4 số dự đoán, tìm xem nó "nổ" ở checkpoint nào
+  // (Latest / CP1 / CP2) — 1 số chỉ có thể nổ ở ĐÚNG 1 checkpoint sớm nhất.
+  function findHitCheckpoint(num) {
+    if (latestRow && latestRow.nums6.includes(num)) return { label: 'Latest', date: entry.latestDrawDate };
+    if (cp1 && cp1.nums6.includes(num)) return { label: 'CP1', date: dateKey(cp1.date) };
+    if (cp2 && cp2.nums6.includes(num)) return { label: 'CP2', date: dateKey(cp2.date) };
+    return null;
+  }
 
-    // ⚔️ Dấu ❌ dùng màu HỒNG SÁNG (--accent) — nổi rõ trên nền tối, không dùng đen
-    function markFor(label, info) {
-      if (!info) return `<span style="color:#8fb2c1;">${label}: ⏳ pending</span>`;
-      if (info.hits.length > 0) {
-        return `<span style="color:#ff2a6d; font-weight:bold;">${label} (${info.date}): ❌ HIT — [${info.hits.join(', ')}] already drawn, do NOT reuse</span>`;
-      }
-      return `<span style="color:#3ad29f;">${label} (${info.date}): ✅ clean</span>`;
-    }
-
-    return `
-      <div style="border-bottom:1px solid #123545; padding:8px 0;">
-        <div style="color:#ffd700; font-weight:bold;">Prediction: [${entry.numbers.join(', ')}] — made ${new Date(entry.createdAt).toLocaleDateString()}</div>
-        <div>${markFor('Latest', latestInfo)}</div>
-        <div>${markFor('CP1', cp1Info)}</div>
-        <div>${markFor('CP2', cp2Info)}</div>
+  // ⚔️ Vẽ lại khung FINAL PREDICTION: số nào đã nổ → thêm dấu ❌ MÀU SÁNG
+  // (hồng #ff2a6d) ngay bên dưới số đó, kèm rõ checkpoint + ngày nổ.
+  const cells = entry.numbers.map(num => {
+    const hit = findHitCheckpoint(num);
+    if (hit) {
+      return `<div style="display:inline-block; text-align:center; margin:0 6px;">
+        <div>${String(num).padStart(2, '0')}</div>
+        <div style="font-size:11px; color:#ff2a6d; font-weight:bold;">❌ ${hit.label} (${hit.date})</div>
       </div>`;
+    }
+    return `<div style="display:inline-block; text-align:center; margin:0 6px;">
+      <div>${String(num).padStart(2, '0')}</div>
+      <div style="font-size:11px; color:#3ad29f;">✅ clean</div>
+    </div>`;
   }).join('');
 
-  qs('checkpointStatus').innerHTML = html;
+  const pendingNote = !cp2
+    ? `<div style="margin-top:8px; font-size:11px; color:#8fb2c1;">⏳ CP2 chưa tới ngày quay số — kết quả có thể còn thay đổi.</div>`
+    : '';
+
+  qs('checkpointStatus').innerHTML = `
+    <div style="font-size:11px; color:#8fb2c1; margin-bottom:6px;">
+      Reference: Latest ${entry.latestDrawDate}${cp1 ? ` • CP1 ${dateKey(cp1.date)}` : ''}${cp2 ? ` • CP2 ${dateKey(cp2.date)}` : ''}
+    </div>
+    <div style="font-size:22px; font-family:monospace; font-weight:bold; color:#ffd700;">${cells}</div>
+    ${pendingNote}
+  `;
 }
 
 qs('checkCheckpointsBtn').addEventListener('click', () => {
-  checkAllPredictions().catch(e => console.error(e));
+  checkAndRenderCheckpoints().catch(e => console.error(e));
 });
-// ⚔️ Tự kiểm tra ngay khi vào trang — cho biết dự đoán cũ đã "nổ" chưa
+// ⚔️ Tự kiểm tra ngay khi vào trang — cho biết dự đoán gần nhất đã "nổ" chưa
 window.addEventListener('load', () => {
-  checkAllPredictions().catch(e => console.error(e));
+  checkAndRenderCheckpoints().catch(e => console.error(e));
 });
 
-async function runPredict() {
+async function runPredict(trueLatestDrawDate = null) {
   qs('result').innerText = '';
   qs('finalNumbers').innerText = '— processing —';
   qs('finalNumbers').classList.remove('ready');
@@ -433,11 +433,13 @@ async function runPredict() {
   if (data.chartHistory && data.chartHistory.length) renderChart(data.chartHistory);
   setStatus('✅ Done.', true);
 
-  // ⚔️ Lưu lại 4 số vừa lộ ra + draw thật gần nhất tại thời điểm này, để
-  // sau này tự kiểm tra xem chúng có "nổ" ở CP1/CP2 chưa.
+  // ⚔️ Lưu lại 4 số vừa lộ ra + draw thật gần nhất MÀ THUẬT TOÁN ĐÃ DÙNG LÀM
+  // INPUT (trueLatestDrawDate — truyền vào từ autoFetchAndRun, chỉ có khi
+  // chạy Auto Run Powerball; chế độ "Other Lottery" thủ công thì bỏ qua vì
+  // không biết chắc chắn ngày draw thật để đối chiếu).
   const revealedNumbers = data.maskedPrediction.split(/\s+/).filter(t => t.toLowerCase() !== 'xx').map(Number);
-  await saveNewPrediction(revealedNumbers);
-  await checkAllPredictions();
+  saveNewPrediction(revealedNumbers, trueLatestDrawDate);
+  await checkAndRenderCheckpoints();
 }
 
 async function autoFetchAndRun() {
@@ -464,7 +466,12 @@ async function autoFetchAndRun() {
     `— preparing for the ${nextDraw.toDateString()} drawing.`, true
   );
 
-  await runPredict();
+  // ⚔️ "latest" THẬT dùng cho Checkpoint Status PHẢI là draw cuối cùng trong
+  // "selected" (đã áp dụng cutoff 3-Checkpoint) — KHÔNG phải draw mới nhất
+  // tuyệt đối trong toàn bộ CSV (2 cái này có thể khác ngày nhau, gây bug
+  // sai lệch checkpoint như đã phát hiện).
+  const trueLatestDrawDate = selected[selected.length - 1].date;
+  await runPredict(trueLatestDrawDate);
 }
 
 qs('trainBtn').addEventListener('click', () => {
