@@ -246,7 +246,17 @@ function parsePowerballCSV(rawText) {
   rows.sort((a, b) => a.date - b.date);
   return rows;
 }
-function dateKey(d) { return d.toISOString().slice(0, 10); }
+// ⚔️ SỬA LỖI MÚI GIỜ: KHÔNG dùng toISOString() (nó quy đổi sang UTC, gây lệch
+// 1 ngày với múi giờ Việt Nam UTC+7 — ví dụ 0h ngày 11/7 giờ VN sẽ bị quy đổi
+// thành 17h ngày 10/7 UTC, hiển thị sai thành "2026-07-10"). Lấy trực tiếp
+// năm/tháng/ngày theo giờ địa phương của trình duyệt, khớp đúng với cách
+// Date được tạo ra ở parsePowerballCSV (new Date(year, month-1, day)).
+function dateKey(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 // ══════════════════════════════════════════════════════════
 // ⚔️ CHECKPOINT STATUS — sau khi dự đoán ra 4 số, kiểm tra xem chúng
@@ -302,40 +312,46 @@ async function checkAndRenderCheckpoints() {
   const cp2 = afterLatest[1] || null;
 
   // ⚔️ Với mỗi số trong 4 số dự đoán, tìm xem nó "nổ" ở checkpoint nào
-  // (Latest / CP1 / CP2) — 1 số chỉ có thể nổ ở ĐÚNG 1 checkpoint sớm nhất.
   function findHitCheckpoint(num) {
     if (latestRow && latestRow.nums6.includes(num)) return { label: 'Latest', date: entry.latestDrawDate };
     if (cp1 && cp1.nums6.includes(num)) return { label: 'CP1', date: dateKey(cp1.date) };
     if (cp2 && cp2.nums6.includes(num)) return { label: 'CP2', date: dateKey(cp2.date) };
     return null;
   }
+  const hitDetails = entry.numbers.map(num => ({ num, hit: findHitCheckpoint(num) })).filter(x => x.hit);
+  const anyHit = hitDetails.length > 0;
 
-  // ⚔️ Vẽ lại khung FINAL PREDICTION: số nào đã nổ → thêm dấu ❌ MÀU SÁNG
-  // (hồng #ff2a6d) ngay bên dưới số đó, kèm rõ checkpoint + ngày nổ.
-  const cells = entry.numbers.map(num => {
-    const hit = findHitCheckpoint(num);
-    if (hit) {
-      return `<div style="display:inline-block; text-align:center; margin:0 6px;">
-        <div>${String(num).padStart(2, '0')}</div>
-        <div style="font-size:11px; color:#ff2a6d; font-weight:bold;">❌ ${hit.label} (${hit.date})</div>
+  // ⚔️ NGUYÊN TẮC AN TOÀN: chỉ cần 1 SỐ BẤT KỲ đã nổ → HỦY TOÀN BỘ bộ 4 số,
+  // không hiển thị kiểu "từng số riêng lẻ, có số vẫn clean" — vì cách hiển
+  // thị đó khiến khách phổ thông hiểu nhầm là "vẫn còn dùng được 1 phần".
+  // Đây là 1 banner TỔNG DUY NHẤT, rõ ràng, không mập mờ.
+  let bannerHtml;
+  if (anyHit) {
+    const hitList = hitDetails.map(x => `${String(x.num).padStart(2,'0')} (${x.hit.label} ${x.hit.date})`).join(', ');
+    bannerHtml = `
+      <div style="background:#3d0a1a; border:2px solid #ff2a6d; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#ff2a6d; font-weight:bold; font-size:18px;">❌ CANCELLED — DO NOT USE THIS PREDICTION</div>
+        <div style="color:#ffb3c6; font-size:12px; margin-top:6px;">Already hit: ${hitList}. Per EurekaLott rule: if ANY number already appeared, the ENTIRE set of 4 is invalid — wait for the next prediction.</div>
       </div>`;
-    }
-    return `<div style="display:inline-block; text-align:center; margin:0 6px;">
-      <div>${String(num).padStart(2, '0')}</div>
-      <div style="font-size:11px; color:#3ad29f;">✅ clean</div>
-    </div>`;
-  }).join('');
-
-  const pendingNote = !cp2
-    ? `<div style="margin-top:8px; font-size:11px; color:#8fb2c1;">⏳ CP2 chưa tới ngày quay số — kết quả có thể còn thay đổi.</div>`
-    : '';
+  } else if (cp2) {
+    bannerHtml = `
+      <div style="background:#06251a; border:2px solid #3ad29f; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#3ad29f; font-weight:bold; font-size:18px;">✅ CONFIRMED CLEAN — safe through CP2</div>
+        <div style="color:#8fdcc0; font-size:12px; margin-top:6px;">None of the 4 numbers appeared at Latest, CP1, or CP2. This prediction remained valid through its full verification window.</div>
+      </div>`;
+  } else {
+    bannerHtml = `
+      <div style="background:#1a2530; border:2px solid #8fb2c1; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#aee6ff; font-weight:bold; font-size:16px;">⏳ Still pending — waiting for CP2 draw</div>
+        <div style="color:#8fb2c1; font-size:12px; margin-top:6px;">No hits so far, but final confirmation requires CP2 (${cp1 ? 'after CP1 ' + dateKey(cp1.date) : 'not yet available'}). Come back after the next draw.</div>
+      </div>`;
+  }
 
   qs('checkpointStatus').innerHTML = `
-    <div style="font-size:11px; color:#8fb2c1; margin-bottom:6px;">
+    <div style="font-size:11px; color:#8fb2c1; margin-bottom:6px; text-align:center;">
       Reference: Latest ${entry.latestDrawDate}${cp1 ? ` • CP1 ${dateKey(cp1.date)}` : ''}${cp2 ? ` • CP2 ${dateKey(cp2.date)}` : ''}
     </div>
-    <div style="font-size:22px; font-family:monospace; font-weight:bold; color:#ffd700;">${cells}</div>
-    ${pendingNote}
+    ${bannerHtml}
   `;
 }
 
@@ -351,6 +367,11 @@ async function runPredict(trueLatestDrawDate = null) {
   qs('result').innerText = '';
   qs('finalNumbers').innerText = '— processing —';
   qs('finalNumbers').classList.remove('ready');
+  // ⚔️ Ẩn ngay khung Checkpoint Status cũ khi bắt đầu chạy — tránh hiển thị
+  // dữ liệu của LẦN CHẠY TRƯỚC (có thể thuộc loại vé số khác, hoặc kỳ quay
+  // khác) trong lúc lần chạy mới đang "processing", gây hiểu nhầm nghiêm
+  // trọng cho khách hàng (tưởng số cũ là kết quả check của số mới).
+  qs('checkpointBox').style.display = 'none';
   setStatus('🔄 Sending data to the server for training... (this may take a few minutes on our free server — please do not close this page)');
 
   const payload = {
@@ -439,7 +460,16 @@ async function runPredict(trueLatestDrawDate = null) {
   // không biết chắc chắn ngày draw thật để đối chiếu).
   const revealedNumbers = data.maskedPrediction.split(/\s+/).filter(t => t.toLowerCase() !== 'xx').map(Number);
   saveNewPrediction(revealedNumbers, trueLatestDrawDate);
-  await checkAndRenderCheckpoints();
+  // ⚔️ Checkpoint Status CHỈ áp dụng cho Auto Run Powerball (có ngày draw
+  // thật để đối chiếu). Chế độ "Other Lottery" thủ công KHÔNG có ngày draw
+  // đáng tin cậy để so — giữ khung này ẨN HẲN, không hiện lại số của lần
+  // Auto Run trước đó (tránh gây hiểu nhầm số đó liên quan tới vé số vừa
+  // mới chạy, dù thực ra là 2 loại vé/2 lần chạy hoàn toàn khác nhau).
+  if (trueLatestDrawDate) {
+    await checkAndRenderCheckpoints();
+  } else {
+    qs('checkpointBox').style.display = 'none';
+  }
 }
 
 async function autoFetchAndRun() {
