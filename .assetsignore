@@ -1,0 +1,16 @@
+# ⚔️ Danh sách file/thư mục KHÔNG được đưa vào static assets công khai.
+# Đây là lỗ hổng nghiêm trọng đã phát hiện: .git/ đang bị Cloudflare phục vụ
+# như file tĩnh bình thường, cho phép bất kỳ ai tải lại toàn bộ lịch sử
+# commit + mã nguồn qua git-dumper hoặc công cụ tương tự.
+#
+# Đặt file này ở NGOÀI CÙNG (root) của repo mywebsite, cùng cấp với worker.js
+# và wrangler.toml.
+
+.git
+.git/**
+.github
+.github/**
+.gitignore
+wrangler.toml
+PROJECT_ARCHITECTURE.md
+README.md
