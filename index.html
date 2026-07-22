@@ -224,7 +224,37 @@ body{
   </div>
 
 </div>
-    <a href="powerball.html">🎯 Powerball Prediction</a>
+    <div class="dropdown">
+
+  <button class="btn-results" id="btnPrediction" onclick="togglePrediction()">
+    🔮 Prediction Center <span class="arrow">▾</span>
+  </button>
+
+  <div class="dropdown-menu" id="predictionMenu">
+
+    <div class="dd-item"
+         onclick="window.location.href='EurekaLott-1A.html'">
+      🇻🇳 Vietlott 6/55
+    </div>
+
+    <div class="dd-item disabled">
+      🇺🇸 Powerball USA
+      <span class="coming">Coming Soon</span>
+    </div>
+
+    <div class="dd-item disabled">
+      🇺🇸 Mega Millions
+      <span class="coming">Coming Soon</span>
+    </div>
+
+    <div class="dd-item disabled">
+      🇪🇺 EuroMillions
+      <span class="coming">Coming Soon</span>
+    </div>
+
+  </div>
+
+</div>
     <a href="community.html">💬 Community</a>
     
     <a href="https://www.facebook.com/groups/1243032744487699" target="_blank">📘 Facebook</a>
@@ -289,6 +319,13 @@ function toggleDropdown(){
 }
 
 function toggleNeural(){
+  function togglePrediction(){
+
+  document.getElementById("btnPrediction").classList.toggle("open");
+
+  document.getElementById("predictionMenu").classList.toggle("open");
+
+}
   document.getElementById('btnNeural').classList.toggle('open');
   document.getElementById('neuralMenu').classList.toggle('open');
 }
