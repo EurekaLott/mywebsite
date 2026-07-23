@@ -321,30 +321,34 @@ function toggleDropdown(){
 function toggleNeural(){
   function togglePrediction(){
 
-  document.getElementById("btnPrediction").classList.toggle("open");
+    const btn=document.getElementById("btnPrediction");
+    const menu=document.getElementById("predictionMenu");
 
-  document.getElementById("predictionMenu").classList.toggle("open");
+    btn.classList.toggle("open");
+    menu.classList.toggle("open");
 
 }
   document.getElementById('btnNeural').classList.toggle('open');
   document.getElementById('neuralMenu').classList.toggle('open');
 }
 
-document.addEventListener('click',function(e){
+document.addEventListener("click",function(e){
 
-  document.querySelectorAll('.dropdown').forEach(function(dd){
+    document.querySelectorAll(".dropdown").forEach(function(drop){
 
-    if(!dd.contains(e.target)){
+        if(!drop.contains(e.target)){
 
-      const btn=dd.querySelector('.btn-results');
-      const menu=dd.querySelector('.dropdown-menu');
+            drop.querySelectorAll(".btn-results").forEach(function(btn){
+                btn.classList.remove("open");
+            });
 
-      if(btn) btn.classList.remove('open');
-      if(menu) menu.classList.remove('open');
+            drop.querySelectorAll(".dropdown-menu").forEach(function(menu){
+                menu.classList.remove("open");
+            });
 
-    }
+        }
 
-  });
+    });
 
 });
 
