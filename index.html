@@ -318,20 +318,20 @@ function toggleDropdown(){
   document.getElementById('dropdownMenu').classList.toggle('open');
 }
 
+function toggleDropdown(){
+    document.getElementById("btnResults").classList.toggle("open");
+    document.getElementById("dropdownMenu").classList.toggle("open");
+}
+
 function toggleNeural(){
-  function togglePrediction(){
-
-    const btn=document.getElementById("btnPrediction");
-    const menu=document.getElementById("predictionMenu");
-
-    btn.classList.toggle("open");
-    menu.classList.toggle("open");
-
-}
-  document.getElementById('btnNeural').classList.toggle('open');
-  document.getElementById('neuralMenu').classList.toggle('open');
+    document.getElementById("btnNeural").classList.toggle("open");
+    document.getElementById("neuralMenu").classList.toggle("open");
 }
 
+function togglePrediction(){
+    document.getElementById("btnPrediction").classList.toggle("open");
+    document.getElementById("predictionMenu").classList.toggle("open");
+}
 document.addEventListener("click",function(e){
 
     document.querySelectorAll(".dropdown").forEach(function(drop){
