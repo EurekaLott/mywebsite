@@ -271,14 +271,14 @@ Prediction Center
 <script src="forecast-data.js"></script>
 <script>
 
-const lines = forecast
+const forecastLines = forecast
     .trim()
     .split(/\r?\n/)
     .map(s => s.trim())
     .filter(s => s !== "");
 
-const lottery = lines[0];
-const drawDate = lines[1];
+const lottery = forecastLines[0];
+const drawDate = forecastLines[1];
 
 let html = `
 <div class="card">
@@ -299,9 +299,9 @@ ${drawDate}
 </div>
 `;
 
-for(let i=2;i<lines.length;i++){
+for(let i=2;i<forecastLines.length;i++){
 
-    const n = lines[i].split(/\s+/);
+    const n = forecastLines[i].split(/\s+/);
 
     if(n.length!==2) continue;
 
