@@ -266,5 +266,78 @@ Prediction Center
 
         draw();
     </script>
+    
+<div id="todayPrediction"></div>    
+<script src="forecast-data.js"></script>
+<script>
+
+const lines = forecast
+    .trim()
+    .split(/\r?\n/)
+    .map(s => s.trim())
+    .filter(s => s !== "");
+
+const lottery = lines[0];
+const drawDate = lines[1];
+
+let html = `
+<div class="card">
+
+<div class="card-title">
+🔮 Today's Prediction
+</div>
+
+<div style="
+font-size:24px;
+font-weight:bold;
+color:#ffd700;
+text-align:center;
+margin-bottom:25px;
+">
+${lottery}<br>
+${drawDate}
+</div>
+`;
+
+for(let i=2;i<lines.length;i++){
+
+    const n = lines[i].split(/\s+/);
+
+    if(n.length!==2) continue;
+
+    html += `
+    <div style="
+    display:flex;
+    justify-content:center;
+    gap:120px;
+    padding:16px 0;
+    font-size:34px;
+    font-weight:bold;
+    border-bottom:1px solid #1d3b55;
+    ">
+        <span>${n[0]}</span>
+        <span>${n[1]}</span>
+    </div>
+    `;
+}
+
+html += `
+
+<div style="
+margin-top:25px;
+text-align:center;
+font-size:18px;
+color:#9fd8ff;
+">
+Choose <b>ONE</b> number from each pair.
+</div>
+
+</div>
+`;
+
+document.getElementById("todayPrediction").innerHTML = html;
+
+</script>
+    
 </body>
 </html>
