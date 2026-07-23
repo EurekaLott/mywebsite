@@ -1,6 +1,18 @@
 const archive = [
 
 {
+date: "undefined",
+
+rows: `
+
+
+
+`
+},
+
+
+
+{
 date: "const forecast =",
 
 rows: `
