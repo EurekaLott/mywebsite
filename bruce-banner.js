@@ -9,7 +9,16 @@ if (!banner) {
 
 banner.style.width = "100%";
 banner.style.maxWidth = "1100px";
-banner.style.height = "110px";
+if(window.innerWidth<=430){
+
+    banner.style.height="80px";
+
+}else{
+
+    banner.style.height="110px";
+
+}
+    
 banner.style.margin = "20px auto";
 banner.style.borderRadius = "14px";
 banner.style.overflow = "hidden";
@@ -26,11 +35,24 @@ banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
 
 const canvas = document.getElementById("bruceCanvas");
 const ctx = canvas.getContext("2d");
+function W(){
+    return banner.clientWidth;
+}
 
-function resizeCanvas() {
+function H(){
+    return banner.clientHeight;
+}
+function resizeCanvas(){
 
-    canvas.width = banner.clientWidth;
-    canvas.height = banner.clientHeight;
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.style.width = banner.clientWidth + "px";
+    canvas.style.height = banner.clientHeight + "px";
+
+    canvas.width = banner.clientWidth * dpr;
+    canvas.height = banner.clientHeight * dpr;
+
+    ctx.setTransform(dpr,0,0,dpr,0,0);
 
 }
 
@@ -41,7 +63,12 @@ window.addEventListener("resize", resizeCanvas);
 console.log("🌌 Canvas Ready");    
 const stars = [];
 
-for (let i = 0; i < 180; i++) {
+const STAR_COUNT =
+window.innerWidth<=430
+?60
+:180;
+
+for(let i=0;i<STAR_COUNT;i++){
     stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
@@ -78,7 +105,7 @@ jupiter.onerror = () => {
     console.error("❌ Jupiter Load Failed");
 };
 
-let jupiterX = canvas.width - 30;
+let jupiterX = W()-30;
 let jupiterY = 5;
 let jupiterAngle = 0;   
 let glowPhase = 0;
@@ -99,7 +126,7 @@ neptune.onerror = () => {
     console.error("❌ Neptune Load Failed");
 };
 
-let neptuneX = canvas.width / 2 - 60;
+let neptuneX=W()/2-60;
 let neptuneY = -140;
 let neptuneAngle = 0;
 let neptuneStarted = false;
@@ -119,7 +146,7 @@ purple.onerror = () => {
     console.error("❌ Purple Load Failed");
 };
 
-let purpleX = canvas.width + 140;
+let purpleX=W()+140;
 let purpleY = 10;
 let purpleAngle = 0;
 
@@ -158,8 +185,14 @@ let jupiterHit = false;
 let jupiterScale = 1;
 let jupiterSpin = 0;
     
-let bruceX = -80;
-const bruceY = canvas.height - 70; 
+let bruceX =
+window.innerWidth<=430
+?-40
+:-80;
+const bruceY =
+window.innerWidth<=430
+?canvas.height-55
+:canvas.height-70; 
 let bruceCurrentY = bruceY;
 
 let bruceAttached = false;
@@ -190,7 +223,7 @@ function resetScene(){
     burstReady = false;
 
     // Jupiter
-    jupiterX = canvas.width - 30;
+    jupiterX=W()-30;
     jupiterY = 5;
     jupiterAngle = 0;
     jupiterScale = 1;
@@ -208,11 +241,14 @@ function resetScene(){
     neptuneDone = false;
 
     // Purple
-    purpleX = canvas.width + 140;
+    purpleX=W()+140;
     purpleDone = false;
 
     // Bruce
-    bruceX = -80;
+   bruceX=
+window.innerWidth<=430
+?-40
+:-80;
     bruceCurrentY = bruceY;
     bruceAttached = false;
     bruceKungfu = false;
@@ -241,7 +277,7 @@ orion.onerror = () => {
     console.error("❌ Orion Load Failed");
 };
 
-let orionX = canvas.width + 150;
+let orionX=W()+150;
 let orionY = 8;
     
 function drawStars() {
@@ -911,7 +947,7 @@ if (aiPanel) {
     // ===========================
 
     const left = 20;
-    const right = canvas.width - 20;
+    const right=W()-20;
     const textY = canvas.height / 2;
 
     // ===========================
@@ -1003,8 +1039,7 @@ if (aiPanel) {
 
     ctx.fillStyle = "#ffe800";
 
-    const startX =
-        canvas.width - ledOffset;
+   const startX=W()-ledOffset;
 
     ctx.fillText(
         ledText,
@@ -1018,7 +1053,7 @@ if (aiPanel) {
     // tốc độ chạy
     // ===========================
 
-    ledOffset += 2.4;
+    ledOffset += 4.8;
 
     const textWidth =
         ctx.measureText(ledText).width;
