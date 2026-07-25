@@ -111,11 +111,44 @@ body{
 }
 .recent-table tr:hover td{background:rgba(255,255,255,.04);}
 .recent-table td:first-child{
-  color:#667;opacity:.4;font-weight:400;font-size:11px;
+  color:#a9c2e8;opacity:1;font-weight:700;font-size:13px;
   user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;
 }
-  
+
 .pb-num{color:#ff6b60;font-weight:900;}
+
+/* DATA MODE TABS (Raw / Sorted) */
+.data-mode-tabs{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.mode-tab{
+  background:transparent;border:1px solid #2a4a70;color:#9db8dd;
+  padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;
+  cursor:pointer;transition:.2s;
+}
+.mode-tab:hover{background:#0d2240;}
+.mode-tab.active{background:#ffd700;color:#071528;border-color:#ffd700;}
+.mode-note{font-size:11.5px;color:#6d84a8;margin-bottom:14px;}
+.recent-note{font-size:12px;color:#6d84a8;font-weight:400;margin:-8px 0 14px;}
+
+/* COPY BUTTONS */
+.btn-copy-row{
+  background:transparent;border:1px solid #3a5a80;color:#ffd700;
+  padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;
+  cursor:pointer;transition:.2s;
+}
+.btn-copy-row:hover{background:#0d2240;}
+.btn-copy-row.copied{background:#2ecc71;color:#04210f;border-color:#2ecc71;}
+.btn-sm.copy24{background:#2ecc71;color:#04210f;}
+.btn-sm.copy24:hover{background:#27ae60;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:#0d2240;color:#ffd700;padding:13px 24px;border-radius:10px;
+  font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.45);
+  opacity:0;pointer-events:none;transition:.25s;z-index:999;
+  max-width:90vw;text-align:center;border:1px solid rgba(255,215,0,.35);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* LED BOARD */
 .led-wrap{margin:40px 50px;background:#071528;overflow:hidden;border-radius:14px;box-shadow:0 10px 35px rgba(0,0,0,.35);}
@@ -276,6 +309,7 @@ body{
     <div class="latest-source" id="latestSource"></div>
     <div class="result-actions">
       <button class="btn-sm refresh" onclick="fetchLatestDraw()">🔄 Refresh</button>
+      <button class="btn-sm copy24" onclick="copy24Draws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
     </div>
     <div class="result-error" id="resultError"></div>
   </div>
@@ -283,12 +317,21 @@ body{
   <!-- Recent 12 draws table -->
   <div class="recent-section">
     <h4>📋 RECENT 30 DRAWS</h4>
+    <div class="recent-note">(not counting the latest draw already shown above)</div>
+
+    <div class="data-mode-tabs">
+      <button class="mode-tab active" data-mode="raw" onclick="setDataMode('raw')">🔀 Raw (ball-drop order)</button>
+      <button class="mode-tab" data-mode="sorted" onclick="setDataMode('sorted')">🔢 Sorted (ascending)</button>
+    </div>
+    <div class="mode-note">Sorted is calculated instantly from the same official Texas Lottery source — just arranged low→high for easier reading. The "Copy" buttons and "Copy 24 Draws" always use the original Raw order, because the Neural Network needs the real ball-drop position to work correctly.</div>
+
     <table class="recent-table">
       <thead>
         <tr>
           <th>Date</th>
           <th>White Balls</th>
           <th>PB</th>
+          <th>Copy</th>
         </tr>
       </thead>
       <tbody id="recentBody"></tbody>
@@ -384,25 +427,142 @@ function parseTexasCSV(text){
     });
 }
 
-/* ── RENDER RECENT 30 ── */
+/* ── DATA MODE (Raw / Sorted) ── */
+let dataMode='raw';
+function setDataMode(mode){
+  dataMode=mode;
+  document.querySelectorAll('.mode-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.mode===mode);
+  });
+  renderRecent30(null);
+}
+
+/* ── RENDER RECENT 30 (loại bỏ draw mới nhất vì đã hiện ở trên) ── */
 function renderRecent30(data){
   const tbody=document.getElementById('recentBody');
   tbody.innerHTML='';
   const src=data||(typeof draws!=='undefined'?draws:[]);
   if(!src.length){
-    tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No data</td></tr>';
+    tbody.innerHTML='<tr><td colspan="4" style="color:#778;">No data</td></tr>';
     return;
   }
-  const recent=src.slice(-30).reverse();
+  /* bỏ draw cuối cùng (latest) ra khỏi bảng vì đã hiển thị ở khối "LATEST DRAW" bên trên */
+  const withoutLatest=src.slice(0,-1);
+  const recent=withoutLatest.slice(-30).reverse();
   recent.forEach(d=>{
     const row=document.createElement('tr');
-    const whites=d.white||[];
+    const whitesRaw=d.white||[];
+    const whitesShown=dataMode==='sorted' ? whitesRaw.slice().sort((a,b)=>a-b) : whitesRaw;
+    const pbVal=(d.pb!==undefined)?d.pb:d.powerball;
     row.innerHTML=`
       <td>${fmtDate(d.date)}</td>
-      <td>${whites.join(' &nbsp; ')}</td>
-      <td class="pb-num">${d.pb||d.powerball}</td>`;
+      <td>${whitesShown.join(' &nbsp; ')}</td>
+      <td class="pb-num">${pbVal}</td>
+      <td><button class="btn-copy-row" onclick='copyRow(${JSON.stringify(d.date)}, ${JSON.stringify(whitesRaw)}, ${pbVal}, this)'>📋</button></td>`;
     tbody.appendChild(row);
   });
+}
+
+/* ── TOAST FEEDBACK ── */
+let toastTimer=null;
+function showToast(msg){
+  let t=document.getElementById('copyToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='copyToast';
+    t.className='toast';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+/* ── CLIPBOARD HELPERS ── */
+function fallbackCopy(text,cb){
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.position='fixed';
+  ta.style.opacity='0';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  if(cb) cb();
+}
+function copyToClipboard(text,successMsg){
+  const done=()=>showToast(successMsg||'✅ Copied!');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));
+  }else{
+    fallbackCopy(text,done);
+  }
+}
+
+/* ── FORMAT 1 DRAW → dòng raw CSV (đúng format Texas Lottery mà EurekaLott-1A.html đọc được) ── */
+function formatRawCSVLine(d){
+  const dt=parseDrawDate(d.date);
+  const month=dt.getMonth()+1, day=dt.getDate(), year=dt.getFullYear();
+  const w=d.white||[];
+  const pb=(d.pb!==undefined)?d.pb:d.powerball;
+  return `Powerball,${month},${day},${year},${w[0]},${w[1]},${w[2]},${w[3]},${w[4]},${pb}`;
+}
+function parseDrawDate(dateStr){
+  const p=dateStr.split('-').map(Number);
+  return new Date(p[0],p[1]-1,p[2]); /* local time, tránh lệch ngày do UTC */
+}
+function dateKeyLocal(d){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+/* ── COPY 1 DÒNG ── */
+function copyRow(dateStr,white,pb,btn){
+  const line=formatRawCSVLine({date:dateStr,white,pb});
+  copyToClipboard(line, `✅ Copied draw ${fmtDate(dateStr)}`);
+  if(btn){
+    const old=btn.textContent;
+    btn.textContent='✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent=old; btn.classList.remove('copied'); },1200);
+  }
+}
+
+/* ── COPY 24 DRAWS — ĐÚNG LUẬT "3-CHECKPOINT" (giống hệt EurekaLott-1A.html) ──
+   POWERBALL_DRAW_DAYS = Mon(1) / Wed(3) / Sat(6).
+   nextDraw = ngày quay kế tiếp gần nhất tính từ hôm nay (kể cả hôm nay nếu đúng ngày quay).
+   cutoff   = nextDraw - 7 ngày (tức "cùng ngày trong tuần trước").
+   selected = tất cả draws có date <= cutoff, lấy 24 kỳ gần cutoff nhất. */
+const POWERBALL_DRAW_DAYS=[1,3,6];
+function getNextDrawDate(today){
+  const d=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  for(let i=0;i<7;i++){
+    if(POWERBALL_DRAW_DAYS.includes(d.getDay())) return d;
+    d.setDate(d.getDate()+1);
+  }
+  return d;
+}
+function getCutoffDate(today){
+  const nextDraw=getNextDrawDate(today);
+  const cutoff=new Date(nextDraw);
+  cutoff.setDate(cutoff.getDate()-7);
+  return cutoff;
+}
+function copy24Draws(){
+  if(typeof draws==='undefined'||!draws.length){
+    showToast('⚠️ No data available.');
+    return;
+  }
+  const today=new Date();
+  const cutoff=getCutoffDate(today);
+  const selected=draws.filter(d=>parseDrawDate(d.date)<=cutoff).slice(-24);
+  if(selected.length===0){
+    showToast('⚠️ No draws found before the cutoff.');
+    return;
+  }
+  const text=selected.map(formatRawCSVLine).join('\n');
+  copyToClipboard(text, `✅ Copied ${selected.length} draws (cutoff: ${fmtDate(dateKeyLocal(cutoff))}) — paste into Neural Networks input`);
 }
 /* ── RENDER BALLS (latest) ── */
 function renderBalls(white,pb,dateStr,source){
