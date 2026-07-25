@@ -45,7 +45,6 @@ function W(){
 function H(){
     return banner.clientHeight;
 }
-function resizeCanvas(){
 
     function resizeCanvas(){
 
@@ -1117,11 +1116,13 @@ Math.floor(H()*0.60);
 
 }
 
-requestAnimationFrame window.addEventListener("load",()=>{
-    resizeCanvas();
-    drawStars();
-});
+window.addEventListener("load", () => {
 
+    resizeCanvas();
+
+    drawStars();
+
+});
 }
 drawStars();    
     setInterval(() => {
