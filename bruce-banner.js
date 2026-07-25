@@ -173,7 +173,7 @@ let jupiterSpin = 0;
     
 let bruceX = -80;
 let bruceY = 0;
-let if (!bruceAttached && !bruceKungfu) {
+ if (!bruceAttached && !bruceKungfu) {
     bruceCurrentY = bruceY;
 }
 let bruceAttached = false;
