@@ -1053,8 +1053,7 @@ if (aiPanel) {
     // tốc độ chạy
     // ===========================
 
-    ledOffset += 4.8;
-
+   ledOffset += 6;
     const textWidth =
         ctx.measureText(ledText).width;
 
