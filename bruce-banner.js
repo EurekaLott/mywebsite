@@ -27,15 +27,23 @@ banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
 const canvas = document.getElementById("bruceCanvas");
 const ctx = canvas.getContext("2d");
 
-function resizeCanvas(){
+function resizeCanvas() {
 
     banner.style.height =
         window.innerWidth <= 430
         ? "80px"
         : "110px";
 
-    canvas.width  = banner.clientWidth;
+    canvas.width = banner.clientWidth;
     canvas.height = banner.clientHeight;
+
+    jupiterX = canvas.width - 30;
+
+    neptuneX = canvas.width / 2 - 60;
+
+    purpleX = canvas.width + 140;
+
+    orionX = canvas.width + 150;
 
 }
 
@@ -83,7 +91,7 @@ jupiter.onerror = () => {
     console.error("❌ Jupiter Load Failed");
 };
 
-let jupiterX = banner.clientWidth - 30;
+let jupiterX = canvas.width - 30;
 let jupiterY = 5;
 let jupiterAngle = 0;   
 let glowPhase = 0;
@@ -104,7 +112,7 @@ neptune.onerror = () => {
     console.error("❌ Neptune Load Failed");
 };
 
-let neptuneX = banner.clientWidth / 2 - 60;
+let neptuneX = canvas.width / 2 - 60;
 let neptuneY = -140;
 let neptuneAngle = 0;
 let neptuneStarted = false;
@@ -124,7 +132,7 @@ purple.onerror = () => {
     console.error("❌ Purple Load Failed");
 };
 
-let purpleX = banner.clientWidth + 140;
+let purpleX = canvas.width + 140;
 let purpleY = 10;
 let purpleAngle = 0;
 
@@ -246,7 +254,7 @@ orion.onerror = () => {
     console.error("❌ Orion Load Failed");
 };
 
-let orionX = banner.clientWidth + 150;
+let orionX = canvas.width + 150;
 let orionY = 8;
     
 function drawStars() {
