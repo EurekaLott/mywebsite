@@ -36,14 +36,14 @@ function resizeCanvas() {
 
     canvas.width = banner.clientWidth;
     canvas.height = banner.clientHeight;
+    bruceY = canvas.height - 70;
+bruceCurrentY = bruceY;
 
     jupiterX = canvas.width - 30;
-
     neptuneX = canvas.width / 2 - 60;
-
     purpleX = canvas.width + 140;
-
     orionX = canvas.width + 150;
+    bruceX = -80;
 
 }
 
@@ -172,9 +172,10 @@ let jupiterScale = 1;
 let jupiterSpin = 0;
     
 let bruceX = -80;
-const bruceY = canvas.height - 70; 
-let bruceCurrentY = bruceY;
-
+let bruceY = 0;
+let if (!bruceAttached && !bruceKungfu) {
+    bruceCurrentY = bruceY;
+}
 let bruceAttached = false;
 
 let bruceKungfu = false;
@@ -203,7 +204,7 @@ function resetScene(){
     burstReady = false;
 
     // Jupiter
-    jupiterX = canvas.width - 30;
+    
     jupiterY = 5;
     jupiterAngle = 0;
     jupiterScale = 1;
@@ -211,7 +212,7 @@ function resetScene(){
     jupiterHit = false;
 
     // Neptune
-    neptuneX = canvas.width / 2 - 60;
+    
     neptuneY = -140;
     neptuneAngle = 0;
     neptuneScale = 1;
@@ -221,7 +222,7 @@ function resetScene(){
     neptuneDone = false;
 
     // Purple
-    purpleX = canvas.width + 140;
+    
     purpleDone = false;
 
     // Bruce
@@ -254,7 +255,7 @@ orion.onerror = () => {
     console.error("❌ Orion Load Failed");
 };
 
-let orionX = canvas.width + 150;
+
 let orionY = 8;
     
 function drawStars() {
@@ -756,7 +757,7 @@ if(
 
     bruceAttached = false;
 
-    bruceX = -80;
+   
 
     bruceCurrentY = bruceY;
 
