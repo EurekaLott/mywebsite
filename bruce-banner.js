@@ -1,15 +1,20 @@
-console.log("🥋 Bruce Banner Loaded");
+// BỌC THÉP TOÀN BỘ CODE: Chờ HTML, CSS load xong xuôi 100% mới chạy
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("🥋 Bruce Banner Init...");
 
-const banner = document.getElementById("bruce-banner");
+    const banner = document.getElementById("bruce-banner");
 
-if (!banner) {
-    console.error("❌ #bruce-banner not found");
-} else {
+    if (!banner) {
+        console.error("❌ #bruce-banner không tồn tại trong HTML lúc này!");
+        return; // Dừng lại nếu không thấy banner
+    }
+    
     console.log("🥋 Bruce Banner Ready");
 
     banner.style.width = "100%";
     banner.style.maxWidth = "1100px";
-    banner.style.height = "110px";
+    // Thiết lập height ban đầu dựa trên màn hình ngay lập tức
+    banner.style.height = window.innerWidth <= 430 ? "80px" : "110px";
     banner.style.margin = "20px auto";
     banner.style.borderRadius = "14px";
     banner.style.overflow = "hidden";
@@ -18,21 +23,33 @@ if (!banner) {
     banner.style.border = "1px solid #5b21b6";
     banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
     
-    banner.innerHTML = `
-        <canvas id="bruceCanvas"></canvas>
-    `;
+    // Gắn canvas vào
+    banner.innerHTML = `<canvas id="bruceCanvas" style="display:block; width:100%; height:100%;"></canvas>`;
 
     // ===============================
     // Canvas
     // ===============================
-    const canvas = document.getElementById("bruceCanvas");
+    // Dùng querySelector tìm ngay trong banner để tránh lỗi DOM chưa cập nhật kịp id
+    const canvas = banner.querySelector("canvas");
     const ctx = canvas.getContext("2d");
 
-    // "Đả thông kinh mạch" cho Resize - Giữ kích thước hợp lý cho mobile
+    // Các biến cần khởi tạo
+    let bruceY = 0;
+    let bruceCurrentY = 0;
+    let jupiterX = 0;
+    let neptuneX = 0;
+    let purpleX = 0;
+    let orionX = 0;
+    let bruceX = -80;
+
+    // "Đả thông kinh mạch" cho Resize - Chống ClientWidth = 0 trên Mobile
     function resizeCanvas() {
-        banner.style.height = window.innerWidth <= 430 ? "80px" : "110px";
-        canvas.width = banner.clientWidth;
-        canvas.height = banner.clientHeight;
+        const isMobile = window.innerWidth <= 430;
+        banner.style.height = isMobile ? "80px" : "110px";
+        
+        // Safari đôi khi trả về clientWidth = 0 khi DOM đang render, thêm fallback
+        canvas.width = banner.clientWidth || window.innerWidth || 300;
+        canvas.height = banner.clientHeight || (isMobile ? 80 : 110);
         
         // Cân bằng lại toạ độ Y cho Bruce phù hợp với chiều cao canvas mới
         bruceY = canvas.height - 70;
@@ -45,19 +62,10 @@ if (!banner) {
         bruceX = -80;
     }
 
-    // Các biến cần khởi tạo TẠI ĐÂY để dùng trong resizeCanvas và resetScene
-    let bruceY = 0;
-    let bruceCurrentY = 0;
-    let jupiterX = 0;
-    let neptuneX = 0;
-    let purpleX = 0;
-    let orionX = 0;
-    let bruceX = -80;
-
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    console.log("🌌 Canvas Ready");    
+    console.log("🌌 Canvas Size:", canvas.width, "x", canvas.height);    
     
     const stars = [];
     for (let i = 0; i < 180; i++) {
@@ -75,12 +83,9 @@ if (!banner) {
     const bruce = new Image();
     bruce.src = "images/bruce.png";
     bruce.onload = () => console.log("🥋 Bruce Image Loaded");
-    bruce.onerror = () => console.error("❌ Bruce Image Load Failed");
 
     const jupiter = new Image();
     jupiter.src = "images/Jupiter.png";
-    jupiter.onload = () => console.log("🪐 Jupiter Loaded");
-    jupiter.onerror = () => console.error("❌ Jupiter Load Failed");
 
     let jupiterY = 5;
     let jupiterAngle = 0;   
@@ -89,8 +94,6 @@ if (!banner) {
 
     const neptune = new Image();
     neptune.src = "images/Neptune.png";
-    neptune.onload = () => console.log("🔵 Neptune Loaded");
-    neptune.onerror = () => console.error("❌ Neptune Load Failed");
 
     let neptuneY = -140;
     let neptuneAngle = 0;
@@ -99,16 +102,12 @@ if (!banner) {
 
     const purple = new Image();
     purple.src = "images/purple.png";
-    purple.onload = () => console.log("🟣 Purple Loaded");
-    purple.onerror = () => console.error("❌ Purple Load Failed");
 
     let purpleY = 10;
     let purpleAngle = 0;
     
     const blackhole = new Image();
     blackhole.src = "images/blackhole.png";
-    blackhole.onload = () => console.log("🕳️ Black Hole Loaded");
-    blackhole.onerror = () => console.error("❌ Black Hole Load Failed");
 
     let blackX = 40;
     let blackY = -140;
@@ -127,8 +126,6 @@ if (!banner) {
     let jupiterScale = 1;
     let jupiterSpin = 0;
     
-    // 🔥 "ĐẢ THÔNG KINH MẠCH" LỖI CHÍNH Ở ĐÂY 🔥
-    // Khai báo biến chuẩn xác, không dùng "let if"
     let bruceAttached = false;
     let bruceKungfu = false;
     
@@ -181,12 +178,16 @@ if (!banner) {
     
     const orion = new Image();
     orion.src = "images/Orion.png";
-    orion.onload = () => console.log("🚀 Orion Loaded");
-    orion.onerror = () => console.error("❌ Orion Load Failed");
 
     let orionY = 8;
     
     function drawStars() {
+        // Nếu canvas chưa có kích thước thì không vẽ để tránh lỗi Safari
+        if(canvas.width === 0 || canvas.height === 0) {
+            requestAnimationFrame(drawStars);
+            return;
+        }
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (restartScene) {
@@ -208,8 +209,9 @@ if (!banner) {
 
         // ===============================
         // Orion Spacecraft
+        // Dùng naturalWidth để đảm bảo Safari đã tải xong hình ảnh
         // ===============================
-        if (orion.complete && orion.width > 0){
+        if (orion.complete && orion.naturalWidth > 0){
             ctx.save();
             ctx.translate(orionX+30, orionY+15);
             
@@ -250,7 +252,7 @@ if (!banner) {
         // ===============================
         // Black Hole
         // ===============================
-        if (blackhole.complete && blackhole.width > 0) {
+        if (blackhole.complete && blackhole.naturalWidth > 0) {
             ctx.save();
             glowPhase += 0.08;
             const glow = 40 + Math.sin(glowPhase) * 30;
@@ -311,7 +313,7 @@ if (!banner) {
         // ===============================
         // Jupiter
         // ===============================
-        if (jupiter.complete && jupiter.width > 0) {
+        if (jupiter.complete && jupiter.naturalWidth > 0) {
             ctx.save();
             const glowRadius = 130 + Math.sin(glowPhase) * 20;
             const glow = ctx.createRadialGradient(
@@ -371,7 +373,7 @@ if (!banner) {
         // ===============================
         // Purple Planet
         // ===============================
-        if (purple.complete && purple.width > 0) {
+        if (purple.complete && purple.naturalWidth > 0) {
             ctx.save();
             const purpleGlow = 260 + Math.sin(glowPhase) * 30;
             const purpleLight = ctx.createRadialGradient(
@@ -425,7 +427,7 @@ if (!banner) {
             neptuneStarted = true;
         }
 
-        if (neptuneStarted && !neptuneDone && neptune.complete && neptune.width > 0) {
+        if (neptuneStarted && !neptuneDone && neptune.complete && neptune.naturalWidth > 0) {
             ctx.save();
             ctx.translate(neptuneX + 60, neptuneY + 60);
             ctx.rotate(neptuneHit ? neptuneSpin : neptuneAngle);
@@ -453,7 +455,7 @@ if (!banner) {
         // ===============================
         // Bruce Lee & LED Panel
         // ===============================
-        if (bruce.complete && bruce.width > 0) {
+        if (bruce.complete && bruce.naturalWidth > 0) {
             if(bruceKungfu){
                 bruceKungfuTimer++;
                 if(bruceKungfuTimer<18){
@@ -489,10 +491,6 @@ if (!banner) {
                 const right = canvas.width - 20;
                 const textY = canvas.height / 2;
 
-                if (typeof forecastIndex === "undefined") forecastIndex = 0;
-                if (typeof ledOffset === "undefined") ledOffset = 0;
-                if (typeof ledText === "undefined") ledText = "";
-
                 if (ledText === "") {
                     if (typeof forecastData !== "undefined" && forecastData.length > 0 && forecastIndex < forecastData.length) {
                         const row = forecastData[forecastIndex];
@@ -509,8 +507,7 @@ if (!banner) {
                 ctx.rect(left, 0, right-left, canvas.height);
                 ctx.clip();
 
-                // Đảm bảo font size không bị quá to trên mobile
-                const fontSize = Math.floor(canvas.height * 0.50); // Giảm một chút cho an toàn
+                const fontSize = Math.floor(canvas.height * 0.45); // Chữ gọn hơn chút nữa trên mobile
                 ctx.font = "900 " + fontSize + "px Arial Black";
                 ctx.textAlign = "left";
                 ctx.textBaseline = "middle";
@@ -539,10 +536,11 @@ if (!banner) {
                 bruceX += 0.8;
             }
         }
+        
         requestAnimationFrame(drawStars);
     }
     
     // Gọi hàm chạy animation
     drawStars();    
-    console.log("⭐ Stars Animated");      
-}
+    console.log("⭐ Stars Animated (Safe Mode)");      
+});
