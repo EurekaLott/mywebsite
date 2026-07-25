@@ -23,7 +23,7 @@
             border-radius: 4px;
         }
         .card {
-            width: 780px;
+            width:min(780px,95%);
             box-sizing: border-box;
             padding: 20px;
             border-radius: 6px;
@@ -101,7 +101,14 @@ Prediction Center
     
 
     <!-- 1. TESLA NETWORK CANVAS VIEW (ANIMATED ILLUSTRATION) -->
-    <canvas id="networkCanvas" width="800" height="600"></canvas>
+   <canvas
+id="networkCanvas"
+style="
+width:95%;
+max-width:800px;
+height:auto;
+aspect-ratio:4/3;
+"></canvas>
 
     <!-- 2. THE TRAVELER & FIBONACCI UNIVERSE INSTRUCTIONS -->
     <div class="card">
