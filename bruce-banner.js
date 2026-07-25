@@ -47,20 +47,33 @@ function H(){
 }
 function resizeCanvas(){
 
-    const dpr = window.devicePixelRatio || 1;
+    function resizeCanvas(){
 
+    const dpr =
+        (window.innerWidth <= 430)
+        ? 1
+        : (window.devicePixelRatio || 1);
+
+    canvas.style.display = "block";
     canvas.style.width = banner.clientWidth + "px";
     canvas.style.height = banner.clientHeight + "px";
 
-    canvas.width = banner.clientWidth * dpr;
-    canvas.height = banner.clientHeight * dpr;
-    canvas.style.display="block";
-canvas.style.width="100%";
-canvas.style.height="100%"; 
-    
+    canvas.width =
+        Math.floor(banner.clientWidth * dpr);
+
+    canvas.height =
+        Math.floor(banner.clientHeight * dpr);
 
     ctx.setTransform(1,0,0,1,0,0);
-ctx.scale(dpr,dpr);
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.scale(dpr,dpr);
 
 }
 
