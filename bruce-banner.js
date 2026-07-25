@@ -70,8 +70,8 @@ window.innerWidth<=430
 
 for(let i=0;i<STAR_COUNT;i++){
     stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * W(),
+y: Math.random() * H(),
         size: Math.random() * 2 + 0.3,
         speed: Math.random() * 0.8 + 0.2
     });
@@ -191,8 +191,8 @@ window.innerWidth<=430
 :-80;
 const bruceY =
 window.innerWidth<=430
-?canvas.height-55
-:canvas.height-70; 
+?H()-55
+:H()-70;
 let bruceCurrentY = bruceY;
 
 let bruceAttached = false;
@@ -231,7 +231,7 @@ function resetScene(){
     jupiterHit = false;
 
     // Neptune
-    neptuneX = canvas.width / 2 - 60;
+    neptuneX = W()/2 - 60;
     neptuneY = -140;
     neptuneAngle = 0;
     neptuneScale = 1;
@@ -282,7 +282,12 @@ let orionY = 8;
     
 function drawStars() {
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(
+    0,
+    0,
+    W(),
+    H()
+);
 
     if (restartScene) {
 
@@ -303,8 +308,8 @@ function drawStars() {
 
         if (star.x < 0) {
 
-            star.x = canvas.width;
-            star.y = Math.random() * canvas.height;
+            star.x = W();
+star.y = Math.random()*H();
 
         }
 
@@ -391,7 +396,7 @@ if (orion.complete){
 
     if(orionX<-160){
 
-        orionX=canvas.width+180;
+       orionX = W() + 180;
 
         orionY=5+Math.random()*12;
 
@@ -948,8 +953,7 @@ if (aiPanel) {
 
     const left = 20;
     const right=W()-20;
-    const textY = canvas.height / 2;
-
+    const textY = H()/2;
     // ===========================
     // lấy dữ liệu forecast
     // ===========================
@@ -1007,12 +1011,12 @@ if (aiPanel) {
     ctx.save();
 
     ctx.beginPath();
-    ctx.rect(
-        left,
-        0,
-        right-left,
-        canvas.height
-    );
+   ctx.rect(
+    left,
+    0,
+    right-left,
+    H()
+);
     ctx.clip();
 
     // ===========================
@@ -1020,7 +1024,7 @@ if (aiPanel) {
     // ===========================
 
     const fontSize =
-        Math.floor(canvas.height * 0.60);
+Math.floor(H()*0.60);
 
     ctx.font =
         "900 " +
