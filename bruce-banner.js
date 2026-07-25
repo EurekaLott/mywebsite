@@ -34,6 +34,9 @@ banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
 // ===============================
 
 const canvas = document.getElementById("bruceCanvas");
+    console.log(canvas);
+console.log(canvas.width);
+console.log(canvas.height);
 const ctx = canvas.getContext("2d");
 function W(){
     return banner.clientWidth;
@@ -51,8 +54,13 @@ function resizeCanvas(){
 
     canvas.width = banner.clientWidth * dpr;
     canvas.height = banner.clientHeight * dpr;
+    canvas.style.display="block";
+canvas.style.width="100%";
+canvas.style.height="100%"; 
+    
 
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.setTransform(1,0,0,1,0,0);
+ctx.scale(dpr,dpr);
 
 }
 
@@ -1096,10 +1104,16 @@ Math.floor(H()*0.60);
 
 }
 
-requestAnimationFrame(drawStars);
+requestAnimationFrame window.addEventListener("load",()=>{
+    resizeCanvas();
+    drawStars();
+});
 
 }
 drawStars();    
+    setInterval(() => {
+    console.log("FPS", Date.now());
+},1000);
 console.log("⭐ Stars Animated");      
   
 }
