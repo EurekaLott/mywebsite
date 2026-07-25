@@ -9,16 +9,7 @@ if (!banner) {
 
 banner.style.width = "100%";
 banner.style.maxWidth = "1100px";
-if(window.innerWidth<=430){
-
-    banner.style.height="80px";
-
-}else{
-
-    banner.style.height="110px";
-
-}
-    
+banner.style.height = "110px";
 banner.style.margin = "20px auto";
 banner.style.borderRadius = "14px";
 banner.style.overflow = "hidden";
@@ -34,45 +25,17 @@ banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
 // ===============================
 
 const canvas = document.getElementById("bruceCanvas");
-    console.log(canvas);
-console.log(canvas.width);
-console.log(canvas.height);
 const ctx = canvas.getContext("2d");
-function W(){
-    return banner.clientWidth;
-}
 
-function H(){
-    return banner.clientHeight;
-}
+function resizeCanvas(){
 
-    function resizeCanvas(){
+    banner.style.height =
+        window.innerWidth <= 430
+        ? "80px"
+        : "110px";
 
-    const dpr =
-        (window.innerWidth <= 430)
-        ? 1
-        : (window.devicePixelRatio || 1);
-
-    canvas.style.display = "block";
-    canvas.style.width = banner.clientWidth + "px";
-    canvas.style.height = banner.clientHeight + "px";
-
-    canvas.width =
-        Math.floor(banner.clientWidth * dpr);
-
-    canvas.height =
-        Math.floor(banner.clientHeight * dpr);
-
-    ctx.setTransform(1,0,0,1,0,0);
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    ctx.scale(dpr,dpr);
+    canvas.width  = banner.clientWidth;
+    canvas.height = banner.clientHeight;
 
 }
 
@@ -83,15 +46,10 @@ window.addEventListener("resize", resizeCanvas);
 console.log("🌌 Canvas Ready");    
 const stars = [];
 
-const STAR_COUNT =
-window.innerWidth<=430
-?60
-:180;
-
-for(let i=0;i<STAR_COUNT;i++){
+for (let i = 0; i < 180; i++) {
     stars.push({
-        x: Math.random() * W(),
-y: Math.random() * H(),
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
         size: Math.random() * 2 + 0.3,
         speed: Math.random() * 0.8 + 0.2
     });
@@ -125,7 +83,7 @@ jupiter.onerror = () => {
     console.error("❌ Jupiter Load Failed");
 };
 
-let jupiterX = W()-30;
+let jupiterX = banner.clientWidth - 30;
 let jupiterY = 5;
 let jupiterAngle = 0;   
 let glowPhase = 0;
@@ -146,7 +104,7 @@ neptune.onerror = () => {
     console.error("❌ Neptune Load Failed");
 };
 
-let neptuneX=W()/2-60;
+let neptuneX = banner.clientWidth / 2 - 60;
 let neptuneY = -140;
 let neptuneAngle = 0;
 let neptuneStarted = false;
@@ -166,7 +124,7 @@ purple.onerror = () => {
     console.error("❌ Purple Load Failed");
 };
 
-let purpleX=W()+140;
+let purpleX = banner.clientWidth + 140;
 let purpleY = 10;
 let purpleAngle = 0;
 
@@ -205,14 +163,8 @@ let jupiterHit = false;
 let jupiterScale = 1;
 let jupiterSpin = 0;
     
-let bruceX =
-window.innerWidth<=430
-?-40
-:-80;
-const bruceY =
-window.innerWidth<=430
-?H()-55
-:H()-70;
+let bruceX = -80;
+const bruceY = canvas.height - 70; 
 let bruceCurrentY = bruceY;
 
 let bruceAttached = false;
@@ -243,7 +195,7 @@ function resetScene(){
     burstReady = false;
 
     // Jupiter
-    jupiterX=W()-30;
+    jupiterX = canvas.width - 30;
     jupiterY = 5;
     jupiterAngle = 0;
     jupiterScale = 1;
@@ -251,7 +203,7 @@ function resetScene(){
     jupiterHit = false;
 
     // Neptune
-    neptuneX = W()/2 - 60;
+    neptuneX = canvas.width / 2 - 60;
     neptuneY = -140;
     neptuneAngle = 0;
     neptuneScale = 1;
@@ -261,14 +213,11 @@ function resetScene(){
     neptuneDone = false;
 
     // Purple
-    purpleX=W()+140;
+    purpleX = canvas.width + 140;
     purpleDone = false;
 
     // Bruce
-   bruceX=
-window.innerWidth<=430
-?-40
-:-80;
+    bruceX = -80;
     bruceCurrentY = bruceY;
     bruceAttached = false;
     bruceKungfu = false;
@@ -297,17 +246,12 @@ orion.onerror = () => {
     console.error("❌ Orion Load Failed");
 };
 
-let orionX=W()+150;
+let orionX = banner.clientWidth + 150;
 let orionY = 8;
     
 function drawStars() {
 
-    ctx.clearRect(
-    0,
-    0,
-    W(),
-    H()
-);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (restartScene) {
 
@@ -328,8 +272,8 @@ function drawStars() {
 
         if (star.x < 0) {
 
-            star.x = W();
-star.y = Math.random()*H();
+            star.x = canvas.width;
+            star.y = Math.random() * canvas.height;
 
         }
 
@@ -416,7 +360,7 @@ if (orion.complete){
 
     if(orionX<-160){
 
-       orionX = W() + 180;
+        orionX=canvas.width+180;
 
         orionY=5+Math.random()*12;
 
@@ -972,8 +916,9 @@ if (aiPanel) {
     // ===========================
 
     const left = 20;
-    const right=W()-20;
-    const textY = H()/2;
+    const right = canvas.width - 20;
+    const textY = canvas.height / 2;
+
     // ===========================
     // lấy dữ liệu forecast
     // ===========================
@@ -1031,12 +976,12 @@ if (aiPanel) {
     ctx.save();
 
     ctx.beginPath();
-   ctx.rect(
-    left,
-    0,
-    right-left,
-    H()
-);
+    ctx.rect(
+        left,
+        0,
+        right-left,
+        canvas.height
+    );
     ctx.clip();
 
     // ===========================
@@ -1044,7 +989,7 @@ if (aiPanel) {
     // ===========================
 
     const fontSize =
-Math.floor(H()*0.60);
+        Math.floor(canvas.height * 0.60);
 
     ctx.font =
         "900 " +
@@ -1063,7 +1008,8 @@ Math.floor(H()*0.60);
 
     ctx.fillStyle = "#ffe800";
 
-   const startX=W()-ledOffset;
+    const startX =
+        canvas.width - ledOffset;
 
     ctx.fillText(
         ledText,
@@ -1077,7 +1023,8 @@ Math.floor(H()*0.60);
     // tốc độ chạy
     // ===========================
 
-   ledOffset += 6;
+    ledOffset += 2.4;
+
     const textWidth =
         ctx.measureText(ledText).width;
 
@@ -1116,18 +1063,10 @@ Math.floor(H()*0.60);
 
 }
 
-window.addEventListener("load", () => {
+requestAnimationFrame(drawStars);
 
-    resizeCanvas();
-
-    drawStars();
-
-});
 }
 drawStars();    
-    setInterval(() => {
-    console.log("FPS", Date.now());
-},1000);
 console.log("⭐ Stars Animated");      
   
 }
