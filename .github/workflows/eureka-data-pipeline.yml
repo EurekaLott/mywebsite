@@ -1,0 +1,48 @@
+name: Eureka Data Pipeline
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch latest Powerball draws
+        run: node fetch-draws.js
+
+      - name: Verify forecasts
+        run: node verify.js
+
+      - name: Archive forecasts
+        run: node archive.js
+
+      - name: Commit & Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add draws-data.js verified-data.js archive-data.js
+
+          if git diff --cached --quiet; then
+            echo "✅ No changes detected."
+          else
+            git commit -m "🔄 Eureka Pipeline Update"
+            git push origin main
+          fi
