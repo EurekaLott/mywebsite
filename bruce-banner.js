@@ -75,7 +75,6 @@ window.addEventListener("load", function() {
     // Image Loads 
     // ===============================
     
-    // Đã xóa Bruce 2, chỉ dùng 1 ảnh Bruce duy nhất
     const bruce = new Image();
     bruce.src = "images/bruce.png";
 
@@ -144,11 +143,16 @@ window.addEventListener("load", function() {
         blackAngle = 0;
         blackScale = 1;
         burstReady = false;
+        
+        // SỬA LỖI JUPITER: Thêm reset tọa độ X để nó không bị lỗi hiển thị
+        jupiterX = canvas.width + 50; 
         jupiterY = 5;
         jupiterAngle = 0;
         jupiterScale = 1;
         jupiterSpin = 0;
         jupiterHit = false;
+        
+        neptuneX = canvas.width / 2 - 60;
         neptuneY = -140;
         neptuneAngle = 0;
         neptuneScale = 1;
@@ -212,7 +216,7 @@ window.addEventListener("load", function() {
         }
 
         // ===============================
-        // Orion Spacecraft
+        // Orion Spacecraft (Bay độc lập vô tận)
         // ===============================
         if (orion.complete && orion.naturalWidth > 0){
             ctx.save();
@@ -246,11 +250,11 @@ window.addEventListener("load", function() {
 
             orionX -= (2.0 * speedScale);
             orionY += Math.sin(orionX*0.02)*0.15;
+            
+            // XÓA ĐIỀU KIỆN (!aiPanel): Tàu Orion sẽ bay mải miết qua màn hình không dừng
             if(orionX < -160){
-                if (!aiPanel) {
-                    orionX = canvas.width+180;
-                    orionY = 5+Math.random()*12;
-                }
+                orionX = canvas.width+180;
+                orionY = 5+Math.random()*12;
             }
         }
 
@@ -477,7 +481,6 @@ window.addEventListener("load", function() {
                 bruceX += (0.8 * speedScale); 
             }
             
-            // Vẽ Bruce duy nhất (ảnh bruce.png)
             ctx.drawImage(bruce, bruceX, bruceCurrentY, 45, 65);
             
             if(bruceKungfu){
@@ -523,10 +526,8 @@ window.addEventListener("load", function() {
                 ctx.fillText(ledText, startX, textY);
                 ctx.restore();
 
-                // Tăng tốc độ cuộn lên gấp 3 (15.0 thay vì 5.0)
                 ledOffset += (15.0 * speedScale);
 
-                // RESET AN TOÀN: Khi toàn bộ chiều dài chữ đã chui tọt sang mép bên kia
                 if (startX + textWidth < -50) {
                     resetScene();
                 }
@@ -540,5 +541,5 @@ window.addEventListener("load", function() {
         drawStars(time);
     });     
     
-    console.log("⭐ Stars Animated (Bruce Fixed, 3x Text Speed, Stable Reset)");       
+    console.log("⭐ Stars Animated (Jupiter Fixed, Orion Loops Infinitely)");       
 });
