@@ -1,0 +1,46 @@
+name: Data Pipeline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch latest Powerball draws
+        run: node fetch-draws.js
+
+      - name: Fetch latest Vietlott draws
+        run: node fetch-vietlott.js
+
+      - name: Verify draw data
+        run: node verify.js
+
+      - name: Archive raw data
+        run: node archive.js
+
+      - name: Commit & Push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add draws-data.js verified-data.js archive-data.js vietlott-data.js
+          if git diff --staged --quiet; then
+            echo "✅ No changes detected."
+          else
+            git commit -m "🔄 Pipeline update"
+            git push origin main
+          fi
