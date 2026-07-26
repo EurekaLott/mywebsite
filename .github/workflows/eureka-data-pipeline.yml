@@ -26,7 +26,6 @@ jobs:
 
       - name: Fetch latest Vietlott draws
         run: node fetch-vietlott.js
-        # Đã lột bỏ khiên chắn giấu lỗi (continue-on-error) ở đây
 
       - name: Verify draw data
         run: node verify.js
