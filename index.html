@@ -500,13 +500,14 @@ function copyToClipboard(text,successMsg){
   }
 }
 
-/* ── FORMAT 1 DRAW → dòng raw CSV (đúng format Texas Lottery mà EurekaLott-1A.html đọc được) ── */
-function formatRawCSVLine(d){
-  const dt=parseDrawDate(d.date);
-  const month=dt.getMonth()+1, day=dt.getDate(), year=dt.getFullYear();
+/* ── FORMAT 1 DRAW → đúng định dạng mà ô "dataInput" của EurekaLott-1A.html
+   thực sự nhận: CHỈ 6 số cách nhau bởi khoảng trắng (5 số trắng + Powerball),
+   KHÔNG ngày tháng, KHÔNG chữ "Powerball," — y hệt dòng 502 trong
+   EurekaLott-1A.html: qs('dataInput').value = selected.map(r => r.nums6.join(' ')) */
+function formatForNeuralInput(d){
   const w=d.white||[];
   const pb=(d.pb!==undefined)?d.pb:d.powerball;
-  return `Powerball,${month},${day},${year},${w[0]},${w[1]},${w[2]},${w[3]},${w[4]},${pb}`;
+  return `${w[0]} ${w[1]} ${w[2]} ${w[3]} ${w[4]} ${pb}`;
 }
 function parseDrawDate(dateStr){
   const p=dateStr.split('-').map(Number);
@@ -519,8 +520,8 @@ function dateKeyLocal(d){
 
 /* ── COPY 1 DÒNG ── */
 function copyRow(dateStr,white,pb,btn){
-  const line=formatRawCSVLine({date:dateStr,white,pb});
-  copyToClipboard(line, `✅ Copied draw ${fmtDate(dateStr)}`);
+  const line=formatForNeuralInput({white,pb});
+  copyToClipboard(line, `✅ Copied draw ${fmtDate(dateStr)} — ready to paste into Neural Networks input`);
   if(btn){
     const old=btn.textContent;
     btn.textContent='✓';
@@ -561,8 +562,8 @@ function copy24Draws(){
     showToast('⚠️ No draws found before the cutoff.');
     return;
   }
-  const text=selected.map(formatRawCSVLine).join('\n');
-  copyToClipboard(text, `✅ Copied ${selected.length} draws (cutoff: ${fmtDate(dateKeyLocal(cutoff))}) — paste into Neural Networks input`);
+  const text=selected.map(formatForNeuralInput).join('\n');
+  copyToClipboard(text, `✅ Copied ${selected.length} draws (cutoff: ${fmtDate(dateKeyLocal(cutoff))}) — paste directly into the "Data" box on the Neural Networks page`);
 }
 /* ── RENDER BALLS (latest) ── */
 function renderBalls(white,pb,dateStr,source){
