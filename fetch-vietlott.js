@@ -1,248 +1,203 @@
 /**
  * fetch-vietlott.js — EurekaLott
- * Tải kết quả Vietlott (Power 6/55, Mega 6/45, Power 5/35, Keno, Bingo18)
- * trực tiếp từ vietlott.vn (endpoint AjaxPro chính thức).
+ * ============================================================
+ * PHIÊN BẢN MỚI — bỏ hẳn việc gọi trực tiếp AjaxPro của vietlott.vn
+ * (quá dễ vỡ: phụ thuộc cookie phiên + Key nội bộ + cấu trúc HTML
+ * riêng của site chính phủ, đổi bất kỳ lúc nào là toang cả pipeline).
  *
- * Logic POST + cookie + parse HTML được port lại từ repo tham khảo mã nguồn mở:
- * https://github.com/vietvudanh/vietlott-data
- * (src/vietlott/crawler/...) — chỉ đổi từ Python (requests+BeautifulSoup)
- * sang Node.js thuần (https + regex), không cần cài thêm package nào.
+ * NGUỒN CHÍNH (PRIMARY):
+ *   GitHub repo vietvudanh/vietlott-data — tự động crawl vietlott.vn
+ *   hằng ngày qua GitHub Actions, lưu JSONL rất sạch, đã verify khớp
+ *   dữ liệu 1-1 với vietlott.vn / Minh Ngọc.
+ *     https://raw.githubusercontent.com/vietvudanh/vietlott-data/main/data/<product>.jsonl
+ *
+ * NGUỒN DỰ PHÒNG (FALLBACK) — chỉ khi GitHub fail/trả về 0 dòng:
+ *   Minh Ngọc (minhngoc.net.vn) — chỉ có Power 6/55 và Mega 6/45,
+ *   không có Power 5/35 / Keno / Bingo18 nên 3 sản phẩm đó KHÔNG có
+ *   fallback (giữ nguyên hành vi cũ: null nếu cả GitHub cũng fail).
  *
  * Output: vietlott-data.js (browser-compatible, không có module.exports)
- *
- * ⚠️ Ghi chú: vietlott.vn có thể thay đổi cấu trúc HTML/endpoint bất kỳ lúc nào
- * (giống mọi trang chính phủ/nhà nước khác). Nếu script này báo lỗi parse,
- * cần vào https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong xem lại
- * cấu trúc bảng kết quả mới rồi cập nhật hàm parseTable() bên dưới.
+ * ============================================================
  */
 
 const https = require('https');
 const fs    = require('fs');
 
-const HEADERS_BASE = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:128.0) Gecko/20100101 Firefox/128.0',
-  'Accept': '*/*',
-  'Accept-Language': 'en-US,en;q=0.5',
-  'Content-Type': 'text/plain; charset=utf-8',
-  'X-AjaxPro-Method': 'ServerSideDrawResult',
-  'X-Requested-With': 'XMLHttpRequest',
-  'Origin': 'https://vietlott.vn',
-  'Connection': 'keep-alive',
-  'Referer': 'https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/winning-number-645',
-};
-
-const ORENDER_INFO = {
-  ExtraParam1: '', ExtraParam2: '', ExtraParam3: '',
-  FullPageAlias: null, IsPageDesign: false,
-  OrgPageAlias: null, PageAlias: null, RefKey: null,
-  SiteAlias: 'main.vi', SiteId: 'main.frontend.vi',
-  SiteLang: 'vi', SiteName: 'Vietlott', SiteURL: '',
-  System: 1, UserSessionId: '', WebPage: null,
-};
-
-/* ── HTTP HELPERS (chỉ dùng module có sẵn của Node) ── */
-function getRaw(url) {
+/* ── HTTP GET đơn giản, theo redirect, có timeout ── */
+function get(url, extraHeaders = {}) {
   return new Promise((resolve, reject) => {
     const req = https.get(url, {
-      headers: { 'User-Agent': HEADERS_BASE['User-Agent'] },
-      timeout: 15000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; EurekaLott-Bot/1.0)',
+        'Accept': '*/*',
+        ...extraHeaders,
+      },
+      timeout: 20000,
     }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return get(res.headers.location, extraHeaders).then(resolve).catch(reject);
+      }
+      if (res.statusCode !== 200) {
+        return reject(new Error(`HTTP ${res.statusCode} — ${url}`));
+      }
       let body = '';
       res.on('data', c => body += c);
       res.on('end', () => resolve(body));
     });
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+    req.on('timeout', () => { req.destroy(); reject(new Error(`Timeout — ${url}`)); });
   });
 }
 
-function postJson(url, bodyObj, cookie) {
-  return new Promise((resolve, reject) => {
-    const payload = JSON.stringify(bodyObj);
-    const headers = { ...HEADERS_BASE, 'Content-Length': Buffer.byteLength(payload) };
-    if (cookie) headers['Cookie'] = cookie;
-    const req = https.request(url, { method: 'POST', headers, timeout: 20000 }, res => {
-      let body = '';
-      res.on('data', c => body += c);
-      res.on('end', () => {
-        try { resolve(JSON.parse(body)); }
-        catch (e) { reject(new Error(`JSON parse fail (status ${res.statusCode}): ${body.slice(0,200)}`)); }
-      });
-    });
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
-    req.write(payload);
-    req.end();
-  });
-}
+/* ── PRIMARY: GitHub vietvudanh/vietlott-data (JSONL) ──
+   Mỗi dòng: {"date":"2026-07-25","id":"01376","result":[5,9,27,33,37,50,48],"process_time":"..."}
+   → chuẩn hoá về { date, id, numbers } giống schema cũ để không phải sửa gì ở front-end. */
+const GITHUB_BASE = 'https://raw.githubusercontent.com/vietvudanh/vietlott-data/main/data';
 
-/* ── LẤY COOKIE PHIÊN (giống get_vietlott_cookie() trong repo gốc) ── */
-async function getVietlottCookie() {
-  const text = await getRaw('https://vietlott.vn/ajaxpro/');
-  const m = text.match(/document\.cookie="(.*?)"/);
-  if (!m) throw new Error('Không lấy được cookie từ vietlott.vn/ajaxpro/ (site có thể đã đổi cấu trúc)');
-  return m[1];
-}
-
-/* ── MINI HTML PARSER (regex-based, thay cho BeautifulSoup) ── */
-function stripTags(html) {
-  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
-}
-function extractRows(html) {
-  const out = []; const re = /<tr[^>]*>([\s\S]*?)<\/tr>/gi; let m;
-  while ((m = re.exec(html))) out.push(m[1]);
-  return out;
-}
-function extractCells(trHtml) {
-  const out = []; const re = /<td[^>]*>([\s\S]*?)<\/td>/gi; let m;
-  while ((m = re.exec(trHtml))) out.push(m[1]);
-  return out;
-}
-function extractSpanNumbers(html) {
-  const out = []; const re = /<span[^>]*>([\s\S]*?)<\/span>/gi; let m;
-  while ((m = re.exec(html))) {
-    const t = stripTags(m[1]);
-    if (t && t !== '|') out.push(parseInt(t, 10));
+async function fetchFromGithub(fileName) {
+  const url = `${GITHUB_BASE}/${fileName}.jsonl`;
+  const body = await get(url);
+  const lines = body.trim().split('\n').filter(Boolean);
+  const rows = [];
+  for (const line of lines) {
+    try {
+      const obj = JSON.parse(line);
+      if (!obj.date || !Array.isArray(obj.result)) continue;
+      rows.push({ date: obj.date, id: obj.id || '', numbers: obj.result });
+    } catch { /* dòng lỗi thì bỏ qua, không chết cả file */ }
   }
-  return out.filter(n => !isNaN(n));
-}
-function extractLinkTexts(html) {
-  const out = []; const re = /<a[^>]*>([\s\S]*?)<\/a>/gi; let m;
-  while ((m = re.exec(html))) out.push(stripTags(m[1]));
-  return out;
-}
-function toISODate(ddmmyyyy) {
-  const m = ddmmyyyy.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (!m) return null;
-  return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  rows.sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
+  return rows;
 }
 
-/* ── PARSE BẢNG KẾT QUẢ CHUẨN (655 / 645 / 535) ──
-   cột 0: ngày (dd/mm/yyyy), cột 1: kỳ quay (id), cột 2: các số (span, cách nhau "|") */
-function parseStandardTable(html) {
-  const rows = extractRows(html);
+/* ── FALLBACK: Minh Ngọc (chỉ Power 6/55 & Mega 6/45) ──
+   Trang danh sách (10 kỳ gần nhất) chứa các khối lặp lại dạng:
+     ... Kỳ vé: #01375 | Ngày quay thưởng 23/07/2026 ...
+     ... 01  03  08  38  40  55  36 ...
+     ... (bảng "Giải thưởng" ngay sau, dùng làm điểm chặn cuối khối số) ...
+   Không phụ thuộc tên thẻ HTML cụ thể (dễ đổi) — chỉ dựa vào 2 mốc text
+   cố định "Kỳ vé:" và "Giải thưởng" để cắt khối, sau đó rip toàn bộ
+   số 2 chữ số (00-99) nằm giữa 2 mốc đó làm kết quả quay. */
+const MINHNGOC_URLS = {
+  power655: 'https://www.minhngoc.net.vn/ket-qua-xo-so/dien-toan-vietlott/power-6x55.html',
+  power645: 'https://www.minhngoc.net.vn/ket-qua-xo-so/dien-toan-vietlott/mega-6x45.html',
+};
+
+function stripTags(html) {
+  return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function parseMinhNgocListing(html) {
   const out = [];
-  rows.forEach((tr, i) => {
-    if (i === 0) return; // header
-    const tds = extractCells(tr);
-    if (tds.length < 3) return;
-    const date = toISODate(stripTags(tds[0]));
-    const id = stripTags(tds[1]);
-    const numbers = extractSpanNumbers(tds[2]);
-    if (date && numbers.length) out.push({ date, id, numbers });
-  });
+  // Cắt file thành từng khối, mỗi khối bắt đầu tại "Kỳ vé:"
+  const blocks = html.split(/Kỳ vé\s*:/i).slice(1);
+  for (const blockRaw of blocks) {
+    // chỉ lấy phần trước bảng "Giải thưởng" (nếu có), tránh dính số tiền giải thưởng
+    const cutIdx = blockRaw.search(/Giải thưởng/i);
+    const block = cutIdx > -1 ? blockRaw.slice(0, cutIdx) : blockRaw.slice(0, 2000);
+
+    const dateMatch = block.match(/Ngày quay thưởng\D*(\d{2})\/(\d{2})\/(\d{4})/i);
+    const idMatch = block.match(/#?\s*(\d{4,6})/);
+    if (!dateMatch) continue;
+
+    const date = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+    const id = idMatch ? idMatch[1] : '';
+
+    // Phần sau ngày quay thưởng mới chứa dàn số kết quả (tránh nhầm với số kỳ vé)
+    const afterDate = block.slice(block.indexOf(dateMatch[0]) + dateMatch[0].length);
+    const text = stripTags(afterDate);
+    const numbers = (text.match(/\b\d{1,2}\b/g) || [])
+      .map(n => parseInt(n, 10))
+      .filter(n => n >= 0 && n <= 55);
+
+    if (numbers.length >= 5) {
+      out.push({ date, id, numbers });
+    }
+  }
   return out;
 }
 
-/* ── PARSE KENO ── cột 0: <a>ngày</a><a>kỳ</a>, cột 1: số, cột 2: to/nhỏ, cột 3: chẵn/lẻ */
-function parseKenoTable(html) {
-  const rows = extractRows(html);
-  const out = [];
-  rows.forEach((tr, i) => {
-    if (i === 0) return;
-    const tds = extractCells(tr);
-    if (tds.length < 2) return;
-    const links = extractLinkTexts(tds[0]);
-    if (links.length < 2) return;
-    const date = toISODate(links[0]);
-    const id = links[1];
-    const numbers = extractSpanNumbers(tds[1]);
-    const bigSmall = tds[2] ? stripTags(tds[2]) : '';
-    const oddEven = tds[3] ? stripTags(tds[3]) : '';
-    if (date && numbers.length) out.push({ date, id, numbers, bigSmall, oddEven });
+async function fetchFromMinhNgoc(product) {
+  const url = MINHNGOC_URLS[product];
+  if (!url) return [];
+  const html = await get(url, {
+    'Accept-Language': 'vi-VN,vi;q=0.9',
+    'Referer': 'https://www.minhngoc.net.vn/',
   });
-  return out;
+  const rows = parseMinhNgocListing(html);
+  rows.sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
+  return rows;
 }
 
-/* ── PARSE BINGO18 ── cột 0: <a>ngày</a><a>#kỳ</a>, cột 1: 3 số, cột 2: tổng, cột 3: to/nhỏ */
-function parseBingo18Table(html) {
-  const rows = extractRows(html);
-  const out = [];
-  rows.forEach((tr, i) => {
-    if (i === 0) return;
-    const tds = extractCells(tr);
-    if (tds.length < 4) return;
-    const links = extractLinkTexts(tds[0]);
-    if (links.length < 2) return;
-    const date = toISODate(links[0]);
-    const id = links[1].replace('#', '');
-    const numbers = extractSpanNumbers(tds[1]);
-    const total = parseInt(stripTags(tds[2]), 10);
-    const largeSmall = stripTags(tds[3]);
-    if (date && numbers.length === 3) out.push({ date, id, numbers, total: isNaN(total) ? numbers.reduce((a,b)=>a+b,0) : total, largeSmall });
-  });
-  return out;
-}
+/* ── CẤU HÌNH 5 SẢN PHẨM ──
+   ⚠️ Keno & Bingo18 quay NHIỀU LẦN/NGÀY suốt nhiều năm → hàng chục nghìn
+   dòng, file JS nặng tới ~35MB nếu giữ full lịch sử. Vì front-end chỉ cần
+   hiển thị tham khảo (không dùng cho EurekaLott Rule — chỉ Powerball Mỹ
+   mới dùng), nên giới hạn `limit` = chỉ giữ N kỳ GẦN NHẤT sau khi sort. */
+const PRODUCTS = {
+  power655: { label: 'Power 6/55', githubFile: 'power655', hasFallback: true,  limit: null },
+  power645: { label: 'Mega 6/45',  githubFile: 'power645', hasFallback: true,  limit: null },
+  power535: { label: 'Power 5/35', githubFile: 'power535', hasFallback: false, limit: null },
+  keno:     { label: 'Keno',       githubFile: 'keno',      hasFallback: false, limit: 30 },
+  bingo18:  { label: 'Bingo18',    githubFile: 'bingo18',   hasFallback: false, limit: 30 },
+};
 
-/* ── CẤU HÌNH 5 SẢN PHẨM (đúng Key/URL/body từ repo gốc) ── */
-function buildProducts(cookie) {
-  return {
-    power655: {
-      label: 'Power 6/55',
-      url: 'https://vietlott.vn/ajaxpro/Vietlott.PlugIn.WebParts.Game655CompareWebPart,Vietlott.PlugIn.WebParts.ashx',
-      body: { ORenderInfo: ORENDER_INFO, Key: '23bbd667', GameDrawId: '', ArrayNumbers: Array.from({length:5},()=>Array(18).fill('')), CheckMulti: false, PageIndex: 0 },
-      parser: parseStandardTable,
-    },
-    power645: {
-      label: 'Mega 6/45',
-      url: 'https://vietlott.vn/ajaxpro/Vietlott.PlugIn.WebParts.Game645CompareWebPart,Vietlott.PlugIn.WebParts.ashx',
-      body: { ORenderInfo: ORENDER_INFO, Key: '8290fce2', GameDrawId: '', ArrayNumbers: Array.from({length:6},()=>Array(18).fill('')), CheckMulti: false, PageIndex: 0 },
-      parser: parseStandardTable,
-    },
-    power535: {
-      label: 'Power 5/35',
-      url: 'https://vietlott.vn/ajaxpro/Vietlott.PlugIn.WebParts.Game535CompareWebPart,Vietlott.PlugIn.WebParts.ashx',
-      body: { ORenderInfo: ORENDER_INFO, Key: 'd0ea794f', GameDrawId: '', ArrayNumbers: Array.from({length:5},()=>Array(35).fill('')), CheckMulti: false, PageIndex: 0 },
-      parser: parseStandardTable,
-    },
-    keno: {
-      label: 'Keno',
-      url: 'https://vietlott.vn/ajaxpro/Vietlott.PlugIn.WebParts.GameKenoCompareWebPart,Vietlott.PlugIn.WebParts.ashx',
-      body: { DrawDate: '', GameDrawNo: '', GameId: '6', ORenderInfo: ORENDER_INFO, OddEven: 2, PageIndex: 1, ProcessType: 0, TotalRow: 112453, UpperLower: 2, number: '' },
-      parser: parseKenoTable,
-    },
-    bingo18: {
-      label: 'Bingo18',
-      url: 'https://vietlott.vn/ajaxpro/Vietlott.PlugIn.WebParts.GameBingoCompareWebPart,Vietlott.PlugIn.WebParts.ashx',
-      body: { ORenderInfo: ORENDER_INFO, GameId: '8', GameDrawNo: '', number: '', DrawDate: '', PageIndex: 1, TotalRow: 43569 },
-      parser: parseBingo18Table,
-    },
-  };
+function applyLimit(rows, limit) {
+  if (!limit || rows.length <= limit) return rows;
+  return rows.slice(-limit); // rows đã sort tăng dần theo date → lấy N phần tử cuối = N kỳ gần nhất
 }
 
 (async () => {
-  console.log('\n🇻🇳 EurekaLott — Fetching Vietlott draws (power655/645/535, keno, bingo18)...\n');
+  console.log('\n🇻🇳 EurekaLott — Fetching Vietlott draws...');
+  console.log('   Primary  : GitHub vietvudanh/vietlott-data (JSONL)');
+  console.log('   Fallback : Minh Ngọc — chỉ Power 6/55 & Mega 6/45\n');
 
-  let cookie;
-  try {
-    cookie = await getVietlottCookie();
-    console.log(' [C] ✅ Session cookie obtained');
-  } catch (err) {
-    console.error('❌ Failed to get cookie:', err.message);
-    process.exit(1);
-  }
-
-  const products = buildProducts(cookie);
   const result = {};
   let anySuccess = false;
 
-  for (const [key, cfg] of Object.entries(products)) {
+  for (const [key, cfg] of Object.entries(PRODUCTS)) {
+    // 1) Thử nguồn chính: GitHub
     try {
-      const json = await postJson(cfg.url, cfg.body, cookie);
-      const html = (json && json.value && (json.value.HtmlContent || json.value)) || '';
-      const rows = cfg.parser(typeof html === 'string' ? html : '');
-      rows.sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
-      result[key] = rows;
-      anySuccess = rows.length > 0;
-      console.log(` [✓] ${cfg.label.padEnd(12)} → ${rows.length} draws parsed`);
+      let rows = await fetchFromGithub(cfg.githubFile);
+      if (rows.length > 0) {
+        const total = rows.length;
+        rows = applyLimit(rows, cfg.limit);
+        result[key] = rows;
+        anySuccess = true;
+        const limitNote = cfg.limit ? ` (giữ ${rows.length}/${total} kỳ gần nhất)` : '';
+        console.log(` [✓] ${cfg.label.padEnd(12)} → ${rows.length} draws (GitHub)${limitNote}`);
+        continue;
+      }
+      console.warn(` [!] ${cfg.label.padEnd(12)} → GitHub trả về 0 dòng, thử fallback...`);
     } catch (err) {
-      console.error(` [x] ${cfg.label.padEnd(12)} → FAILED: ${err.message}`);
-      result[key] = null; // giữ null để front-end biết là "chưa cào được", không phải "0 kết quả"
+      console.warn(` [!] ${cfg.label.padEnd(12)} → GitHub FAILED (${err.message}), thử fallback...`);
     }
+
+    // 2) GitHub fail → thử fallback (nếu sản phẩm này có hỗ trợ)
+    if (cfg.hasFallback) {
+      try {
+        let rows = await fetchFromMinhNgoc(key);
+        if (rows.length > 0) {
+          rows = applyLimit(rows, cfg.limit);
+          result[key] = rows;
+          anySuccess = true;
+          console.log(` [✓] ${cfg.label.padEnd(12)} → ${rows.length} draws (Minh Ngọc — FALLBACK)`);
+          continue;
+        }
+        console.error(` [x] ${cfg.label.padEnd(12)} → Fallback Minh Ngọc cũng trả về 0 dòng`);
+      } catch (err) {
+        console.error(` [x] ${cfg.label.padEnd(12)} → Fallback Minh Ngọc FAILED: ${err.message}`);
+      }
+    } else {
+      console.error(` [x] ${cfg.label.padEnd(12)} → Không có fallback cho sản phẩm này`);
+    }
+
+    // 3) Cả 2 đều fail → giữ null (front-end hiểu là "chưa cào được", không phải "0 kết quả")
+    result[key] = null;
   }
 
   if (!anySuccess) {
-    console.error('\n❌ Không sản phẩm nào cào được — có thể vietlott.vn đã đổi cấu trúc endpoint/HTML.');
+    console.error('\n❌ Không sản phẩm nào cào được từ cả GitHub lẫn Minh Ngọc.');
     process.exit(1);
   }
 
@@ -250,10 +205,11 @@ function buildProducts(cookie) {
   fs.writeFileSync('vietlott-data.js',
 `// vietlott-data.js — AUTO-GENERATED by fetch-vietlott.js
 // Do not edit manually.
-// Source: vietlott.vn (official AjaxPro endpoint)
+// Primary source : GitHub vietvudanh/vietlott-data (JSONL, cập nhật hằng ngày)
+// Fallback source: Minh Ngọc (minhngoc.net.vn) — chỉ power655 & power645
 // Last updated: ${new Date().toISOString()}
-// Mỗi sản phẩm: { date, id, numbers[], ... } — numbers[] là RAW ORDER hiển thị trên vietlott.vn
-// null nghĩa là lần cào gần nhất bị lỗi (site đổi cấu trúc) — giữ nguyên dữ liệu cũ nếu có
+// Mỗi sản phẩm: { date, id, numbers[] } — numbers[] RAW ORDER
+// null nghĩa là cả 2 nguồn đều lỗi lần cào gần nhất — giữ nguyên dữ liệu cũ nếu có
 
 const vietlottData = ${json};
 
