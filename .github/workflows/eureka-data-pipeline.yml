@@ -1,6 +1,6 @@
 name: Eureka Data Pipeline
 
-on:
+"on":
   schedule:
     - cron: '0 8 * * *'
 
