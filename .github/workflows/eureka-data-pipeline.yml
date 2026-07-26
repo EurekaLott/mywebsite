@@ -1,6 +1,25 @@
-- name: Fetch latest Vietlott draws
+name: Eureka Data Pipeline
+
+on:
+  workflow_dispatch: # Cho phép ngài tự bấm nút chạy bằng tay
+  schedule:
+    - cron: '0 */4 * * *' # Tự động chạy 4 tiếng 1 lần
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Fetch latest Vietlott draws
         run: node fetch-vietlott.js
-        # Đã xóa continue-on-error để lộ lỗi nếu có
 
       - name: Commit and push Vietlott data
         run: |
