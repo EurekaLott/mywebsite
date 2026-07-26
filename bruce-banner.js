@@ -1,5 +1,5 @@
-// BỌC THÉP TOÀN BỘ CODE: Chờ HTML, CSS load xong xuôi 100% mới chạy
-document.addEventListener("DOMContentLoaded", function() {
+// BỌC THÉP: Chờ HTML, CSS và toàn bộ hình ảnh load xong xuôi 100% mới chạy
+window.addEventListener("load", function() {
     console.log("🥋 Bruce Banner Init...");
 
     const banner = document.getElementById("bruce-banner");
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    console.log("🌌 Canvas Size:", canvas.width, "x", canvas.height);    
+    console.log("🌌 Canvas Size:", canvas.width, "x", canvas.height);   
     
     const stars = [];
     for (let i = 0; i < 180; i++) {
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function() {
     jupiter.src = "images/Jupiter.png";
 
     let jupiterY = 5;
-    let jupiterAngle = 0;   
+    let jupiterAngle = 0;  
     let glowPhase = 0;
     let moonAngle = 0;
 
@@ -226,25 +226,26 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.translate(orionX+30, orionY+15);
             
             const fire = 18+Math.sin(Date.now()*0.03)*6;
-            const g = ctx.createLinearGradient(-45,0,-10,0);
-            g.addColorStop(0,"rgba(255,80,0,0)");
-            g.addColorStop(.3,"#ff5500");
-            g.addColorStop(.7,"#ffee55");
-            g.addColorStop(1,"#ffffff");
+            // SỬA LỖI: Lửa phụt về phía sau (bên phải)
+            const g = ctx.createLinearGradient(28,0,28+fire,0);
+            g.addColorStop(0,"#ffffff");
+            g.addColorStop(0.3,"#ffee55");
+            g.addColorStop(0.7,"#ff5500");
+            g.addColorStop(1,"rgba(255,80,0,0)");
             ctx.fillStyle=g;
             
             ctx.beginPath();
-            ctx.moveTo(-28,-4);
-            ctx.lineTo(-28-fire,0);
-            ctx.lineTo(-28,4);
+            ctx.moveTo(28,-4);
+            ctx.lineTo(28+fire,0);
+            ctx.lineTo(28,4);
             ctx.fill();
 
             ctx.strokeStyle="#66ffff";
             ctx.lineWidth=1.5;
             for(let i=0;i<3;i++){
                 ctx.beginPath();
-                ctx.moveTo(-30, -5+i*5);
-                ctx.lineTo(-48-fire*0.6, -5+i*5);
+                ctx.moveTo(30, -5+i*5);
+                ctx.lineTo(48+fire*0.6, -5+i*5);
                 ctx.stroke();
             }
 
@@ -254,8 +255,11 @@ document.addEventListener("DOMContentLoaded", function() {
             orionX -= (2.0 * speedScale);
             orionY += Math.sin(orionX*0.02)*0.15;
             if(orionX < -160){
-                orionX = canvas.width+180;
-                orionY = 5+Math.random()*12;
+                // Nếu chữ đang chạy, biến mất tạm thời không loop lại
+                if (!aiPanel) {
+                    orionX = canvas.width+180;
+                    orionY = 5+Math.random()*12;
+                }
             }
         }
 
@@ -297,7 +301,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
 
             if (blackX > canvas.width + 160) {
-                blackX = -140; 
+                // Biến mất tạm thời nếu chữ đang hiện
+                if (!aiPanel) {
+                    blackX = -140; 
+                }
             }
 
             if (burstReady) {
@@ -376,7 +383,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 if(jupiterScale < 0.22) bigBang = true;
             }
             
-            if (jupiterX < -120) jupiterX = canvas.width + 150;
+            if (jupiterX < -150) {
+                // Ẩn tạm thời khi bảng chữ đang chạy
+                if (!aiPanel) jupiterX = canvas.width + 150;
+            }
         }
 
         // ===============================
@@ -417,14 +427,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 aiSignal = true;
             }
             
-            // SỬA LỖI CẮT CHỮ: Nếu hành tinh bay qua mép, không reset nếu chữ đang chạy
             if (purpleX < -260) {
+                // Biến mất khi chạy qua mép, nhường không gian cho Text. Không tự reset!
                 if (!aiPanel) {
-                    // Nếu bảng AI chưa bật, cho phép hành tinh lặp lại vòng lặp
                     purpleX = canvas.width + 140;
                 }
-                // Nếu aiPanel đang bật (chữ đang chạy), cứ để hành tinh và Bruce trôi ra ngoài.
-                // Hàm resetScene() sẽ lo việc reset toàn bộ khi chữ chạy xong!
             }
         }
 
@@ -458,7 +465,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     neptuneScale *= 0.985;
                 }
             }
-        }    
+        }   
 
         // ===============================
         // Bruce Lee Đi Bộ & LED Panel
@@ -510,7 +517,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 const textY = canvas.height / 2;
 
                 if (ledText === "") {
-                    // Đã bỏ ký tự 🌌 và ✅ theo yêu cầu
                     ledText = "Cosmos The Traveler walks through the Fibonacci Universe until he finds the Purple Planet—or keeps walking for the rest of his life. 🪐Only when the Purple Planet appears does the hidden Fibonacci Pattern begin to reveal itself for Today's Drawing.";
                 }
 
@@ -532,15 +538,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 ctx.fillText(ledText, startX, textY);
                 ctx.restore();
 
-                // ĐÃ TĂNG TỐC ĐỘ CHỮ LÊN ĐÁNG KỂ (Từ 2.4 lên 5.0)
                 ledOffset += (5.0 * speedScale);
                 const textWidth = ctx.measureText(ledText).width;
 
-                // CHỈ RESET KHI CHỮ ĐÃ CHẠY HOÀN TOÀN KHUẤT MÉP TRÁI
+                // CHỈ RESET KHI CHỮ ĐÃ CHẠY HOÀN TOÀN KHUẤT MÉP TRÁI (Không reset theo hành tinh)
                 if (startX < -(textWidth + 100)) {
                     resetScene();
                 }
-            }    
+            }   
         }
     }
     
@@ -548,7 +553,7 @@ document.addEventListener("DOMContentLoaded", function() {
     requestAnimationFrame(function(time) {
         lastRenderTime = time;
         drawStars(time);
-    });    
+    });     
     
-    console.log("⭐ Stars Animated (Fast Text & Correct Reset)");      
+    console.log("⭐ Stars Animated (All fixes applied)");       
 });
