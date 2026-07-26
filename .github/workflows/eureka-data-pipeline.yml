@@ -2,6 +2,15 @@ name: Pipeline
 on: [workflow_dispatch]
 permissions:
   contents: write
+
+# ⚔️ Chặn 2 lần "Run workflow" chạy song song cùng lúc — nếu bạn bấm nút
+# Run workflow thêm lần nữa trong lúc job cũ chưa xong, GitHub sẽ tự HUỶ
+# job cũ và chỉ giữ lại job mới nhất (cancel-in-progress: true). Đây chính
+# là nguyên nhân gây lỗi "non-fast-forward" khi 2 job cùng push 1 lúc.
+concurrency:
+  group: eureka-data-pipeline
+  cancel-in-progress: true
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -20,4 +29,26 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add draws-data.js verified-data.js archive-data.js vietlott-data.js
-          git diff --staged --quiet || (git commit -m "🔄 Pipeline update" && git push origin main)
+
+          if git diff --staged --quiet; then
+            echo "ℹ️  Không có gì thay đổi, bỏ qua commit."
+            exit 0
+          fi
+
+          git commit -m "🔄 Pipeline update"
+
+          # ⚔️ Retry push tối đa 5 lần: nếu bị "non-fast-forward" (do vừa có
+          # commit khác lên main), tự động git pull --rebase rồi push lại,
+          # thay vì chết cứng như trước.
+          for i in 1 2 3 4 5; do
+            if git push origin main; then
+              echo "✅ Push thành công (lần thử $i)"
+              exit 0
+            fi
+            echo "⚠️  Push thất bại (lần thử $i) — pull --rebase rồi thử lại..."
+            git pull --rebase origin main
+            sleep 3
+          done
+
+          echo "❌ Push thất bại sau 5 lần thử."
+          exit 1
