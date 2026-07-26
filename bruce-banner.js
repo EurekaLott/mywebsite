@@ -6,13 +6,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (!banner) {
         console.error("❌ #bruce-banner không tồn tại trong HTML lúc này!");
-        return; 
+        return; // Dừng lại nếu không thấy banner
     }
     
     console.log("🥋 Bruce Banner Ready");
 
     banner.style.width = "100%";
     banner.style.maxWidth = "1100px";
+    // Thiết lập height ban đầu dựa trên màn hình ngay lập tức
     banner.style.height = window.innerWidth <= 430 ? "80px" : "110px";
     banner.style.margin = "20px auto";
     banner.style.borderRadius = "14px";
@@ -22,11 +23,17 @@ document.addEventListener("DOMContentLoaded", function() {
     banner.style.border = "1px solid #5b21b6";
     banner.style.boxShadow = "0 0 20px rgba(138,43,226,.35)";
     
+    // Gắn canvas vào
     banner.innerHTML = `<canvas id="bruceCanvas" style="display:block; width:100%; height:100%;"></canvas>`;
 
+    // ===============================
+    // Canvas
+    // ===============================
+    // Dùng querySelector tìm ngay trong banner để tránh lỗi DOM chưa cập nhật kịp id
     const canvas = banner.querySelector("canvas");
     const ctx = canvas.getContext("2d");
 
+    // Các biến cần khởi tạo
     let bruceY = 0;
     let bruceCurrentY = 0;
     let jupiterX = 0;
@@ -35,13 +42,16 @@ document.addEventListener("DOMContentLoaded", function() {
     let orionX = 0;
     let bruceX = -80;
 
+    // "Đả thông kinh mạch" cho Resize - Chống ClientWidth = 0 trên Mobile
     function resizeCanvas() {
         const isMobile = window.innerWidth <= 430;
         banner.style.height = isMobile ? "80px" : "110px";
         
+        // Safari đôi khi trả về clientWidth = 0 khi DOM đang render, thêm fallback
         canvas.width = banner.clientWidth || window.innerWidth || 300;
         canvas.height = banner.clientHeight || (isMobile ? 80 : 110);
         
+        // Cân bằng lại toạ độ Y cho Bruce phù hợp với chiều cao canvas mới
         bruceY = canvas.height - 70;
         bruceCurrentY = bruceY;
 
@@ -68,72 +78,111 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     // ===============================
-    // Image Loads & Walk Cycle
+    // Image Loads (Bruce, Planets, etc.)
     // ===============================
-    const bruce1 = new Image();
-    bruce1.src = "images/Bruce.png";
-    bruce1.onload = () => console.log("🥋 Bruce 1 Image Loaded");
-
-    const bruce2 = new Image();
-    bruce2.src = "images/Bruce 2.png";
-    bruce2.onload = () => console.log("🥋 Bruce 2 Image Loaded");
-    
-    let bruceWalkPhase = 0;
-    let useBruce1 = true;
+    const bruce = new Image();
+    bruce.src = "images/bruce.png";
+    bruce.onload = () => console.log("🥋 Bruce Image Loaded");
 
     const jupiter = new Image();
     jupiter.src = "images/Jupiter.png";
-    let jupiterY = 5, jupiterAngle = 0, glowPhase = 0, moonAngle = 0;
+
+    let jupiterY = 5;
+    let jupiterAngle = 0;   
+    let glowPhase = 0;
+    let moonAngle = 0;
 
     const neptune = new Image();
     neptune.src = "images/Neptune.png";
-    let neptuneY = -140, neptuneAngle = 0, neptuneStarted = false, neptuneDone = false;    
+
+    let neptuneY = -140;
+    let neptuneAngle = 0;
+    let neptuneStarted = false;
+    let neptuneDone = false;    
 
     const purple = new Image();
     purple.src = "images/purple.png";
-    let purpleY = 10, purpleAngle = 0;
+
+    let purpleY = 10;
+    let purpleAngle = 0;
     
     const blackhole = new Image();
     blackhole.src = "images/blackhole.png";
-    let blackX = 40, blackY = -140, blackAngle = 0, neptuneHit = false, neptuneScale = 1, neptuneSpin = 0;   
-    let blackScale = 1, burstReady = false, bigBang = false, bigBangRadius = 0, bigBangAlpha = 1;
-    let jupiterHit = false, jupiterScale = 1, jupiterSpin = 0;
+
+    let blackX = 40;
+    let blackY = -140;
+    let blackAngle = 0;
+    let neptuneHit = false;
+    let neptuneScale = 1;
+    let neptuneSpin = 0;   
+    let blackScale = 1;
+    let burstReady = false;
+
+    let bigBang = false;
+    let bigBangRadius = 0;
+    let bigBangAlpha = 1;
+
+    let jupiterHit = false;
+    let jupiterScale = 1;
+    let jupiterSpin = 0;
     
-    let bruceAttached = false, bruceKungfu = false;
-    let bruceKungfuTimer = 0, purpleDone = false, aiSignal = false, aiPanel = false;    
+    let bruceAttached = false;
+    let bruceKungfu = false;
     
-    let ledOffset = 0, ledText = "", restartScene = false;
+    if (!bruceAttached && !bruceKungfu) {
+        bruceCurrentY = bruceY;
+    }
+
+    let bruceKungfuTimer = 0;
+    let purpleDone = false;
+    let aiSignal = false;
+    let aiPanel = false;    
+    
+    let ledOffset = 0;
+    let ledText = "";   
+    let forecastIndex = 0;
+    let restartScene = false;
 
     function resetScene(){
         ledOffset = 0;
         ledText = "";
-        blackX = 40; blackY = -140; blackAngle = 0; blackScale = 1; burstReady = false;
-        jupiterY = 5; jupiterAngle = 0; jupiterScale = 1; jupiterSpin = 0; jupiterHit = false;
-        neptuneY = -140; neptuneAngle = 0; neptuneScale = 1; neptuneSpin = 0; neptuneHit = false; neptuneStarted = false; neptuneDone = false;
+        blackX = 40;
+        blackY = -140;
+        blackAngle = 0;
+        blackScale = 1;
+        burstReady = false;
+        jupiterY = 5;
+        jupiterAngle = 0;
+        jupiterScale = 1;
+        jupiterSpin = 0;
+        jupiterHit = false;
+        neptuneY = -140;
+        neptuneAngle = 0;
+        neptuneScale = 1;
+        neptuneSpin = 0;
+        neptuneHit = false;
+        neptuneStarted = false;
+        neptuneDone = false;
         purpleDone = false;
-        bruceX = -80; bruceCurrentY = bruceY; bruceAttached = false; bruceKungfu = false; bruceKungfuTimer = 0;
-        aiPanel = false; aiSignal = false; bigBang = false; bigBangRadius = 0; bigBangAlpha = 1;
+        bruceX = -80;
+        bruceCurrentY = bruceY;
+        bruceAttached = false;
+        bruceKungfu = false;
+        bruceKungfuTimer = 0;
+        aiPanel = false;
+        aiSignal = false;
+        bigBang = false;
+        bigBangRadius = 0;
+        bigBangAlpha = 1;
     }
     
     const orion = new Image();
     orion.src = "images/Orion.png";
+
     let orionY = 8;
     
-    // ===============================
-    // Animation Loop với Delta Time 
-    // (Khắc phục lỗi chạy nhanh trên iPhone)
-    // ===============================
-    let lastTime = 0;
-
-    function drawStars(timestamp) {
-        if (!lastTime) lastTime = timestamp;
-        let dt = timestamp - lastTime;
-        if (dt > 100) dt = 16.67; // Cắt bỏ thời gian chờ nếu người dùng chuyển tab (tránh lỗi dịch chuyển khoảng cách quá lớn)
-        lastTime = timestamp;
-        
-        // timeScale sẽ bằng 1 nếu thiết bị chạy chuẩn 60fps, và tự điều chỉnh trên máy nhanh/chậm
-        const timeScale = dt / 16.6667; 
-
+    function drawStars() {
+        // Nếu canvas chưa có kích thước thì không vẽ để tránh lỗi Safari
         if(canvas.width === 0 || canvas.height === 0) {
             requestAnimationFrame(drawStars);
             return;
@@ -146,20 +195,22 @@ document.addEventListener("DOMContentLoaded", function() {
             resetScene();
         }
 
-        // --- DRAW VŨ TRỤ ---
         ctx.fillStyle = "white";
         for (const star of stars) {
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
             ctx.fill();
-            star.x -= star.speed * timeScale;
+            star.x -= star.speed;
             if (star.x < 0) {
                 star.x = canvas.width;
                 star.y = Math.random() * canvas.height;
             }
         }
 
-        // Tàu Orion
+        // ===============================
+        // Orion Spacecraft
+        // Dùng naturalWidth để đảm bảo Safari đã tải xong hình ảnh
+        // ===============================
         if (orion.complete && orion.naturalWidth > 0){
             ctx.save();
             ctx.translate(orionX+30, orionY+15);
@@ -190,18 +241,20 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.drawImage(orion, -30, -15, 60, 30);
             ctx.restore();
 
-            orionX -= 2.0 * timeScale;
-            orionY += Math.sin(orionX*0.02)*0.15 * timeScale;
+            orionX-=2.0;
+            orionY+=Math.sin(orionX*0.02)*0.15;
             if(orionX<-160){
-                orionX = canvas.width+180;
-                orionY = 5+Math.random()*12;
+                orionX=canvas.width+180;
+                orionY=5+Math.random()*12;
             }
         }
 
+        // ===============================
         // Black Hole
+        // ===============================
         if (blackhole.complete && blackhole.naturalWidth > 0) {
             ctx.save();
-            glowPhase += 0.08 * timeScale;
+            glowPhase += 0.08;
             const glow = 40 + Math.sin(glowPhase) * 30;
             ctx.shadowColor = "#fff6a0";
             ctx.shadowBlur = glow;
@@ -216,9 +269,9 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.restore();
 
             if (blackY < 5) {
-                blackY += 1.0 * timeScale;
+                blackY += 1.0;
             } else {
-                blackX += 0.6 * timeScale;      
+                blackX += 0.6;      
                 const dx = (blackX + 100) - (neptuneX + 60);
                 const dy = (blackY + 65) - (neptuneY + 60);
                 const jdx = (blackX + 100) - (jupiterX + 60);
@@ -230,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!neptuneHit && Math.sqrt(dx * dx + dy * dy) < 90){
                     neptuneHit = true;
                 }   
-                blackAngle += 0.04 * timeScale; 
+                blackAngle += 0.04; 
             }
 
             if (blackX < -160) {
@@ -257,7 +310,9 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
+        // ===============================
         // Jupiter
+        // ===============================
         if (jupiter.complete && jupiter.naturalWidth > 0) {
             ctx.save();
             const glowRadius = 130 + Math.sin(glowPhase) * 20;
@@ -281,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.drawImage(jupiter, -60, -60, 120, 120);
             ctx.restore();
 
-            moonAngle += 0.03 * timeScale;
+            moonAngle += 0.03;
             const europaX = jupiterX + 50 + Math.cos(moonAngle) * 72;
             const europaY = jupiterY + 50 + Math.sin(moonAngle) * 26;
             ctx.beginPath();
@@ -297,16 +352,16 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.fill();
             
             if(!jupiterHit){
-                jupiterAngle += 0.05 * timeScale;
-                jupiterX -= 2.2 * timeScale;
+                jupiterAngle += 0.05;
+                jupiterX -= 2.2;
             } else {
                 const jdx = (blackX + 100) - (jupiterX + 60);
                 const jdy = (blackY + 65) - (jupiterY + 60);
-                jupiterX += jdx * 0.06 * timeScale;
-                jupiterY += jdy * 0.06 * timeScale;
-                jupiterSpin += 0.35 * timeScale;
-                jupiterScale *= Math.pow(0.94, timeScale); // Scaling smooth frame-rate
-                blackScale += 0.10 * timeScale;
+                jupiterX += jdx * 0.06;
+                jupiterY += jdy * 0.06;
+                jupiterSpin += 0.35;
+                jupiterScale *= 0.94;
+                blackScale += 0.10;
                 if(blackScale > 2.8) blackScale = 2.8;
                 if(jupiterScale < 0.55) burstReady = true;
                 if(jupiterScale < 0.22) bigBang = true;
@@ -315,7 +370,9 @@ document.addEventListener("DOMContentLoaded", function() {
             if (jupiterX < -120) jupiterX = canvas.width + 150;
         }
 
+        // ===============================
         // Purple Planet
+        // ===============================
         if (purple.complete && purple.naturalWidth > 0) {
             ctx.save();
             const purpleGlow = 260 + Math.sin(glowPhase) * 30;
@@ -342,8 +399,8 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.drawImage(purple, -55, -55, 110, 110);
             ctx.restore();
 
-            if(!purpleDone) purpleX -= 1.1 * timeScale;
-            purpleAngle += 0.02 * timeScale;
+            if(!purpleDone) purpleX -= 1.1;
+            purpleAngle += 0.02;
             
             const dxBruce = (purpleX + 55) - (bruceX + 30);
             if(!bruceAttached && !bruceKungfu && Math.abs(dxBruce) < 80){
@@ -363,7 +420,9 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
+        // ===============================
         // Neptune
+        // ===============================
         if (!neptuneDone && blackX < canvas.width / 2) {
             neptuneStarted = true;
         }
@@ -377,32 +436,32 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.restore();
 
             if (neptuneY < 5) {
-                neptuneY += 1 * timeScale;
+                neptuneY += 1;
             } else {
                 if (!neptuneHit) {
-                    neptuneX -= 2.4 * timeScale;
-                    neptuneAngle += 0.05 * timeScale;
+                    neptuneX -= 2.4;
+                    neptuneAngle += 0.05;
                 } else {
                     const dx = (blackX + 100) - (neptuneX + 60);
                     const dy = (blackY + 65) - (neptuneY + 60);
-                    neptuneX += dx * 0.06 * timeScale;
-                    neptuneY += dy * 0.06 * timeScale;
-                    neptuneSpin += 0.25 * timeScale;
-                    neptuneScale *= Math.pow(0.985, timeScale);
+                    neptuneX += dx * 0.06;
+                    neptuneY += dy * 0.06;
+                    neptuneSpin += 0.25;
+                    neptuneScale *= 0.985;
                 }
             }
         }    
 
         // ===============================
-        // Bruce Lee & LED Panel (Walking)
+        // Bruce Lee & LED Panel
         // ===============================
-        if (bruce1.complete && bruce1.naturalWidth > 0) {
+        if (bruce.complete && bruce.naturalWidth > 0) {
             if(bruceKungfu){
-                bruceKungfuTimer += timeScale;
+                bruceKungfuTimer++;
                 if(bruceKungfuTimer<18){
-                    bruceCurrentY -= 1.4 * timeScale;
+                    bruceCurrentY-=1.4;
                 } else if(bruceKungfuTimer<36){
-                    bruceCurrentY += 1.4 * timeScale;
+                    bruceCurrentY+=1.4;
                 }
                 if (bruceKungfuTimer > 35) {
                     bruceKungfu = false;
@@ -411,19 +470,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             
-            // Xử lý chuyển đổi ảnh để tạo bước đi
-            let currentBruce = bruce1;
-            if (!bruceAttached && !bruceKungfu) {
-                bruceWalkPhase += timeScale;
-                if (bruceWalkPhase > 12) { // 12 khung hình đổi chân 1 lần
-                    useBruce1 = !useBruce1;
-                    bruceWalkPhase = 0;
-                }
-                // Fallback: nếu Bruce 2 chưa load kịp thì cứ dùng Bruce 1
-                currentBruce = (useBruce1 || !bruce2.complete) ? bruce1 : bruce2;
-            }
-            
-            ctx.drawImage(currentBruce, bruceX, bruceCurrentY, 60, 60);
+            ctx.drawImage(bruce, bruceX, bruceCurrentY, 60, 60);
             
             if(bruceKungfu){
                 ctx.strokeStyle="#00ffff";
@@ -444,9 +491,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 const right = canvas.width - 20;
                 const textY = canvas.height / 2;
 
-                // THAY ĐỔI TEXT YÊU CẦU
                 if (ledText === "") {
-                    ledText = "🌌 Cosmos✅ The Traveler walks through the Fibonacci Universe until he finds the Purple Planet—or keeps walking for the rest of his life. 🪐Only when the Purple Planet appears does the hidden Fibonacci Pattern begin to reveal itself for Today's Drawing.";
+                    if (typeof forecastData !== "undefined" && forecastData.length > 0 && forecastIndex < forecastData.length) {
+                        const row = forecastData[forecastIndex];
+                        ledText = row.date + "     " + row.numbers.join("   ");
+                    } else {
+                        const d = new Date();
+                        const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+                        ledText = d.getFullYear() + " " + month[d.getMonth()] + " " + d.getDate() + "     Today's Status Prediction Engine : Inactive";
+                    }
                 }
 
                 ctx.save();
@@ -454,7 +507,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 ctx.rect(left, 0, right-left, canvas.height);
                 ctx.clip();
 
-                const fontSize = Math.floor(canvas.height * 0.45); 
+                const fontSize = Math.floor(canvas.height * 0.45); // Chữ gọn hơn chút nữa trên mobile
                 ctx.font = "900 " + fontSize + "px Arial Black";
                 ctx.textAlign = "left";
                 ctx.textBaseline = "middle";
@@ -467,24 +520,27 @@ document.addEventListener("DOMContentLoaded", function() {
                 ctx.fillText(ledText, startX, textY);
                 ctx.restore();
 
-                ledOffset += 2.4 * timeScale;
+                ledOffset += 2.4;
                 const textWidth = ctx.measureText(ledText).width;
 
-                // SỬA LỖI RESET: Bắt buộc startX phải âm sâu hơn độ rộng chữ (đã thêm buffer 100px)
-                if (startX < -(textWidth + 100)) {
+                if (startX < -textWidth) {
+                    if (typeof forecastData !== "undefined" && forecastData.length > 0) {
+                        forecastIndex++;
+                        if (forecastIndex >= forecastData.length) forecastIndex = 0;
+                    }
                     resetScene();
                 }
             }    
             
             if (!bruceAttached && !bruceKungfu){
-                bruceX += 0.8 * timeScale;
+                bruceX += 0.8;
             }
         }
         
         requestAnimationFrame(drawStars);
     }
     
-    // Bắt đầu vòng lặp
-    requestAnimationFrame(drawStars);    
-    console.log("⭐ Stars Animated (Safe Mode + Delta Time Fixed)");      
+    // Gọi hàm chạy animation
+    drawStars();    
+    console.log("⭐ Stars Animated (Safe Mode)");      
 });
