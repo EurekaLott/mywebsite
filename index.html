@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EurekaLott | Where Dreams Begin</title>
 <script src="draws-data.js"></script>
+<script src="vietlott-data.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
@@ -117,6 +118,17 @@ body{
 
 .pb-num{color:#ff6b60;font-weight:900;}
 
+/* VIETLOTT SUBMENU (accordion trượt xuống bên trong dropdown View Results) */
+.dd-parent{display:flex;justify-content:space-between;align-items:center;}
+.arrow.small{font-size:11px;transition:transform .2s;}
+.arrow.small.rotated{transform:rotate(180deg);}
+.dd-submenu{
+  max-height:0;overflow:hidden;transition:max-height .28s ease;
+  background:rgba(0,0,0,.15);
+}
+.dd-submenu.open{max-height:260px;}
+.dd-item.sub{padding-left:34px;font-size:13.5px;}
+
 /* DATA MODE TABS (Raw / Sorted) */
 .data-mode-tabs{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
 .mode-tab{
@@ -194,6 +206,17 @@ body{
         <div class="dd-item disabled">🎲 Mega Millions <span class="coming">Soon</span></div>
         <div class="dd-item disabled">🇪🇺 EuroMillions <span class="coming">Soon</span></div>
         <div class="dd-item disabled">🇦🇺 Oz Lotto <span class="coming">Soon</span></div>
+
+        <div class="dd-item dd-parent" id="vietlottParent" onclick="toggleVietlottSub(event)">
+          🇻🇳 Vietlott <span class="arrow small" id="vietlottArrow">▾</span>
+        </div>
+        <div class="dd-submenu" id="vietlottSubmenu">
+          <div class="dd-item sub" onclick="selectLottery('vietlott_power655')">🎯 Power 6/55</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_power645')">🎯 Mega 6/45</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_power535')">🎯 Power 5/35</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_keno')">🔢 Keno</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_bingo18')">🎰 Bingo18</div>
+        </div>
       </div>
     </div>
 <div class="dropdown">
@@ -308,26 +331,26 @@ body{
     <div class="balls" id="latestBalls"><div class="ball spin">↻</div></div>
     <div class="latest-source" id="latestSource"></div>
     <div class="result-actions">
-      <button class="btn-sm refresh" onclick="fetchLatestDraw()">🔄 Refresh</button>
-      <button class="btn-sm copy24" onclick="copy24Draws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
+      <button class="btn-sm refresh" id="refreshBtn" onclick="fetchLatestDraw()">🔄 Refresh</button>
+      <button class="btn-sm copy24" id="copy24Btn" onclick="copy24Draws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
     </div>
     <div class="result-error" id="resultError"></div>
   </div>
 
-  <!-- Recent 12 draws table -->
+  <!-- Recent draws table -->
   <div class="recent-section">
-    <h4>📋 RECENT 30 DRAWS</h4>
-    <div class="recent-note">(not counting the latest draw already shown above)</div>
+    <h4 id="recentTitle">📋 RECENT 30 DRAWS</h4>
+    <div class="recent-note" id="recentNote">(not counting the latest draw already shown above)</div>
 
-    <div class="data-mode-tabs">
+    <div class="data-mode-tabs" id="dataModeTabs">
       <button class="mode-tab active" data-mode="raw" onclick="setDataMode('raw')">🔀 Raw (ball-drop order)</button>
       <button class="mode-tab" data-mode="sorted" onclick="setDataMode('sorted')">🔢 Sorted (ascending)</button>
     </div>
-    <div class="mode-note">Sorted is calculated instantly from the same official Texas Lottery source — just arranged low→high for easier reading. Both the 📋 row buttons and "Copy 24 Draws" copy exactly what's shown in the current tab (Raw or Sorted). ⚠️ For the Neural Networks page, always copy from the <b>Raw</b> tab — it needs the real ball-drop order to work correctly.</div>
+    <div class="mode-note" id="modeNote">Sorted is calculated instantly from the same official Texas Lottery source — just arranged low→high for easier reading. Both the 📋 row buttons and "Copy 24 Draws" copy exactly what's shown in the current tab (Raw or Sorted). ⚠️ For the Neural Networks page, always copy from the <b>Raw</b> tab — it needs the real ball-drop order to work correctly.</div>
 
     <table class="recent-table">
       <thead>
-        <tr>
+        <tr id="recentTableHead">
           <th>Date</th>
           <th>White Balls</th>
           <th>PB</th>
@@ -395,19 +418,105 @@ document.addEventListener("click",function(e){
 
 });
 
+/* ── VIETLOTT SUBMENU TOGGLE ── */
+function toggleVietlottSub(e){
+  e.stopPropagation();
+  document.getElementById('vietlottSubmenu').classList.toggle('open');
+  document.getElementById('vietlottArrow').classList.toggle('rotated');
+}
+
+const VIETLOTT_META = {
+  power655: {label:'🇻🇳 Vietlott — Power 6/55', title:'RECENT DRAWS'},
+  power645: {label:'🇻🇳 Vietlott — Mega 6/45', title:'RECENT DRAWS'},
+  power535: {label:'🇻🇳 Vietlott — Power 5/35', title:'RECENT DRAWS'},
+  keno:     {label:'🇻🇳 Vietlott — Keno', title:'RECENT DRAWS'},
+  bingo18:  {label:'🇻🇳 Vietlott — Bingo18', title:'RECENT DRAWS'},
+};
+
 /* ── SELECT LOTTERY ── */
 function selectLottery(type){
   toggleDropdown();
   const panel=document.getElementById('resultPanel');
   panel.classList.add('open');
+
   if(type==='powerball'){
+    showPowerballControls(true);
     document.getElementById('resultTitle').textContent='🎱 Powerball USA';
-    /* latest ball từ draws-data.js */
+    document.getElementById('recentTableHead').innerHTML='<th>Date</th><th>White Balls</th><th>PB</th><th>Copy</th>';
+    document.getElementById('recentNote').textContent='(not counting the latest draw already shown above)';
+    setDataMode('raw');
     fetchLatestDraw();
-    /* recent 12 từ draws-data.js — raw order như Texas CSV */
     renderRecent30(null);
+  } else if(type.startsWith('vietlott_')){
+    showPowerballControls(false);
+    const key=type.replace('vietlott_','');
+    renderVietlott(key);
   }
   panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* Ẩn/hiện các control chỉ áp dụng cho Powerball (Copy 24, Raw/Sorted tabs) */
+function showPowerballControls(show){
+  document.getElementById('copy24Btn').style.display  = show?'':'none';
+  document.getElementById('dataModeTabs').style.display = show?'':'none';
+  document.getElementById('modeNote').style.display    = show?'':'none';
+}
+
+/* ── RENDER VIETLOTT (power655 / power645 / power535 / keno / bingo18) ── */
+function renderVietlott(key){
+  const meta=VIETLOTT_META[key];
+  document.getElementById('resultTitle').textContent=meta.label;
+  document.getElementById('recentTitle').textContent='📋 '+meta.title;
+  document.getElementById('recentNote').textContent='(not counting the latest draw already shown above)';
+  document.getElementById('latestSource').textContent='Source: vietlott.vn (official)';
+  document.getElementById('resultError').textContent='';
+
+  const rows=(typeof vietlottData!=='undefined') ? vietlottData[key] : null;
+
+  if(!rows || rows.length===0){
+    document.getElementById('latestDate').textContent='—';
+    document.getElementById('latestBalls').innerHTML='<div class="ball" style="background:#333;color:#889;">?</div>';
+    document.getElementById('resultError').textContent=
+      '⚠️ No data yet for this product. The daily GitHub Actions job (fetch-vietlott.js) hasn\'t run successfully yet — check back after the next scheduled run, or trigger it manually from the Actions tab.';
+    document.getElementById('recentTableHead').innerHTML='<th>Date</th><th>Numbers</th><th>Copy</th>';
+    document.getElementById('recentBody').innerHTML='<tr><td colspan="3" style="color:#778;">No data</td></tr>';
+    return;
+  }
+
+  /* Latest draw */
+  const latest=rows[rows.length-1];
+  document.getElementById('latestDate').textContent=fmtDate(latest.date)+(latest.id?` (Kỳ #${latest.id})`:'');
+  document.getElementById('latestBalls').innerHTML=
+    latest.numbers.map(n=>`<div class="ball">${n}</div>`).join('');
+
+  /* Recent table (bỏ dòng trùng với latest, giống Powerball) */
+  document.getElementById('recentTableHead').innerHTML='<th>Date</th><th>Numbers</th><th>Copy</th>';
+  const tbody=document.getElementById('recentBody');
+  const withoutLatest=rows.slice(0,-1);
+  const recent=withoutLatest.slice(-30).reverse();
+  if(recent.length===0){
+    tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No earlier draws yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  recent.forEach(d=>{
+    const row=document.createElement('tr');
+    row.innerHTML=`
+      <td>${fmtDate(d.date)}</td>
+      <td>${d.numbers.join(' &nbsp; ')}</td>
+      <td><button class="btn-copy-row" onclick='copyVietlottRow(${JSON.stringify(d.numbers)}, this)'>📋</button></td>`;
+    tbody.appendChild(row);
+  });
+}
+
+function copyVietlottRow(numbers, btn){
+  copyToClipboard(numbers.join(' '), '✅ Copied draw');
+  if(btn){
+    const old=btn.textContent;
+    btn.textContent='✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent=old; btn.classList.remove('copied'); },1200);
+  }
 }
 
 /* ── PARSE TEXAS CSV raw format ── */
