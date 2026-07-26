@@ -80,11 +80,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // Tải 2 hình Bruce Lee để làm hiệu ứng bước đi
     const bruce1 = new Image();
     bruce1.src = "images/bruce.png";
-    bruce1.onload = () => console.log("🥋 Bruce 1 Loaded");
 
     const bruce2 = new Image();
     bruce2.src = "images/Bruce 2.png";
-    bruce2.onload = () => console.log("🥋 Bruce 2 Loaded");
 
     const jupiter = new Image();
     jupiter.src = "images/Jupiter.png";
@@ -136,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     let bruceKungfuTimer = 0;
-    let purpleDone = false;
     let aiSignal = false;
     let aiPanel = false;    
     
@@ -164,7 +161,9 @@ document.addEventListener("DOMContentLoaded", function() {
         neptuneHit = false;
         neptuneStarted = false;
         neptuneDone = false;
-        purpleDone = false;
+        
+        // Reset Bruce & Hành tinh tím
+        purpleX = canvas.width + 140; 
         bruceX = -80;
         bruceCurrentY = bruceY;
         bruceAttached = false;
@@ -182,25 +181,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let orionY = 8;
     
-    // FPS Capper & Speed Scaler (Giúp iPhone 7 chạy mượt, đúng tốc độ như Laptop)
+    // FPS Capper & Speed Scaler
     let lastRenderTime = 0;
     const fpsInterval = 1000 / 60; // Max 60 FPS
 
     function drawStars(currentTime) {
         requestAnimationFrame(drawStars);
         
-        // Khống chế Frame Rate
         if (!currentTime) currentTime = performance.now();
         const elapsed = currentTime - lastRenderTime;
         
-        if (elapsed < fpsInterval) {
-            return; // Bỏ qua frame nếu render quá nhanh
-        }
+        if (elapsed < fpsInterval) return; 
         lastRenderTime = currentTime - (elapsed % fpsInterval);
 
-        if(canvas.width === 0 || canvas.height === 0) {
-            return;
-        }
+        if(canvas.width === 0 || canvas.height === 0) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -209,10 +203,8 @@ document.addEventListener("DOMContentLoaded", function() {
             resetScene();
         }
 
-        // TÍNH TOÁN TỶ LỆ TỐC ĐỘ: Canvas càng nhỏ (mobile) tốc độ X càng phải giảm
-        // Tránh tình trạng quãng đường màn hình điện thoại thì ngắn mà bước đi quá dài
         let speedScale = canvas.width / 1100;
-        if (speedScale < 0.45) speedScale = 0.45; // Giới hạn không cho chạy quá chậm trên máy nhỏ
+        if (speedScale < 0.45) speedScale = 0.45; 
 
         ctx.fillStyle = "white";
         for (const star of stars) {
@@ -305,7 +297,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
 
             if (blackX > canvas.width + 160) {
-                blackX = -140; // fix wrap around
+                blackX = -140; 
             }
 
             if (burstReady) {
@@ -416,7 +408,7 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.drawImage(purple, -55, -55, 110, 110);
             ctx.restore();
 
-            if(!purpleDone) purpleX -= (1.1 * speedScale);
+            purpleX -= (1.1 * speedScale);
             purpleAngle += (0.02 * speedScale);
             
             const dxBruce = (purpleX + 55) - (bruceX + 30);
@@ -425,15 +417,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 aiSignal = true;
             }
             
+            // SỬA LỖI CẮT CHỮ: Nếu hành tinh bay qua mép, không reset nếu chữ đang chạy
             if (purpleX < -260) {
-                purpleDone = true;
-                aiPanel = false;
-                bruceAttached = false;
-                bruceCurrentY = bruceY;
-                bruceKungfu = false;
-                bruceKungfuTimer = 0;
-                purpleX = canvas.width + 140;
-                purpleDone = false;
+                if (!aiPanel) {
+                    // Nếu bảng AI chưa bật, cho phép hành tinh lặp lại vòng lặp
+                    purpleX = canvas.width + 140;
+                }
+                // Nếu aiPanel đang bật (chữ đang chạy), cứ để hành tinh và Bruce trôi ra ngoài.
+                // Hàm resetScene() sẽ lo việc reset toàn bộ khi chữ chạy xong!
             }
         }
 
@@ -490,16 +481,13 @@ document.addEventListener("DOMContentLoaded", function() {
             let currentBruce = bruce1;
 
             if (!bruceAttached && !bruceKungfu) {
-                // Đổi hình bước đi liên tục (mỗi 250ms đổi frame 1 lần)
                 const walkCycle = Math.floor(Date.now() / 250) % 2;
                 currentBruce = walkCycle === 0 ? bruce1 : bruce2;
-                bruceX += (0.8 * speedScale); // Cập nhật vị trí X
+                bruceX += (0.8 * speedScale); 
             } else {
-                // Đứng im khi bám vào hành tinh
                 currentBruce = bruce1; 
             }
             
-            // Vẽ Bruce (đã căn tỷ lệ chiều rộng/cao cho thật hơn: 45x65)
             ctx.drawImage(currentBruce, bruceX, bruceCurrentY, 45, 65);
             
             if(bruceKungfu){
@@ -522,8 +510,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 const textY = canvas.height / 2;
 
                 if (ledText === "") {
-                    // Update đoạn text mới như ý bạn
-                    ledText = "🌌 Cosmos✅ The Traveler walks through the Fibonacci Universe until he finds the Purple Planet—or keeps walking for the rest of his life. 🪐Only when the Purple Planet appears does the hidden Fibonacci Pattern begin to reveal itself for Today's Drawing.";
+                    // Đã bỏ ký tự 🌌 và ✅ theo yêu cầu
+                    ledText = "Cosmos The Traveler walks through the Fibonacci Universe until he finds the Purple Planet—or keeps walking for the rest of his life. 🪐Only when the Purple Planet appears does the hidden Fibonacci Pattern begin to reveal itself for Today's Drawing.";
                 }
 
                 ctx.save();
@@ -544,10 +532,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 ctx.fillText(ledText, startX, textY);
                 ctx.restore();
 
-                ledOffset += (2.4 * speedScale);
+                // ĐÃ TĂNG TỐC ĐỘ CHỮ LÊN ĐÁNG KỂ (Từ 2.4 lên 5.0)
+                ledOffset += (5.0 * speedScale);
                 const textWidth = ctx.measureText(ledText).width;
 
-                // FIXED: Thêm bộ đệm (-100) để đảm bảo chữ chạy khuất HẲN khỏi mép trái màn hình
+                // CHỈ RESET KHI CHỮ ĐÃ CHẠY HOÀN TOÀN KHUẤT MÉP TRÁI
                 if (startX < -(textWidth + 100)) {
                     resetScene();
                 }
@@ -555,11 +544,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    // Khởi động Animation với bộ khống chế Frame Rate
+    // Khởi động Animation
     requestAnimationFrame(function(time) {
         lastRenderTime = time;
         drawStars(time);
     });    
     
-    console.log("⭐ Stars Animated (Walking & Speed Optimized)");      
+    console.log("⭐ Stars Animated (Fast Text & Correct Reset)");      
 });
