@@ -29,7 +29,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // ===============================
     // Canvas
     // ===============================
-    // Dùng querySelector tìm ngay trong banner để tránh lỗi DOM chưa cập nhật kịp id
     const canvas = banner.querySelector("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -42,17 +41,14 @@ document.addEventListener("DOMContentLoaded", function() {
     let orionX = 0;
     let bruceX = -80;
 
-    // "Đả thông kinh mạch" cho Resize - Chống ClientWidth = 0 trên Mobile
     function resizeCanvas() {
         const isMobile = window.innerWidth <= 430;
         banner.style.height = isMobile ? "80px" : "110px";
         
-        // Safari đôi khi trả về clientWidth = 0 khi DOM đang render, thêm fallback
         canvas.width = banner.clientWidth || window.innerWidth || 300;
         canvas.height = banner.clientHeight || (isMobile ? 80 : 110);
         
-        // Cân bằng lại toạ độ Y cho Bruce phù hợp với chiều cao canvas mới
-        bruceY = canvas.height - 70;
+        bruceY = canvas.height - 75; // Căn lại chân Bruce Lee
         bruceCurrentY = bruceY;
 
         jupiterX = canvas.width - 30;
@@ -78,11 +74,17 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     // ===============================
-    // Image Loads (Bruce, Planets, etc.)
+    // Image Loads (Bruce Walk Cycle, Planets, etc.)
     // ===============================
-    const bruce = new Image();
-    bruce.src = "images/bruce.png";
-    bruce.onload = () => console.log("🥋 Bruce Image Loaded");
+    
+    // Tải 2 hình Bruce Lee để làm hiệu ứng bước đi
+    const bruce1 = new Image();
+    bruce1.src = "images/bruce.png";
+    bruce1.onload = () => console.log("🥋 Bruce 1 Loaded");
+
+    const bruce2 = new Image();
+    bruce2.src = "images/Bruce 2.png";
+    bruce2.onload = () => console.log("🥋 Bruce 2 Loaded");
 
     const jupiter = new Image();
     jupiter.src = "images/Jupiter.png";
@@ -140,7 +142,6 @@ document.addEventListener("DOMContentLoaded", function() {
     
     let ledOffset = 0;
     let ledText = "";   
-    let forecastIndex = 0;
     let restartScene = false;
 
     function resetScene(){
@@ -181,10 +182,23 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let orionY = 8;
     
-    function drawStars() {
-        // Nếu canvas chưa có kích thước thì không vẽ để tránh lỗi Safari
+    // FPS Capper & Speed Scaler (Giúp iPhone 7 chạy mượt, đúng tốc độ như Laptop)
+    let lastRenderTime = 0;
+    const fpsInterval = 1000 / 60; // Max 60 FPS
+
+    function drawStars(currentTime) {
+        requestAnimationFrame(drawStars);
+        
+        // Khống chế Frame Rate
+        if (!currentTime) currentTime = performance.now();
+        const elapsed = currentTime - lastRenderTime;
+        
+        if (elapsed < fpsInterval) {
+            return; // Bỏ qua frame nếu render quá nhanh
+        }
+        lastRenderTime = currentTime - (elapsed % fpsInterval);
+
         if(canvas.width === 0 || canvas.height === 0) {
-            requestAnimationFrame(drawStars);
             return;
         }
 
@@ -195,12 +209,17 @@ document.addEventListener("DOMContentLoaded", function() {
             resetScene();
         }
 
+        // TÍNH TOÁN TỶ LỆ TỐC ĐỘ: Canvas càng nhỏ (mobile) tốc độ X càng phải giảm
+        // Tránh tình trạng quãng đường màn hình điện thoại thì ngắn mà bước đi quá dài
+        let speedScale = canvas.width / 1100;
+        if (speedScale < 0.45) speedScale = 0.45; // Giới hạn không cho chạy quá chậm trên máy nhỏ
+
         ctx.fillStyle = "white";
         for (const star of stars) {
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
             ctx.fill();
-            star.x -= star.speed;
+            star.x -= (star.speed * speedScale);
             if (star.x < 0) {
                 star.x = canvas.width;
                 star.y = Math.random() * canvas.height;
@@ -209,7 +228,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // ===============================
         // Orion Spacecraft
-        // Dùng naturalWidth để đảm bảo Safari đã tải xong hình ảnh
         // ===============================
         if (orion.complete && orion.naturalWidth > 0){
             ctx.save();
@@ -241,11 +259,11 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.drawImage(orion, -30, -15, 60, 30);
             ctx.restore();
 
-            orionX-=2.0;
-            orionY+=Math.sin(orionX*0.02)*0.15;
-            if(orionX<-160){
-                orionX=canvas.width+180;
-                orionY=5+Math.random()*12;
+            orionX -= (2.0 * speedScale);
+            orionY += Math.sin(orionX*0.02)*0.15;
+            if(orionX < -160){
+                orionX = canvas.width+180;
+                orionY = 5+Math.random()*12;
             }
         }
 
@@ -271,7 +289,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (blackY < 5) {
                 blackY += 1.0;
             } else {
-                blackX += 0.6;      
+                blackX += (0.6 * speedScale);      
                 const dx = (blackX + 100) - (neptuneX + 60);
                 const dy = (blackY + 65) - (neptuneY + 60);
                 const jdx = (blackX + 100) - (jupiterX + 60);
@@ -283,12 +301,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!neptuneHit && Math.sqrt(dx * dx + dy * dy) < 90){
                     neptuneHit = true;
                 }   
-                blackAngle += 0.04; 
+                blackAngle += (0.04 * speedScale); 
             }
 
-            if (blackX < -160) {
-                blackX = canvas.width + 140;
-                blackY = -140;
+            if (blackX > canvas.width + 160) {
+                blackX = -140; // fix wrap around
             }
 
             if (burstReady) {
@@ -352,8 +369,8 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.fill();
             
             if(!jupiterHit){
-                jupiterAngle += 0.05;
-                jupiterX -= 2.2;
+                jupiterAngle += (0.05 * speedScale);
+                jupiterX -= (2.2 * speedScale);
             } else {
                 const jdx = (blackX + 100) - (jupiterX + 60);
                 const jdy = (blackY + 65) - (jupiterY + 60);
@@ -399,8 +416,8 @@ document.addEventListener("DOMContentLoaded", function() {
             ctx.drawImage(purple, -55, -55, 110, 110);
             ctx.restore();
 
-            if(!purpleDone) purpleX -= 1.1;
-            purpleAngle += 0.02;
+            if(!purpleDone) purpleX -= (1.1 * speedScale);
+            purpleAngle += (0.02 * speedScale);
             
             const dxBruce = (purpleX + 55) - (bruceX + 30);
             if(!bruceAttached && !bruceKungfu && Math.abs(dxBruce) < 80){
@@ -439,8 +456,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 neptuneY += 1;
             } else {
                 if (!neptuneHit) {
-                    neptuneX -= 2.4;
-                    neptuneAngle += 0.05;
+                    neptuneX -= (2.4 * speedScale);
+                    neptuneAngle += (0.05 * speedScale);
                 } else {
                     const dx = (blackX + 100) - (neptuneX + 60);
                     const dy = (blackY + 65) - (neptuneY + 60);
@@ -453,15 +470,15 @@ document.addEventListener("DOMContentLoaded", function() {
         }    
 
         // ===============================
-        // Bruce Lee & LED Panel
+        // Bruce Lee Đi Bộ & LED Panel
         // ===============================
-        if (bruce.complete && bruce.naturalWidth > 0) {
+        if (bruce1.complete && bruce1.naturalWidth > 0 && bruce2.complete && bruce2.naturalWidth > 0) {
             if(bruceKungfu){
                 bruceKungfuTimer++;
                 if(bruceKungfuTimer<18){
-                    bruceCurrentY-=1.4;
+                    bruceCurrentY -= 1.4;
                 } else if(bruceKungfuTimer<36){
-                    bruceCurrentY+=1.4;
+                    bruceCurrentY += 1.4;
                 }
                 if (bruceKungfuTimer > 35) {
                     bruceKungfu = false;
@@ -470,14 +487,27 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             
-            ctx.drawImage(bruce, bruceX, bruceCurrentY, 60, 60);
+            let currentBruce = bruce1;
+
+            if (!bruceAttached && !bruceKungfu) {
+                // Đổi hình bước đi liên tục (mỗi 250ms đổi frame 1 lần)
+                const walkCycle = Math.floor(Date.now() / 250) % 2;
+                currentBruce = walkCycle === 0 ? bruce1 : bruce2;
+                bruceX += (0.8 * speedScale); // Cập nhật vị trí X
+            } else {
+                // Đứng im khi bám vào hành tinh
+                currentBruce = bruce1; 
+            }
+            
+            // Vẽ Bruce (đã căn tỷ lệ chiều rộng/cao cho thật hơn: 45x65)
+            ctx.drawImage(currentBruce, bruceX, bruceCurrentY, 45, 65);
             
             if(bruceKungfu){
                 ctx.strokeStyle="#00ffff";
                 ctx.lineWidth=5;
                 ctx.beginPath();
-                ctx.moveTo(bruceX+54, bruceCurrentY+27);
-                ctx.lineTo(bruceX+115, bruceCurrentY+27);
+                ctx.moveTo(bruceX + 42, bruceCurrentY + 27);
+                ctx.lineTo(bruceX + 115, bruceCurrentY + 27);
                 ctx.stroke();
             }
             
@@ -492,14 +522,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 const textY = canvas.height / 2;
 
                 if (ledText === "") {
-                    if (typeof forecastData !== "undefined" && forecastData.length > 0 && forecastIndex < forecastData.length) {
-                        const row = forecastData[forecastIndex];
-                        ledText = row.date + "     " + row.numbers.join("   ");
-                    } else {
-                        const d = new Date();
-                        const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-                        ledText = d.getFullYear() + " " + month[d.getMonth()] + " " + d.getDate() + "     Today's Status Prediction Engine : Inactive";
-                    }
+                    // Update đoạn text mới như ý bạn
+                    ledText = "🌌 Cosmos✅ The Traveler walks through the Fibonacci Universe until he finds the Purple Planet—or keeps walking for the rest of his life. 🪐Only when the Purple Planet appears does the hidden Fibonacci Pattern begin to reveal itself for Today's Drawing.";
                 }
 
                 ctx.save();
@@ -507,7 +531,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 ctx.rect(left, 0, right-left, canvas.height);
                 ctx.clip();
 
-                const fontSize = Math.floor(canvas.height * 0.45); // Chữ gọn hơn chút nữa trên mobile
+                const fontSize = Math.floor(canvas.height * 0.45); 
                 ctx.font = "900 " + fontSize + "px Arial Black";
                 ctx.textAlign = "left";
                 ctx.textBaseline = "middle";
@@ -520,27 +544,22 @@ document.addEventListener("DOMContentLoaded", function() {
                 ctx.fillText(ledText, startX, textY);
                 ctx.restore();
 
-                ledOffset += 2.4;
+                ledOffset += (2.4 * speedScale);
                 const textWidth = ctx.measureText(ledText).width;
 
-                if (startX < -textWidth) {
-                    if (typeof forecastData !== "undefined" && forecastData.length > 0) {
-                        forecastIndex++;
-                        if (forecastIndex >= forecastData.length) forecastIndex = 0;
-                    }
+                // FIXED: Thêm bộ đệm (-100) để đảm bảo chữ chạy khuất HẲN khỏi mép trái màn hình
+                if (startX < -(textWidth + 100)) {
                     resetScene();
                 }
             }    
-            
-            if (!bruceAttached && !bruceKungfu){
-                bruceX += 0.8;
-            }
         }
-        
-        requestAnimationFrame(drawStars);
     }
     
-    // Gọi hàm chạy animation
-    drawStars();    
-    console.log("⭐ Stars Animated (Safe Mode)");      
+    // Khởi động Animation với bộ khống chế Frame Rate
+    requestAnimationFrame(function(time) {
+        lastRenderTime = time;
+        drawStars(time);
+    });    
+    
+    console.log("⭐ Stars Animated (Walking & Speed Optimized)");      
 });
