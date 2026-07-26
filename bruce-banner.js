@@ -6,14 +6,13 @@ window.addEventListener("load", function() {
 
     if (!banner) {
         console.error("❌ #bruce-banner không tồn tại trong HTML lúc này!");
-        return; // Dừng lại nếu không thấy banner
+        return; 
     }
     
     console.log("🥋 Bruce Banner Ready");
 
     banner.style.width = "100%";
     banner.style.maxWidth = "1100px";
-    // Thiết lập height ban đầu dựa trên màn hình ngay lập tức
     banner.style.height = window.innerWidth <= 430 ? "80px" : "110px";
     banner.style.margin = "20px auto";
     banner.style.borderRadius = "14px";
@@ -32,7 +31,6 @@ window.addEventListener("load", function() {
     const canvas = banner.querySelector("canvas");
     const ctx = canvas.getContext("2d");
 
-    // Các biến cần khởi tạo
     let bruceY = 0;
     let bruceCurrentY = 0;
     let jupiterX = 0;
@@ -48,7 +46,7 @@ window.addEventListener("load", function() {
         canvas.width = banner.clientWidth || window.innerWidth || 300;
         canvas.height = banner.clientHeight || (isMobile ? 80 : 110);
         
-        bruceY = canvas.height - 75; // Căn lại chân Bruce Lee
+        bruceY = canvas.height - 75; 
         bruceCurrentY = bruceY;
 
         jupiterX = canvas.width - 30;
@@ -74,15 +72,12 @@ window.addEventListener("load", function() {
     }
     
     // ===============================
-    // Image Loads (Bruce Walk Cycle, Planets, etc.)
+    // Image Loads 
     // ===============================
     
-    // Tải 2 hình Bruce Lee để làm hiệu ứng bước đi
-    const bruce1 = new Image();
-    bruce1.src = "images/bruce.png";
-
-    const bruce2 = new Image();
-    bruce2.src = "images/Bruce 2.png";
+    // Đã xóa Bruce 2, chỉ dùng 1 ảnh Bruce duy nhất
+    const bruce = new Image();
+    bruce.src = "images/bruce.png";
 
     const jupiter = new Image();
     jupiter.src = "images/Jupiter.png";
@@ -162,7 +157,6 @@ window.addEventListener("load", function() {
         neptuneStarted = false;
         neptuneDone = false;
         
-        // Reset Bruce & Hành tinh tím
         purpleX = canvas.width + 140; 
         bruceX = -80;
         bruceCurrentY = bruceY;
@@ -181,9 +175,8 @@ window.addEventListener("load", function() {
 
     let orionY = 8;
     
-    // FPS Capper & Speed Scaler
     let lastRenderTime = 0;
-    const fpsInterval = 1000 / 60; // Max 60 FPS
+    const fpsInterval = 1000 / 60; 
 
     function drawStars(currentTime) {
         requestAnimationFrame(drawStars);
@@ -226,7 +219,6 @@ window.addEventListener("load", function() {
             ctx.translate(orionX+30, orionY+15);
             
             const fire = 18+Math.sin(Date.now()*0.03)*6;
-            // SỬA LỖI: Lửa phụt về phía sau (bên phải)
             const g = ctx.createLinearGradient(28,0,28+fire,0);
             g.addColorStop(0,"#ffffff");
             g.addColorStop(0.3,"#ffee55");
@@ -255,7 +247,6 @@ window.addEventListener("load", function() {
             orionX -= (2.0 * speedScale);
             orionY += Math.sin(orionX*0.02)*0.15;
             if(orionX < -160){
-                // Nếu chữ đang chạy, biến mất tạm thời không loop lại
                 if (!aiPanel) {
                     orionX = canvas.width+180;
                     orionY = 5+Math.random()*12;
@@ -301,7 +292,6 @@ window.addEventListener("load", function() {
             }
 
             if (blackX > canvas.width + 160) {
-                // Biến mất tạm thời nếu chữ đang hiện
                 if (!aiPanel) {
                     blackX = -140; 
                 }
@@ -384,7 +374,6 @@ window.addEventListener("load", function() {
             }
             
             if (jupiterX < -150) {
-                // Ẩn tạm thời khi bảng chữ đang chạy
                 if (!aiPanel) jupiterX = canvas.width + 150;
             }
         }
@@ -428,7 +417,6 @@ window.addEventListener("load", function() {
             }
             
             if (purpleX < -260) {
-                // Biến mất khi chạy qua mép, nhường không gian cho Text. Không tự reset!
                 if (!aiPanel) {
                     purpleX = canvas.width + 140;
                 }
@@ -468,9 +456,9 @@ window.addEventListener("load", function() {
         }   
 
         // ===============================
-        // Bruce Lee Đi Bộ & LED Panel
+        // Bruce Lee & LED Panel
         // ===============================
-        if (bruce1.complete && bruce1.naturalWidth > 0 && bruce2.complete && bruce2.naturalWidth > 0) {
+        if (bruce.complete && bruce.naturalWidth > 0) {
             if(bruceKungfu){
                 bruceKungfuTimer++;
                 if(bruceKungfuTimer<18){
@@ -484,18 +472,13 @@ window.addEventListener("load", function() {
                     aiPanel = true;
                 }
             }
-            
-            let currentBruce = bruce1;
 
             if (!bruceAttached && !bruceKungfu) {
-                const walkCycle = Math.floor(Date.now() / 250) % 2;
-                currentBruce = walkCycle === 0 ? bruce1 : bruce2;
                 bruceX += (0.8 * speedScale); 
-            } else {
-                currentBruce = bruce1; 
             }
             
-            ctx.drawImage(currentBruce, bruceX, bruceCurrentY, 45, 65);
+            // Vẽ Bruce duy nhất (ảnh bruce.png)
+            ctx.drawImage(bruce, bruceX, bruceCurrentY, 45, 65);
             
             if(bruceKungfu){
                 ctx.strokeStyle="#00ffff";
@@ -534,15 +517,17 @@ window.addEventListener("load", function() {
                 ctx.shadowColor = "#ffd700";
                 ctx.fillStyle = "#ffe800";
 
+                const textWidth = ctx.measureText(ledText).width;
                 const startX = canvas.width - ledOffset;
+                
                 ctx.fillText(ledText, startX, textY);
                 ctx.restore();
 
-                ledOffset += (5.0 * speedScale);
-                const textWidth = ctx.measureText(ledText).width;
+                // Tăng tốc độ cuộn lên gấp 3 (15.0 thay vì 5.0)
+                ledOffset += (15.0 * speedScale);
 
-                // CHỈ RESET KHI CHỮ ĐÃ CHẠY HOÀN TOÀN KHUẤT MÉP TRÁI (Không reset theo hành tinh)
-                if (startX < -(textWidth + 100)) {
+                // RESET AN TOÀN: Khi toàn bộ chiều dài chữ đã chui tọt sang mép bên kia
+                if (startX + textWidth < -50) {
                     resetScene();
                 }
             }   
@@ -555,5 +540,5 @@ window.addEventListener("load", function() {
         drawStars(time);
     });     
     
-    console.log("⭐ Stars Animated (All fixes applied)");       
+    console.log("⭐ Stars Animated (Bruce Fixed, 3x Text Speed, Stable Reset)");       
 });
