@@ -333,6 +333,7 @@ body{
     <div class="result-actions">
       <button class="btn-sm refresh" id="refreshBtn" onclick="fetchLatestDraw()">🔄 Refresh</button>
       <button class="btn-sm copy24" id="copy24Btn" onclick="copy24Draws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
+      <button class="btn-sm copy24" id="copy24VietlottBtn" style="display:none;" onclick="copy24VietlottDraws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
     </div>
     <div class="result-error" id="resultError"></div>
   </div>
@@ -460,10 +461,85 @@ function showPowerballControls(show){
   document.getElementById('copy24Btn').style.display  = show?'':'none';
   document.getElementById('dataModeTabs').style.display = show?'':'none';
   document.getElementById('modeNote').style.display    = show?'':'none';
+  document.getElementById('copy24VietlottBtn').style.display = show?'none':'';
+}
+
+/* ── VIETLOTT — LỊCH QUAY THEO SẢN PHẨM (dùng cho luật 3-Checkpoint) ──
+   Tính trực tiếp từ dữ liệu thật (60 kỳ gần nhất mỗi sản phẩm, tại thời
+   điểm viết code này) — KHÔNG đoán bừa:
+     Power 6/55 → Thứ 3 / Thứ 5 / Thứ 7    → [2,4,6]
+     Mega 6/45  → Chủ nhật / Thứ 4 / Thứ 6 → [0,3,5]
+     Power 5/35 → quay MỖI NGÀY trong tuần → [0,1,2,3,4,5,6]
+   (0=CN, 1=T2, 2=T3, 3=T4, 4=T5, 5=T6, 6=T7)
+   ⚠️ Nếu Vietlott đổi lịch quay sau này, sửa lại mảng bên dưới. */
+const VIETLOTT_DRAW_DAYS = {
+  power655: [2,4,6],
+  power645: [0,3,5],
+  power535: [0,1,2,3,4,5,6],
+};
+/* Keno & Bingo18 quay NHIỀU LẦN MỖI NGÀY → không thể tính cutoff theo
+   ngày lịch như trên. Áp dụng luật riêng: lùi 3 KỲ (không phải 3 ngày)
+   tính từ kỳ mới nhất — tương đương ý nghĩa "3 checkpoint" nhưng theo
+   thứ tự kỳ quay thay vì theo ngày. */
+const VIETLOTT_CONTINUOUS = ['keno', 'bingo18'];
+
+function getNextDrawDateGeneric(today, drawDays){
+  const d=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  for(let i=0;i<7;i++){
+    if(drawDays.includes(d.getDay())) return d;
+    d.setDate(d.getDate()+1);
+  }
+  return d;
+}
+function getCutoffDateGeneric(today, drawDays){
+  const nextDraw=getNextDrawDateGeneric(today, drawDays);
+  const cutoff=new Date(nextDraw);
+  cutoff.setDate(cutoff.getDate()-7);
+  return cutoff;
+}
+
+let currentVietlottKey=null; /* sản phẩm Vietlott đang xem, để nút Copy 24 biết lấy đúng data */
+
+/* ── COPY 24 DRAWS CHO VIETLOTT — tự động áp dụng đúng luật theo loại sản phẩm ── */
+function copy24VietlottDraws(){
+  const key=currentVietlottKey;
+  if(!key){ showToast('⚠️ No product selected.'); return; }
+  const rows=(typeof vietlottData!=='undefined') ? vietlottData[key] : null;
+  if(!rows || !rows.length){
+    showToast('⚠️ No data available.');
+    return;
+  }
+
+  let selected, cutoffLabel;
+
+  if(VIETLOTT_CONTINUOUS.includes(key)){
+    /* Keno/Bingo18: lùi 3 KỲ tính từ kỳ mới nhất, rồi lấy 24 kỳ liền trước đó */
+    const withoutLast3 = rows.slice(0, -3);
+    selected = withoutLast3.slice(-24);
+    const cutoffRow = withoutLast3[withoutLast3.length-1];
+    cutoffLabel = cutoffRow ? `kỳ #${cutoffRow.id||'?'} (${fmtDate(cutoffRow.date)})` : '—';
+  } else {
+    /* Power 655/645/535: cutoff = ngày quay kế tiếp − 7 ngày (giống hệt Powerball) */
+    const drawDays = VIETLOTT_DRAW_DAYS[key] || [0,1,2,3,4,5,6];
+    const today=new Date();
+    const cutoff=getCutoffDateGeneric(today, drawDays);
+    selected = rows.filter(d=>parseDrawDate(d.date)<=cutoff).slice(-24);
+    cutoffLabel = fmtDate(dateKeyLocal(cutoff));
+  }
+
+  if(selected.length===0){
+    showToast('⚠️ No draws found before the cutoff.');
+    return;
+  }
+
+  const text = selected.map(d=>d.numbers.join(' ')).join('\n');
+  const meta = VIETLOTT_META[key];
+  copyToClipboard(text, `✅ Copied ${selected.length} draws (${meta.label}, cutoff: ${cutoffLabel}) — paste into Neural Networks input`);
 }
 
 /* ── RENDER VIETLOTT (power655 / power645 / power535 / keno / bingo18) ── */
 function renderVietlott(key){
+  currentVietlottKey=key;
   const meta=VIETLOTT_META[key];
   document.getElementById('resultTitle').textContent=meta.label;
   document.getElementById('recentTitle').textContent='📋 '+meta.title;
