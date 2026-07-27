@@ -501,9 +501,44 @@ function getCutoffDateGeneric(today, drawDays){
 let currentVietlottKey=null; /* sản phẩm Vietlott đang xem, để nút Copy 24 biết lấy đúng data */
 
 /* ── COPY 24 DRAWS CHO VIETLOTT — tự động áp dụng đúng luật theo loại sản phẩm ── */
+/* ── COPY 24 DRAWS CHO KENO — gọi live endpoint riêng, KHÔNG dùng dữ liệu tĩnh ── */
+async function copy24KenoLive(){
+  showToast('⏳ Đang lấy 24 kỳ Keno live...');
+  try{
+    const res=await fetch('/api/keno-copy24?t='+Date.now(),{cache:'no-store'});
+    const data=await res.json();
+
+    if(!data.ok){
+      showToast('⚠️ Lỗi lấy Copy 24 Keno: '+(data.error||'không rõ'));
+      return;
+    }
+    if(!data.rows || data.rows.length===0){
+      showToast('⚠️ Không tìm được kỳ nào trong cửa sổ cần lấy.');
+      return;
+    }
+    if(data.rows.length<24){
+      showToast(`⚠️ Chỉ lấy được ${data.rows.length}/24 kỳ (đầu ngày, chưa đủ lịch sử) — kỳ live mới nhất: ${data.latestLiveId}`);
+    }
+
+    const text=data.rows.map(d=>d.numbers.join(' ')).join('\n');
+    copyToClipboard(text, `✅ Copied ${data.rows.length} draws (Keno, live mới nhất: ${data.latestLiveId}, cutoff: ${data.cutoffId}) — paste into Neural Networks input`);
+  }catch(err){
+    showToast('⚠️ Mất kết nối khi lấy Copy 24 Keno.');
+  }
+}
+
 function copy24VietlottDraws(){
   const key=currentVietlottKey;
   if(!key){ showToast('⚠️ No product selected.'); return; }
+
+  // ⚔️ Keno: PHẢI gọi live endpoint riêng (/api/keno-copy24), KHÔNG dùng
+  // vietlottData.keno (dữ liệu tĩnh, chỉ ~1 lần/ngày, sai lệch xa so với
+  // kỳ live hiện tại — đây chính là bug đã báo trước đó).
+  if(key==='keno'){
+    copy24KenoLive();
+    return;
+  }
+
   const rows=(typeof vietlottData!=='undefined') ? vietlottData[key] : null;
   if(!rows || !rows.length){
     showToast('⚠️ No data available.');
@@ -513,7 +548,7 @@ function copy24VietlottDraws(){
   let selected, cutoffLabel;
 
   if(VIETLOTT_CONTINUOUS.includes(key)){
-    /* Keno/Bingo18: lùi 3 KỲ tính từ kỳ mới nhất, rồi lấy 24 kỳ liền trước đó */
+    /* Bingo18: chưa có live endpoint riêng — tạm dùng dữ liệu tĩnh, lùi 3 KỲ */
     const withoutLast3 = rows.slice(0, -3);
     selected = withoutLast3.slice(-24);
     const cutoffRow = withoutLast3[withoutLast3.length-1];
