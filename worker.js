@@ -58,6 +58,13 @@ const KENO_HEADERS = {
   'X-Requested-With': 'XMLHttpRequest',
   'Origin': 'https://vietlott.vn',
   'Referer': 'https://vietlott.vn/vi/trung-thuong/ket-qua-trung-thuong/winning-number-645',
+  // ⚔️ 3 header này BỊ THIẾU ở bản trước — khớp đúng bản gốc đã xác nhận
+  // chạy được (requests_helper/config.py trong repo tham khảo). Nhiều WAF
+  // kiểm tra các header "trình duyệt thật" này để chặn request giả mạo —
+  // rất có thể đây chính là lý do gây lỗi 403 vừa rồi.
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-origin',
 };
 
 /* ── MINI HTML PARSER (regex-based, port lại từ fetch-vietlott.js) ── */
@@ -127,9 +134,13 @@ async function handleKenoLive() {
     });
 
     if (!res.ok) {
+      const bodyText = await res.text().catch(() => '');
       return new Response(JSON.stringify({
         ok: false,
         error: `vietlott.vn trả về HTTP ${res.status}`,
+        // ⚔️ Kèm luôn 300 ký tự đầu của response thật — nếu vẫn lỗi lần
+        // nữa, thông tin này giúp chẩn đoán ngay không cần thêm vòng nào.
+        bodyPreview: bodyText.slice(0, 300),
       }), { status: 502, headers: jsonHeaders });
     }
 
