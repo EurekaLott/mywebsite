@@ -540,6 +540,15 @@ function copy24VietlottDraws(){
 /* ── RENDER VIETLOTT (power655 / power645 / power535 / keno / bingo18) ── */
 function renderVietlott(key){
   currentVietlottKey=key;
+
+  // ⚔️ Keno: tự động gọi live NGAY khi khách vừa chọn, không cần đợi bấm
+  // Refresh. Gọi async ở đây (không chặn phần render tĩnh bên dưới) —
+  // static render xong trước để có gì đó hiện ngay lập tức, rồi fetchKenoLive()
+  // tự ghi đè bằng số LIVE khi có kết quả (thường chỉ mất < 1 giây).
+  if(key==='keno'){
+    fetchKenoLive();
+  }
+
   const meta=VIETLOTT_META[key];
   document.getElementById('resultTitle').textContent=meta.label;
   document.getElementById('recentTitle').textContent='📋 '+meta.title;
