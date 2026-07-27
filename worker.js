@@ -99,13 +99,18 @@ async function handleKenoLive() {
     const rows = parseKenoLive(html);
 
     if (rows.length === 0) {
-      // ⚠️ Không parse được kỳ nào → RẤT có thể trang nguồn đã đổi cấu
-      // trúc HTML. Trả lỗi rõ ràng kèm 500 ký tự đầu HTML thật để dễ
-      // chẩn đoán ngay, KHÔNG trả mảng rỗng coi như "0 kết quả".
+      // ⚔️ CHẾ ĐỘ DEBUG: tự tìm đoạn HTML THẬT xung quanh mốc "QSMT"
+      // (thay vì chỉ trả 500 ký tự đầu, vốn toàn menu, không giúp ích gì).
+      const anchorIdx = html.indexOf('QSMT');
+      const snippet = anchorIdx > -1
+        ? html.slice(Math.max(0, anchorIdx - 200), anchorIdx + 600)
+        : html.slice(0, 800);
+
       return new Response(JSON.stringify({
         ok: false,
         error: 'Không parse được kỳ nào — trang nguồn có thể đã đổi cấu trúc HTML, cần cập nhật parseKenoLive().',
-        htmlPreview: html.slice(0, 500),
+        anchorFound: anchorIdx > -1,
+        htmlSnippetAroundAnchor: snippet,
       }), { status: 502, headers: jsonHeaders });
     }
 
