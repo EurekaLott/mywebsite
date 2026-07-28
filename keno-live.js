@@ -34,13 +34,15 @@ export async function fetchKenoLive(){
 
     const latest=data.rows[0]; // rows[0] = kỳ mới nhất
     document.getElementById('resultTitle').textContent=VIETLOTT_META.keno.label;
-    document.getElementById('latestDate').textContent=
-      fmtDate(latest.date)+(latest.id?` (Kỳ ${latest.id})`:'');
+    const latestLine=latest.numbers.join(' ');
+    document.getElementById('latestDate').innerHTML=
+      `${fmtDate(latest.date)}${latest.id?` (Kỳ ${latest.id})`:''} `+
+      `<button class="btn-copy-row" onclick="copyToClipboard('${latestLine}','✅ Copied latest draw')">📋 Copy</button>`;
     document.getElementById('latestBalls').innerHTML=
       latest.numbers.map(n=>`<div class="ball">${n}</div>`).join('');
     const fetchedTime=new Date(data.fetchedAt).toLocaleTimeString('vi-VN');
     document.getElementById('latestSource').textContent=
-      `🟢 LIVE lúc ${fetchedTime} — nguồn: ${data.source||'xosominhngoc.net.vn'}`;
+      `🟢 LIVE lúc ${fetchedTime}`;
     document.getElementById('resultError').style.display='none';
     document.getElementById('resultError').textContent='';
 
