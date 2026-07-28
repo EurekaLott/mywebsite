@@ -97,7 +97,9 @@ export function renderVietlott(key){
   }
 
   const latest=rows[rows.length-1];
-  document.getElementById('latestDate').textContent=fmtDate(latest.date)+(latest.id?` (Kỳ #${latest.id})`:'');
+  document.getElementById('latestDate').innerHTML=
+    `${fmtDate(latest.date)}${latest.id?` (Kỳ #${latest.id})`:''} `+
+    `<button class="btn-copy-row" onclick='copyVietlottRow(${JSON.stringify(latest.numbers)}, this)'>📋 Copy</button>`;
   document.getElementById('latestBalls').innerHTML=
     latest.numbers.map(n=>`<div class="ball">${n}</div>`).join('');
 
