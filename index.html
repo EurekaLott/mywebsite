@@ -170,7 +170,7 @@ body{
 
 .footer{margin-top:120px;padding:40px;text-align:center;color:#d7e4ff;}
 
-  
+
 @media(max-width:768px){
   .header{padding:25px;}
   .eureka,.lott{font-size:46px;}
@@ -182,7 +182,7 @@ body{
   .led-item{font-size:18px;}
 }
 
-  
+
 </style>
 </head>
 
@@ -225,6 +225,12 @@ body{
     🧠 Neural Networks for Jackpot Games <span class="arrow">▾</span>
   </button>
 
+  <!-- ⚔️ MENU NEURAL NETWORKS — DUY NHẤT phần cần sửa khi thêm thuật
+       toán mới. Mỗi dòng chỉ là 1 link tĩnh sang trang HTML riêng biệt
+       (tự chứa toàn bộ logic/CSS/JS của nó) — KHÔNG có JS logic nào ở
+       đây cả nên không thể "làm hỏng" bất cứ thứ gì khác khi thêm dòng
+       mới. Muốn thêm Powerball 6: copy đúng 1 khối <div class="dd-item">
+       bên dưới, đổi số + tên file, dán vào, xong — không sửa gì khác. -->
   <div class="dropdown-menu" id="neuralMenu">
 
     <div class="dd-item disabled">
@@ -312,7 +318,7 @@ body{
 
 </div>
     <a href="community.html">💬 Community</a>
-    
+
     <a href="https://www.facebook.com/groups/1243032744487699" target="_blank">📘 Facebook</a>
     <a onclick="setLang('en')">🇺🇸 English</a>
     <a onclick="setLang('vi')">🇻🇳 Tiếng Việt</a>
@@ -331,7 +337,7 @@ body{
     <div class="balls" id="latestBalls"><div class="ball spin">↻</div></div>
     <div class="latest-source" id="latestSource"></div>
     <div class="result-actions">
-      <button class="btn-sm refresh" id="refreshBtn" onclick="fetchLatestDraw()">🔄 Refresh</button>
+      <button class="btn-sm refresh" id="refreshBtn" onclick="handleRefreshClick()">🔄 Refresh</button>
       <button class="btn-sm copy24" id="copy24Btn" onclick="copy24Draws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
       <button class="btn-sm copy24" id="copy24VietlottBtn" style="display:none;" onclick="copy24VietlottDraws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
     </div>
@@ -365,438 +371,11 @@ body{
 
 <div class="footer">EurekaLott © 2026 • Where Dreams Begin</div>
 
-<script>
-/* ── MONTHS ── */
-const MONTHS = ["","January","February","March","April","May","June",
-  "July","August","September","October","November","December"];
-
-function fmtDate(str){
-  if(!str) return str;
-  if(/^\d{4}-\d{2}-\d{2}$/.test(str)){
-    const p=str.split('-');
-    return `${MONTHS[parseInt(p[1],10)]} ${parseInt(p[2],10)}, ${p[0]}`;
-  }
-  return str;
-}
-
-/* ── DROPDOWN ── */
-function toggleDropdown(){
-  document.getElementById('btnResults').classList.toggle('open');
-  document.getElementById('dropdownMenu').classList.toggle('open');
-}
-
-function toggleDropdown(){
-    document.getElementById("btnResults").classList.toggle("open");
-    document.getElementById("dropdownMenu").classList.toggle("open");
-}
-
-function toggleNeural(){
-    document.getElementById("btnNeural").classList.toggle("open");
-    document.getElementById("neuralMenu").classList.toggle("open");
-}
-
-function togglePrediction(){
-    document.getElementById("btnPrediction").classList.toggle("open");
-    document.getElementById("predictionMenu").classList.toggle("open");
-}
-document.addEventListener("click",function(e){
-
-    document.querySelectorAll(".dropdown").forEach(function(drop){
-
-        if(!drop.contains(e.target)){
-
-            drop.querySelectorAll(".btn-results").forEach(function(btn){
-                btn.classList.remove("open");
-            });
-
-            drop.querySelectorAll(".dropdown-menu").forEach(function(menu){
-                menu.classList.remove("open");
-            });
-
-        }
-
-    });
-
-});
-
-/* ── VIETLOTT SUBMENU TOGGLE ── */
-function toggleVietlottSub(e){
-  e.stopPropagation();
-  document.getElementById('vietlottSubmenu').classList.toggle('open');
-  document.getElementById('vietlottArrow').classList.toggle('rotated');
-}
-
-const VIETLOTT_META = {
-  power655: {label:'🇻🇳 Vietlott — Power 6/55', title:'RECENT DRAWS'},
-  power645: {label:'🇻🇳 Vietlott — Mega 6/45', title:'RECENT DRAWS'},
-  power535: {label:'🇻🇳 Vietlott — Power 5/35', title:'RECENT DRAWS'},
-  keno:     {label:'🇻🇳 Vietlott — Keno', title:'RECENT DRAWS'},
-  bingo18:  {label:'🇻🇳 Vietlott — Bingo18', title:'RECENT DRAWS'},
-};
-
-/* ── SELECT LOTTERY ── */
-function selectLottery(type){
-  toggleDropdown();
-  const panel=document.getElementById('resultPanel');
-  panel.classList.add('open');
-
-  if(type==='powerball'){
-    showPowerballControls(true);
-    document.getElementById('resultTitle').textContent='🎱 Powerball USA';
-    document.getElementById('recentTableHead').innerHTML='<th>Date</th><th>White Balls</th><th>PB</th><th>Copy</th>';
-    document.getElementById('recentNote').textContent='(not counting the latest draw already shown above)';
-    setDataMode('raw');
-    fetchLatestDraw();
-    renderRecent30(null);
-  } else if(type.startsWith('vietlott_')){
-    showPowerballControls(false);
-    const key=type.replace('vietlott_','');
-    renderVietlott(key);
-  }
-  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-/* Ẩn/hiện các control chỉ áp dụng cho Powerball (Copy 24, Raw/Sorted tabs) */
-function showPowerballControls(show){
-  document.getElementById('copy24Btn').style.display  = show?'':'none';
-  document.getElementById('dataModeTabs').style.display = show?'':'none';
-  document.getElementById('modeNote').style.display    = show?'':'none';
-  document.getElementById('copy24VietlottBtn').style.display = show?'none':'';
-}
-
-/* ── VIETLOTT — LỊCH QUAY THEO SẢN PHẨM (dùng cho luật 3-Checkpoint) ──
-   Tính trực tiếp từ dữ liệu thật (60 kỳ gần nhất mỗi sản phẩm, tại thời
-   điểm viết code này) — KHÔNG đoán bừa:
-     Power 6/55 → Thứ 3 / Thứ 5 / Thứ 7    → [2,4,6]
-     Mega 6/45  → Chủ nhật / Thứ 4 / Thứ 6 → [0,3,5]
-     Power 5/35 → quay MỖI NGÀY trong tuần → [0,1,2,3,4,5,6]
-   (0=CN, 1=T2, 2=T3, 3=T4, 4=T5, 5=T6, 6=T7)
-   ⚠️ Nếu Vietlott đổi lịch quay sau này, sửa lại mảng bên dưới. */
-const VIETLOTT_DRAW_DAYS = {
-  power655: [2,4,6],
-  power645: [0,3,5],
-  power535: [0,1,2,3,4,5,6],
-};
-/* Keno & Bingo18 quay NHIỀU LẦN MỖI NGÀY → không thể tính cutoff theo
-   ngày lịch như trên. Áp dụng luật riêng: lùi 3 KỲ (không phải 3 ngày)
-   tính từ kỳ mới nhất — tương đương ý nghĩa "3 checkpoint" nhưng theo
-   thứ tự kỳ quay thay vì theo ngày. */
-const VIETLOTT_CONTINUOUS = ['keno', 'bingo18'];
-
-function getNextDrawDateGeneric(today, drawDays){
-  const d=new Date(today.getFullYear(),today.getMonth(),today.getDate());
-  for(let i=0;i<7;i++){
-    if(drawDays.includes(d.getDay())) return d;
-    d.setDate(d.getDate()+1);
-  }
-  return d;
-}
-function getCutoffDateGeneric(today, drawDays){
-  const nextDraw=getNextDrawDateGeneric(today, drawDays);
-  const cutoff=new Date(nextDraw);
-  cutoff.setDate(cutoff.getDate()-7);
-  return cutoff;
-}
-
-let currentVietlottKey=null; /* sản phẩm Vietlott đang xem, để nút Copy 24 biết lấy đúng data */
-
-/* ── COPY 24 DRAWS CHO VIETLOTT — tự động áp dụng đúng luật theo loại sản phẩm ── */
-function copy24VietlottDraws(){
-  const key=currentVietlottKey;
-  if(!key){ showToast('⚠️ No product selected.'); return; }
-  const rows=(typeof vietlottData!=='undefined') ? vietlottData[key] : null;
-  if(!rows || !rows.length){
-    showToast('⚠️ No data available.');
-    return;
-  }
-
-  let selected, cutoffLabel;
-
-  if(VIETLOTT_CONTINUOUS.includes(key)){
-    /* Keno/Bingo18: lùi 3 KỲ tính từ kỳ mới nhất, rồi lấy 24 kỳ liền trước đó */
-    const withoutLast3 = rows.slice(0, -3);
-    selected = withoutLast3.slice(-24);
-    const cutoffRow = withoutLast3[withoutLast3.length-1];
-    cutoffLabel = cutoffRow ? `kỳ #${cutoffRow.id||'?'} (${fmtDate(cutoffRow.date)})` : '—';
-  } else {
-    /* Power 655/645/535: cutoff = ngày quay kế tiếp − 7 ngày (giống hệt Powerball) */
-    const drawDays = VIETLOTT_DRAW_DAYS[key] || [0,1,2,3,4,5,6];
-    const today=new Date();
-    const cutoff=getCutoffDateGeneric(today, drawDays);
-    selected = rows.filter(d=>parseDrawDate(d.date)<=cutoff).slice(-24);
-    cutoffLabel = fmtDate(dateKeyLocal(cutoff));
-  }
-
-  if(selected.length===0){
-    showToast('⚠️ No draws found before the cutoff.');
-    return;
-  }
-
-  const text = selected.map(d=>d.numbers.join(' ')).join('\n');
-  const meta = VIETLOTT_META[key];
-  copyToClipboard(text, `✅ Copied ${selected.length} draws (${meta.label}, cutoff: ${cutoffLabel}) — paste into Neural Networks input`);
-}
-
-/* ── RENDER VIETLOTT (power655 / power645 / power535 / keno / bingo18) ── */
-function renderVietlott(key){
-  currentVietlottKey=key;
-  const meta=VIETLOTT_META[key];
-  document.getElementById('resultTitle').textContent=meta.label;
-  document.getElementById('recentTitle').textContent='📋 '+meta.title;
-  document.getElementById('recentNote').textContent='(not counting the latest draw already shown above)';
-  document.getElementById('latestSource').textContent='Source: vietlott.vn (official)';
-  document.getElementById('resultError').textContent='';
-
-  const rows=(typeof vietlottData!=='undefined') ? vietlottData[key] : null;
-
-  if(!rows || rows.length===0){
-    document.getElementById('latestDate').textContent='—';
-    document.getElementById('latestBalls').innerHTML='<div class="ball" style="background:#333;color:#889;">?</div>';
-    document.getElementById('resultError').textContent=
-      '⚠️ No data yet for this product. The daily GitHub Actions job (fetch-vietlott.js) hasn\'t run successfully yet — check back after the next scheduled run, or trigger it manually from the Actions tab.';
-    document.getElementById('recentTableHead').innerHTML='<th>Date</th><th>Numbers</th><th>Copy</th>';
-    document.getElementById('recentBody').innerHTML='<tr><td colspan="3" style="color:#778;">No data</td></tr>';
-    return;
-  }
-
-  /* Latest draw */
-  const latest=rows[rows.length-1];
-  document.getElementById('latestDate').textContent=fmtDate(latest.date)+(latest.id?` (Kỳ #${latest.id})`:'');
-  document.getElementById('latestBalls').innerHTML=
-    latest.numbers.map(n=>`<div class="ball">${n}</div>`).join('');
-
-  /* Recent table (bỏ dòng trùng với latest, giống Powerball) */
-  document.getElementById('recentTableHead').innerHTML='<th>Date</th><th>Numbers</th><th>Copy</th>';
-  const tbody=document.getElementById('recentBody');
-  const withoutLatest=rows.slice(0,-1);
-  const recent=withoutLatest.slice(-30).reverse();
-  if(recent.length===0){
-    tbody.innerHTML='<tr><td colspan="3" style="color:#778;">No earlier draws yet</td></tr>';
-    return;
-  }
-  tbody.innerHTML='';
-  recent.forEach(d=>{
-    const row=document.createElement('tr');
-    row.innerHTML=`
-      <td>${fmtDate(d.date)}</td>
-      <td>${d.numbers.join(' &nbsp; ')}</td>
-      <td><button class="btn-copy-row" onclick='copyVietlottRow(${JSON.stringify(d.numbers)}, this)'>📋</button></td>`;
-    tbody.appendChild(row);
-  });
-}
-
-function copyVietlottRow(numbers, btn){
-  copyToClipboard(numbers.join(' '), '✅ Copied draw');
-  if(btn){
-    const old=btn.textContent;
-    btn.textContent='✓';
-    btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent=old; btn.classList.remove('copied'); },1200);
-  }
-}
-
-/* ── PARSE TEXAS CSV raw format ── */
-/* Format: Powerball,month,day,year,n1,n2,n3,n4,n5,pb,multiplier */
-function parseTexasCSV(text){
-  return text.trim().split(/\r?\n/)
-    .filter(l=>l.trim()&&l.startsWith('Powerball'))
-    .map(l=>{
-      const c=l.split(',');
-      const month=parseInt(c[1],10);
-      const day=parseInt(c[2],10);
-      const year=parseInt(c[3],10);
-      const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const white=[c[4],c[5],c[6],c[7],c[8]].map(Number);
-      const pb=parseInt(c[9]);
-      return{date,white,pb};
-    });
-}
-
-/* ── DATA MODE (Raw / Sorted) ── */
-let dataMode='raw';
-function setDataMode(mode){
-  dataMode=mode;
-  document.querySelectorAll('.mode-tab').forEach(t=>{
-    t.classList.toggle('active', t.dataset.mode===mode);
-  });
-  renderRecent30(null);
-}
-
-/* ── RENDER RECENT 30 (loại bỏ draw mới nhất vì đã hiện ở trên) ── */
-function renderRecent30(data){
-  const tbody=document.getElementById('recentBody');
-  tbody.innerHTML='';
-  const src=data||(typeof draws!=='undefined'?draws:[]);
-  if(!src.length){
-    tbody.innerHTML='<tr><td colspan="4" style="color:#778;">No data</td></tr>';
-    return;
-  }
-  /* bỏ draw cuối cùng (latest) ra khỏi bảng vì đã hiển thị ở khối "LATEST DRAW" bên trên */
-  const withoutLatest=src.slice(0,-1);
-  const recent=withoutLatest.slice(-30).reverse();
-  recent.forEach(d=>{
-    const row=document.createElement('tr');
-    const whitesRaw=d.white||[];
-    const whitesShown=dataMode==='sorted' ? whitesRaw.slice().sort((a,b)=>a-b) : whitesRaw;
-    const pbVal=(d.pb!==undefined)?d.pb:d.powerball;
-    row.innerHTML=`
-      <td>${fmtDate(d.date)}</td>
-      <td>${whitesShown.join(' &nbsp; ')}</td>
-      <td class="pb-num">${pbVal}</td>
-      <td><button class="btn-copy-row" onclick='copyRow(${JSON.stringify(d.date)}, ${JSON.stringify(whitesShown)}, ${pbVal}, this)'>📋</button></td>`;
-    tbody.appendChild(row);
-  });
-}
-
-/* ── TOAST FEEDBACK ── */
-let toastTimer=null;
-function showToast(msg){
-  let t=document.getElementById('copyToast');
-  if(!t){
-    t=document.createElement('div');
-    t.id='copyToast';
-    t.className='toast';
-    document.body.appendChild(t);
-  }
-  t.textContent=msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3400);
-}
-
-/* ── CLIPBOARD HELPERS ── */
-function fallbackCopy(text,cb){
-  const ta=document.createElement('textarea');
-  ta.value=text;
-  ta.style.position='fixed';
-  ta.style.opacity='0';
-  document.body.appendChild(ta);
-  ta.select();
-  try{ document.execCommand('copy'); }catch(e){}
-  document.body.removeChild(ta);
-  if(cb) cb();
-}
-function copyToClipboard(text,successMsg){
-  const done=()=>showToast(successMsg||'✅ Copied!');
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));
-  }else{
-    fallbackCopy(text,done);
-  }
-}
-
-/* ── FORMAT 1 DRAW → đúng định dạng mà ô "dataInput" của EurekaLott-1A.html
-   thực sự nhận: CHỈ 6 số cách nhau bởi khoảng trắng (5 số trắng + Powerball),
-   KHÔNG ngày tháng, KHÔNG chữ "Powerball," — y hệt dòng 502 trong
-   EurekaLott-1A.html: qs('dataInput').value = selected.map(r => r.nums6.join(' ')) */
-function formatForNeuralInput(d){
-  const w=d.white||[];
-  const pb=(d.pb!==undefined)?d.pb:d.powerball;
-  return `${w[0]} ${w[1]} ${w[2]} ${w[3]} ${w[4]} ${pb}`;
-}
-function parseDrawDate(dateStr){
-  const p=dateStr.split('-').map(Number);
-  return new Date(p[0],p[1]-1,p[2]); /* local time, tránh lệch ngày do UTC */
-}
-function dateKeyLocal(d){
-  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
-}
-
-/* ── COPY 1 DÒNG ── */
-function copyRow(dateStr,white,pb,btn){
-  const line=formatForNeuralInput({white,pb});
-  const modeLabel = dataMode==='sorted' ? 'Sorted' : 'Raw';
-  const warn = dataMode==='sorted' ? ' ⚠️ Sorted order — switch to the Raw tab before pasting into Neural Networks input' : ' — ready to paste into Neural Networks input';
-  copyToClipboard(line, `✅ Copied draw ${fmtDate(dateStr)} (${modeLabel})${warn}`);
-  if(btn){
-    const old=btn.textContent;
-    btn.textContent='✓';
-    btn.classList.add('copied');
-    setTimeout(()=>{ btn.textContent=old; btn.classList.remove('copied'); },1200);
-  }
-}
-
-/* ── COPY 24 DRAWS — ĐÚNG LUẬT "3-CHECKPOINT" (giống hệt EurekaLott-1A.html) ──
-   POWERBALL_DRAW_DAYS = Mon(1) / Wed(3) / Sat(6).
-   nextDraw = ngày quay kế tiếp gần nhất tính từ hôm nay (kể cả hôm nay nếu đúng ngày quay).
-   cutoff   = nextDraw - 7 ngày (tức "cùng ngày trong tuần trước").
-   selected = tất cả draws có date <= cutoff, lấy 24 kỳ gần cutoff nhất. */
-const POWERBALL_DRAW_DAYS=[1,3,6];
-function getNextDrawDate(today){
-  const d=new Date(today.getFullYear(),today.getMonth(),today.getDate());
-  for(let i=0;i<7;i++){
-    if(POWERBALL_DRAW_DAYS.includes(d.getDay())) return d;
-    d.setDate(d.getDate()+1);
-  }
-  return d;
-}
-function getCutoffDate(today){
-  const nextDraw=getNextDrawDate(today);
-  const cutoff=new Date(nextDraw);
-  cutoff.setDate(cutoff.getDate()-7);
-  return cutoff;
-}
-function copy24Draws(){
-  if(typeof draws==='undefined'||!draws.length){
-    showToast('⚠️ No data available.');
-    return;
-  }
-  const today=new Date();
-  const cutoff=getCutoffDate(today);
-  const selected=draws.filter(d=>parseDrawDate(d.date)<=cutoff).slice(-24);
-  if(selected.length===0){
-    showToast('⚠️ No draws found before the cutoff.');
-    return;
-  }
-  /* theo đúng tab đang chọn (Raw hoặc Sorted), giống hệt nút copy từng dòng */
-  const isSorted = dataMode==='sorted';
-  const text=selected.map(d=>{
-    const white = isSorted ? (d.white||[]).slice().sort((a,b)=>a-b) : d.white;
-    return formatForNeuralInput({white, pb:(d.pb!==undefined)?d.pb:d.powerball});
-  }).join('\n');
-  const modeLabel = isSorted ? 'Sorted' : 'Raw';
-  const warn = isSorted ? ' ⚠️ Sorted order — Neural Networks needs Raw order to work correctly, switch to the Raw tab first for training/prediction' : ' — paste directly into the "Data" box on the Neural Networks page';
-  copyToClipboard(text, `✅ Copied ${selected.length} draws (${modeLabel}, cutoff: ${fmtDate(dateKeyLocal(cutoff))})${warn}`);
-}
-/* ── RENDER BALLS (latest) ── */
-function renderBalls(white,pb,dateStr,source){
-  document.getElementById('latestBalls').innerHTML=
-    white.map(n=>`<div class="ball">${n}</div>`).join('')+
-    `<div class="ball pb">${pb}</div>`;
-  document.getElementById('latestDate').textContent=fmtDate(dateStr)||'';
-  document.getElementById('latestSource').textContent=source||'';
-  document.getElementById('resultError').style.display='none';
-}
-
-function showError(msg){
-  document.getElementById('resultError').textContent=msg;
-  document.getElementById('resultError').style.display='block';
-  document.getElementById('latestBalls').innerHTML='<div class="ball spin">↻</div>';
-  document.getElementById('latestDate').textContent='';
-  document.getElementById('latestSource').textContent='';
-}
-
-/* ── LOAD LATEST from draws-data.js (no CORS issue) ── */
-function fetchLatestDraw(){
-  if(typeof draws==='undefined'||!draws.length){
-    showError('⚠️ No data available.');
-    return;
-  }
-  const d=draws[draws.length-1];
-  renderBalls(d.white, d.powerball, d.date, 'draws-data.js (local)');
-}
-
-/* ── LANGUAGE ── */
-function setLang(lang){
-  const text=lang==='vi'
-    ?'TỪ DẤU VẾT ĐẾN TÍN HIỆU • TỪ TÍN HIỆU ĐẾN CẤU TRÚC ẨN • '
-    :'FROM TRACES TO SIGNALS • FROM SIGNALS TO HIDDEN STRUCTURES • ';
-  document.getElementById('ledText').innerHTML=text;
-  document.getElementById('ledText2').innerHTML=text;
-}
-</script>
-
+<!-- ⚔️ CHỈ 1 DÒNG DUY NHẤT — toàn bộ logic nằm trong js/main.js và các
+     module nó import. KHÔNG còn <script> nội tuyến nào ở đây nữa, nên
+     lần sau thêm/sửa tính năng sẽ không còn nguy cơ "sửa nhầm 1 biến là
+     hỏng cả View Result" — mỗi module giờ độc lập hoàn toàn. -->
+<script type="module" src="js/main.js"></script>
 <script src="bruce-banner.js"></script>
 
 </body>
