@@ -43,31 +43,35 @@ jobs:
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add draws-data.js verified-data.js archive-data.js vietlott-data.js
 
-          if git diff --staged --quiet; then
-            echo "ℹ️  Không có gì thay đổi, bỏ qua commit."
-            exit 0
-          fi
-
-          git commit -m "🔄 Pipeline update"
-
-          # ⚔️ Retry push tối đa 5 lần: nếu bị "non-fast-forward" (do vừa có
-          # commit khác lên main), tự động git pull --rebase rồi push lại,
-          # thay vì chết cứng như trước.
+          # ⚔️ ĐỔI CHIẾN THUẬT: bỏ hẳn "git pull --rebase" (dễ kẹt/dễ vỡ khi
+          # gặp xung đột, từng khiến script chết cứng dù đã thử -X ours).
+          # Giờ dùng: fetch + reset --soft — đưa con trỏ nhánh local về ĐÚNG
+          # remote mới nhất, nhưng GIỮ NGUYÊN working tree (file *-data.js
+          # vừa được các script node sinh ra ở đầu job). Vì không dùng 3-way
+          # merge nên KHÔNG BAO GIỜ bị "conflict" — chỉ đơn giản là commit
+          # lại bản data mới nhất của lần chạy này lên trên nền remote mới
+          # nhất. An toàn 100% cho use-case này vì các file *-data.js đều do
+          # máy tự sinh lại toàn bộ mỗi lần chạy, không có gì "quý giá" cần
+          # giữ nguyên riêng từ phía remote.
           for i in 1 2 3 4 5; do
+            git add draws-data.js verified-data.js archive-data.js vietlott-data.js
+
+            if git diff --staged --quiet; then
+              echo "ℹ️  Không có gì thay đổi, bỏ qua commit."
+              exit 0
+            fi
+
+            git commit -m "🔄 Pipeline update"
+
             if git push origin main; then
               echo "✅ Push thành công (lần thử $i)"
               exit 0
             fi
-            echo "⚠️  Push thất bại (lần thử $i) — pull --rebase rồi thử lại..."
-            # ⚔️ -X ours: nếu rebase gặp xung đột (vd. dòng "Last updated: ..."
-            # bị 2 lần chạy gần nhau ghi 2 giá trị khác nhau trên CÙNG 1 dòng
-            # của CÙNG 1 file) → tự động ưu tiên giữ bản MỚI của lần chạy này,
-            # không cần người can thiệp tay. An toàn vì các file *-data.js đều
-            # do máy tự sinh lại toàn bộ mỗi lần chạy — không có nội dung nào
-            # "quý giá" cần giữ nguyên từ phía remote trong trường hợp xung đột.
-            git pull --rebase -X ours origin main || { git rebase --abort 2>/dev/null; echo "⚠️ Rebase thất bại, bỏ qua và thử push lại ở vòng sau"; }
+
+            echo "⚠️  Push thất bại (lần thử $i) — đồng bộ lại với remote mới nhất rồi thử lại..."
+            git fetch origin main
+            git reset --soft origin/main
             sleep 3
           done
 
