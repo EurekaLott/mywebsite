@@ -120,9 +120,10 @@ async function handleKenoLive() {
 }
 
 /* ── HANDLER: /api/keno-copy24 ──
-   1. Lấy trang "hôm nay" (đủ toàn bộ kỳ trong ngày) → xác định kỳ LIVE mới nhất.
-   2. cutoffId = latestId - 3 (lùi 3 kỳ — luật 3-Checkpoint của EurekaLott
-      áp dụng CHUNG cho mọi sản phẩm, kể cả Keno).
+   1. Lấy trang "hôm nay" (đủ toàn bộ kỳ trong ngày) → xác định kỳ LIVE
+      mới nhất (= kỳ ĐÃ quay xong, đang hiển thị "Latest Draw" trên web).
+   2. cutoffId = latestId - 2 (tương đương "kỳ khách sắp mua vé - 3" theo
+      đúng luật 3-Checkpoint gốc — vì kỳ sắp mua = latestId + 1).
    3. Cần 24 kỳ LIỀN TRƯỚC cutoffId → windowStart = cutoffId - 23.
    4. Nếu trang "hôm nay" chưa đủ dữ liệu để phủ hết windowStart (ví dụ đầu
       giờ sáng, ngày mới bắt đầu quay chưa được bao nhiêu kỳ) → lấy thêm
@@ -143,12 +144,18 @@ async function handleKenoCopy24() {
       return new Response(JSON.stringify({ ok: false, error: 'Không parse được kỳ nào từ trang hôm nay — cấu trúc HTML có thể đã đổi.' }), { status: 502, headers: jsonHeaders });
     }
 
-    // Kỳ LIVE mới nhất = id lớn nhất parse được
-    // ⚔️ Luật 3-Checkpoint của EurekaLott ÁP DỤNG CHO CẢ Keno — lùi 3 kỳ
-    // so với Latest rồi mới lấy 24 kỳ liền trước làm cutoff. (Đã có lúc bị
-    // sửa nhầm thành cutoffId = latestId, KHÔI PHỤC lại đúng bản gốc.)
+    // Kỳ LIVE mới nhất = id lớn nhất parse được (= kỳ ĐÃ quay xong, đang
+    // hiển thị là "Latest Draw" trên web — KHÁC với "kỳ khách sắp mua vé"
+    // là kỳ latestId + 1, chưa quay).
+    // ⚔️ Luật 3-Checkpoint gốc: cutoff = (kỳ SẮP quay) − 3
+    //                                  = (latestId + 1) − 3
+    //                                  = latestId − 2
+    // Trước đây code để "latestId - 3" là SAI 1 đơn vị (nhầm latestId với
+    // kỳ sắp quay). Đã sửa lại đúng thành "latestId - 2".
+    // Ví dụ: kỳ khách mua vé #0290039 → Latest #0290038 → cutoff #0290036
+    // = latestId(38) - 2 = 36. ✅
     const latestId = Math.max(...allRows.map(r => parseInt(r.id, 10)));
-    const cutoffId = latestId - 3;
+    const cutoffId = latestId - 2;
     const windowStart = cutoffId - 23;
     const windowEnd = cutoffId;
 
