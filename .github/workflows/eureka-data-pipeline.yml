@@ -61,7 +61,13 @@ jobs:
               exit 0
             fi
             echo "⚠️  Push thất bại (lần thử $i) — pull --rebase rồi thử lại..."
-            git pull --rebase origin main
+            # ⚔️ -X ours: nếu rebase gặp xung đột (vd. dòng "Last updated: ..."
+            # bị 2 lần chạy gần nhau ghi 2 giá trị khác nhau trên CÙNG 1 dòng
+            # của CÙNG 1 file) → tự động ưu tiên giữ bản MỚI của lần chạy này,
+            # không cần người can thiệp tay. An toàn vì các file *-data.js đều
+            # do máy tự sinh lại toàn bộ mỗi lần chạy — không có nội dung nào
+            # "quý giá" cần giữ nguyên từ phía remote trong trường hợp xung đột.
+            git pull --rebase -X ours origin main || { git rebase --abort 2>/dev/null; echo "⚠️ Rebase thất bại, bỏ qua và thử push lại ở vòng sau"; }
             sleep 3
           done
 
