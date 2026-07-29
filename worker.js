@@ -121,9 +121,9 @@ async function handleKenoLive() {
 
 /* ── HANDLER: /api/keno-copy24 ──
    1. Lấy trang "hôm nay" (đủ toàn bộ kỳ trong ngày) → xác định kỳ LIVE mới nhất.
-   2. cutoffId = latestId (chính kỳ Latest — Keno quay liên tục nên không
-      áp dụng luật lùi 3 kỳ như Powerball/Vietlott quay theo lịch tuần).
-   3. Cần 24 kỳ TÍNH TỪ cutoffId trở về trước → windowStart = cutoffId - 23.
+   2. cutoffId = latestId - 3 (lùi 3 kỳ — luật 3-Checkpoint của EurekaLott
+      áp dụng CHUNG cho mọi sản phẩm, kể cả Keno).
+   3. Cần 24 kỳ LIỀN TRƯỚC cutoffId → windowStart = cutoffId - 23.
    4. Nếu trang "hôm nay" chưa đủ dữ liệu để phủ hết windowStart (ví dụ đầu
       giờ sáng, ngày mới bắt đầu quay chưa được bao nhiêu kỳ) → lấy thêm
       trang "hôm qua" rồi gộp lại. */
@@ -144,12 +144,11 @@ async function handleKenoCopy24() {
     }
 
     // Kỳ LIVE mới nhất = id lớn nhất parse được
-    // ⚔️ Keno quay LIÊN TỤC nhiều lần/ngày (không theo lịch tuần như
-    // Powerball/Vietlott 6/55 v.v.) nên KHÔNG áp dụng luật lùi 3 kỳ nữa —
-    // cutoffId = chính kỳ Latest, để "Copy 24 Draws" luôn bao gồm cả dòng
-    // Latest đang hiển thị ở trên, không bị lệch/thiếu 3 kỳ so với UI.
+    // ⚔️ Luật 3-Checkpoint của EurekaLott ÁP DỤNG CHO CẢ Keno — lùi 3 kỳ
+    // so với Latest rồi mới lấy 24 kỳ liền trước làm cutoff. (Đã có lúc bị
+    // sửa nhầm thành cutoffId = latestId, KHÔI PHỤC lại đúng bản gốc.)
     const latestId = Math.max(...allRows.map(r => parseInt(r.id, 10)));
-    const cutoffId = latestId;
+    const cutoffId = latestId - 3;
     const windowStart = cutoffId - 23;
     const windowEnd = cutoffId;
 
