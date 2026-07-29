@@ -20,8 +20,7 @@ permissions:
 
 # ⚔️ Chặn 2 lần "Run workflow" chạy song song cùng lúc — nếu bạn bấm nút
 # Run workflow thêm lần nữa trong lúc job cũ chưa xong, GitHub sẽ tự HUỶ
-# job cũ và chỉ giữ lại job mới nhất (cancel-in-progress: true). Đây chính
-# là nguyên nhân gây lỗi "non-fast-forward" khi 2 job cùng push 1 lúc.
+# job cũ và chỉ giữ lại job mới nhất (cancel-in-progress: true).
 concurrency:
   group: eureka-data-pipeline
   cancel-in-progress: true
@@ -41,20 +40,29 @@ jobs:
       - run: node verify.js
       - run: node archive.js
       - run: |
+          set +e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # ⚔️ ĐỔI CHIẾN THUẬT: bỏ hẳn "git pull --rebase" (dễ kẹt/dễ vỡ khi
-          # gặp xung đột, từng khiến script chết cứng dù đã thử -X ours).
-          # Giờ dùng: fetch + reset --soft — đưa con trỏ nhánh local về ĐÚNG
-          # remote mới nhất, nhưng GIỮ NGUYÊN working tree (file *-data.js
-          # vừa được các script node sinh ra ở đầu job). Vì không dùng 3-way
-          # merge nên KHÔNG BAO GIỜ bị "conflict" — chỉ đơn giản là commit
-          # lại bản data mới nhất của lần chạy này lên trên nền remote mới
-          # nhất. An toàn 100% cho use-case này vì các file *-data.js đều do
-          # máy tự sinh lại toàn bộ mỗi lần chạy, không có gì "quý giá" cần
-          # giữ nguyên riêng từ phía remote.
+          # ⚔️ "set +e" ở trên: TẮT hẳn chế độ tự-chết-khi-lỗi (errexit) của
+          # GitHub Actions cho RIÊNG bước này — để dù bất kỳ lệnh git nào bên
+          # dưới trả về lỗi, script vẫn tiếp tục chạy tới dòng tiếp theo thay
+          # vì bị giết ngang giữa chừng (nghi vấn chính gây ra hiện tượng
+          # script "chết lì" ngay sau lần push đầu tiên mà không thấy được
+          # log của các lần thử lại). Ta tự kiểm soát exit code bằng $? thay
+          # vì để bash tự động xử lý.
+
+          success=0
           for i in 1 2 3 4 5; do
+            echo "── Lần thử $i ──"
+
+            # ⚔️ ĐỒNG BỘ TRƯỚC KHI COMMIT (không chỉ khi push fail) — đưa
+            # nhánh local về đúng remote mới nhất NGAY TỪ ĐẦU mỗi vòng lặp,
+            # giữ nguyên working tree (file *-data.js vừa sinh ra), để giảm
+            # tối đa khung thời gian dễ bị đụng độ với commit khác.
+            git fetch origin main
+            git reset --soft origin/main
+
             git add draws-data.js verified-data.js archive-data.js vietlott-data.js
 
             if git diff --staged --quiet; then
@@ -64,16 +72,22 @@ jobs:
 
             git commit -m "🔄 Pipeline update"
 
-            if git push origin main; then
+            git push origin main
+            pushResult=$?
+
+            if [ $pushResult -eq 0 ]; then
               echo "✅ Push thành công (lần thử $i)"
-              exit 0
+              success=1
+              break
             fi
 
-            echo "⚠️  Push thất bại (lần thử $i) — đồng bộ lại với remote mới nhất rồi thử lại..."
-            git fetch origin main
-            git reset --soft origin/main
+            echo "⚠️  Push thất bại (lần thử $i, exit code $pushResult) — sẽ đồng bộ lại và thử tiếp..."
             sleep 3
           done
+
+          if [ $success -eq 1 ]; then
+            exit 0
+          fi
 
           echo "❌ Push thất bại sau 5 lần thử."
           exit 1
