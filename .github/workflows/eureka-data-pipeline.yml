@@ -1,5 +1,20 @@
 name: Pipeline
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  # ⚔️ THÊM LỊCH TỰ ĐỘNG — trước đây CHỈ có workflow_dispatch (chạy tay),
+  # nghĩa là pipeline nằm im cho tới khi có người vào tab Actions bấm
+  # "Run workflow". Đây chính là lý do draws-data.js/vietlott-data.js
+  # đứng yên nhiều ngày trong khi Keno (gọi live trực tiếp, không qua
+  # pipeline này) vẫn luôn mới.
+  # Giờ chạy tính theo UTC — GitHub Actions không hỗ trợ giờ VN trực tiếp:
+  #   16:00 UTC = 23:00 giờ Việt Nam (UTC+7)
+  #   00:00 UTC = 07:00 giờ Việt Nam — chạy thêm 1 lượt buổi sáng để
+  #     bắt kịp kết quả Powerball Mỹ (quay đêm giờ Mỹ = sáng sớm giờ VN)
+  # ⚠️ GitHub có thể trễ vài phút tới ~1 tiếng so với giờ đặt (best-effort,
+  # không đảm bảo chạy đúng phút — bình thường với free tier).
+  schedule:
+    - cron: '0 16 * * *'
+    - cron: '0 0 * * *'
 permissions:
   contents: write
 
