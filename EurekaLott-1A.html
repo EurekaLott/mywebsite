@@ -224,6 +224,20 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ⚔️ Các hàm dùng CHUNG cho cả "Auto Run" lẫn tính năng "Checkpoint Status" mới —
 // tách ra phạm vi toàn cục thay vì giấu trong 1 hàm, để tái sử dụng được.
 const POWERBALL_DRAW_DAYS = [1, 3, 6];
+// ⚔️ SỬA BUG múi giờ (đồng bộ với EurekaLott-6.html): "today" phải quy đổi
+// về giờ Mỹ (Texas Lottery quay theo America/Chicago), KHÔNG dùng giờ local
+// trình duyệt (VN đi trước Mỹ ~12-13 tiếng, gây lệch 1 kỳ quay khi tính
+// nextDraw/cutoff).
+function getUSLotteryToday() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const y = Number(parts.find(p => p.type === 'year').value);
+  const m = Number(parts.find(p => p.type === 'month').value);
+  const d = Number(parts.find(p => p.type === 'day').value);
+  return new Date(y, m - 1, d);
+}
 function getNextDrawDate(today) {
   const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   for (let i = 0; i < 7; i++) {
@@ -493,7 +507,7 @@ async function autoFetchAndRun() {
   const rows = parsePowerballCSV(rawText);
   if (rows.length === 0) throw new Error('Could not parse any rows from the Texas Lottery data returned.');
 
-  const today = new Date();
+  const today = getUSLotteryToday();
   const nextDraw = getNextDrawDate(today);
   const cutoff = getCutoffDate(today);
   const selected = rows.filter(r => r.date <= cutoff).slice(-24);
