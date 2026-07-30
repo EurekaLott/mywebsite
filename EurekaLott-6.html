@@ -228,6 +228,23 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ⚔️ Các hàm dùng CHUNG cho cả "Auto Run" lẫn tính năng "Checkpoint Status" mới —
 // tách ra phạm vi toàn cục thay vì giấu trong 1 hàm, để tái sử dụng được.
 const POWERBALL_DRAW_DAYS = [1, 3, 6];
+// ⚔️ BUG THẬT ĐÃ TÌM RA: "today" trước đây lấy thẳng new Date() = giờ LOCAL
+// của trình duyệt người dùng. Texas Lottery (Powerball) quay số theo giờ Mỹ
+// (Central Time). Múi giờ Việt Nam (UTC+7) đi trước Mỹ Central khoảng
+// 12–13 tiếng, nên khi ở Việt Nam đã sang NGÀY MỚI, bên Mỹ vẫn còn là ngày
+// hôm trước — dùng new Date() khiến nextDraw/cutoff bị tính NHẢY SỚM 1 kỳ
+// quay, kéo theo "Latest" bị lệch từ 22/7 thành 25/7 (đúng như phát hiện).
+// Sửa: luôn quy đổi "today" về đúng ngày dương lịch tại America/Chicago.
+function getUSLotteryToday() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const y = Number(parts.find(p => p.type === 'year').value);
+  const m = Number(parts.find(p => p.type === 'month').value);
+  const d = Number(parts.find(p => p.type === 'day').value);
+  return new Date(y, m - 1, d);
+}
 function getNextDrawDate(today) {
   const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   for (let i = 0; i < 7; i++) {
@@ -493,7 +510,7 @@ async function autoFetchAndRun() {
   const rows = parsePowerballCSV(rawText);
   if (rows.length === 0) throw new Error('Could not parse any rows from the Texas Lottery data returned.');
 
-  const today = new Date();
+  const today = getUSLotteryToday();
   const nextDraw = getNextDrawDate(today);
   const cutoff = getCutoffDate(today);
   const selected = rows.filter(r => r.date <= cutoff).slice(-24);
