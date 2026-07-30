@@ -451,14 +451,10 @@ async function runPredict(trueLatestDrawDate = null) {
 
   qs('result').innerText =
     `WF-CV MAE: ${data.wfMAE.toFixed(4)}\n` +
-    `Baseline MAE: ${data.baseMAE.toFixed(4)}\n` +
-    `${data.beatBase ? '✅ Beat baseline' : '⚠️ Below baseline'}\n` +
-    `WF Variance: ${data.wfVariance.toFixed(4)}\n` +
+    `Final Energy (EBM): ${data.finalEnergy.toFixed(4)}\n` +
     `Smoothed Loss: ${data.smoothedLoss.toFixed(6)}\n` +
-    `Epochs: ${data.epochsCompleted}/${data.epochsRequested}${data.truncatedByDeadline ? ' (stopped early — server time budget reached)' : ''}\n` +
-    `Gap: ${data.gapReport}\n` +
-    `${data.aspReport}\n` +
-    `Curriculum: ${data.curriculumReport}\n` +
+    `Epochs: ${data.epochsCompleted}/${data.epochsRequested}\n` +
+    `Architecture: ${data.architecture}\n` +
     `Prediction: ${data.maskedPrediction}`;
 
   setStatus(`🌟 **Final prediction**: ${data.maskedPrediction}`, true);
