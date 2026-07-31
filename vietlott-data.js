@@ -2,7 +2,7 @@
 // Do not edit manually.
 // Primary source : GitHub vietvudanh/vietlott-data (JSONL, cập nhật hằng ngày)
 // Fallback source: Minh Ngọc (minhngoc.net.vn) — chỉ power655 & power645
-// Last updated: 2026-07-30T17:21:09.715Z
+// Last updated: 2026-07-31T03:34:29.270Z
 // Mỗi sản phẩm: { date, id, numbers[] } — numbers[] RAW ORDER
 // null nghĩa là cả 2 nguồn đều lỗi lần cào gần nhất — giữ nguyên dữ liệu cũ nếu có
 
