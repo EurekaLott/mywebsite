@@ -30,6 +30,13 @@ function getCutoffDateGeneric(today, drawDays){
 // tự động cập nhật ở nơi import khi giá trị đổi ở đây — không cần setter.
 export let currentVietlottKey=null;
 
+// ⚔️ Gọi khi chuyển sang xem xổ số Mỹ (Powerball/Mega Millions/Lotto Texas)
+// — PHẢI reset về null, nếu không handleRefreshClick() ở router.js sẽ
+// tưởng nhầm vẫn đang xem Vietlott/Keno (bug tiềm ẩn đã sửa).
+export function resetVietlottKey(){
+  currentVietlottKey = null;
+}
+
 export function copy24VietlottDraws(){
   const key=currentVietlottKey;
   if(!key){ showToast('⚠️ No product selected.'); return; }
