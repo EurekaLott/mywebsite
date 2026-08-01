@@ -8,7 +8,8 @@
 import './common.js';
 import './menu.js';
 import './language.js';
-import './powerball-view.js';
+import './us-lottery-constants.js';
+import './us-lottery-view.js';
 import './vietlott-constants.js';
 import './keno-live.js';
 import './vietlott-view.js';
