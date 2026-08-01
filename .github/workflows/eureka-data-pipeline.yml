@@ -1,93 +1,153 @@
 name: Pipeline
 on:
   workflow_dispatch:
-  # ⚔️ THÊM LỊCH TỰ ĐỘNG — trước đây CHỈ có workflow_dispatch (chạy tay),
-  # nghĩa là pipeline nằm im cho tới khi có người vào tab Actions bấm
-  # "Run workflow". Đây chính là lý do draws-data.js/vietlott-data.js
-  # đứng yên nhiều ngày trong khi Keno (gọi live trực tiếp, không qua
-  # pipeline này) vẫn luôn mới.
-  # Giờ chạy tính theo UTC — GitHub Actions không hỗ trợ giờ VN trực tiếp:
-  #   16:00 UTC = 23:00 giờ Việt Nam (UTC+7)
-  #   00:00 UTC = 07:00 giờ Việt Nam — chạy thêm 1 lượt buổi sáng để
-  #     bắt kịp kết quả Powerball Mỹ (quay đêm giờ Mỹ = sáng sớm giờ VN)
-  # ⚠️ GitHub có thể trễ vài phút tới ~1 tiếng so với giờ đặt (best-effort,
-  # không đảm bảo chạy đúng phút — bình thường với free tier).
   schedule:
-    - cron: '0 16 * * *'
-    - cron: '0 0 * * *'
+    - cron: '0 16 * * *'   # 23:00 giờ VN
+    - cron: '0 0 * * *'    # 07:00 giờ VN (bắt kịp Powerball Mỹ quay đêm)
 permissions:
   contents: write
 
-# ⚔️ Chặn 2 lần "Run workflow" chạy song song cùng lúc — nếu bạn bấm nút
-# Run workflow thêm lần nữa trong lúc job cũ chưa xong, GitHub sẽ tự HUỶ
-# job cũ và chỉ giữ lại job mới nhất (cancel-in-progress: true).
-concurrency:
-  group: eureka-data-pipeline
-  cancel-in-progress: true
+# ═══════════════════════════════════════════════════════════════
+# ⚔️ KIẾN TRÚC MỚI — TỪNG NGUỒN DỮ LIỆU LÀ 1 JOB ĐỘC LẬP HOÀN TOÀN.
+#
+# Vấn đề bản cũ: TẤT CẢ nguồn dữ liệu chạy tuần tự trong CÙNG 1 job,
+# rồi mới commit 1 lần duy nhất ở cuối. Chỉ cần 1 bước ở giữa lỗi
+# (ví dụ archive.js) → toàn bộ dừng lại → dù fetch-draws.js/
+# fetch-vietlott.js đã chạy thành công, dữ liệu mới đó CŨNG KHÔNG BAO
+# GIỜ được commit, vì bước git nằm ở cuối cùng, sau tất cả. Đây chính
+# là lý do Powerball + Vietlott cùng đứng yên trong khi Keno (không đi
+# qua pipeline này) vẫn sống.
+#
+# Bản mới: mỗi nguồn (Powerball, Mega Millions, Lotto Texas, Vietlott,
+# Verify+Archive) là 1 JOB RIÊNG, chạy song song, mỗi job TỰ COMMIT
+# ĐÚNG FILE CỦA MÌNH. Job này lỗi/treo hoàn toàn không ảnh hưởng job
+# khác. Sau này thêm nguồn mới (VD: EuroMillions) → chỉ copy 1 khối
+# job y hệt bên dưới, đổi tên/script/file — KHÔNG đụng job nào khác.
+# ═══════════════════════════════════════════════════════════════
 
 jobs:
-  run:
+
+  # ── Hàm dùng chung (copy giống nhau ở mỗi job, xem "COMMIT_STEP" bên dưới) ──
+  # Mỗi job đều có bước cuối giống hệt nhau: fetch+reset+add+commit+push,
+  # retry 5 lần, chỉ khác đúng 2 chỗ: (1) script nào chạy, (2) file nào commit.
+
+  fetch-powerball:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+        with: { node-version: 20 }
       - run: node fetch-draws.js
+      - run: |
+          set +e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --soft origin/main
+            git add draws-data.js
+            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
+            git commit -m "🔄 Powerball update"
+            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
+            echo "⚠️ Push lỗi, thử lại..."; sleep 3
+          done
+          echo "❌ Push thất bại sau 5 lần."; exit 1
+
+  fetch-megamillions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node fetch-megamillions.js
+      - run: |
+          set +e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --soft origin/main
+            git add megamillions-data.js
+            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
+            git commit -m "🔄 Mega Millions update"
+            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
+            echo "⚠️ Push lỗi, thử lại..."; sleep 3
+          done
+          echo "❌ Push thất bại sau 5 lần."; exit 1
+
+  fetch-lottotexas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node fetch-lottotexas.js
+      - run: |
+          set +e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --soft origin/main
+            git add lottotexas-data.js
+            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
+            git commit -m "🔄 Lotto Texas update"
+            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
+            echo "⚠️ Push lỗi, thử lại..."; sleep 3
+          done
+          echo "❌ Push thất bại sau 5 lần."; exit 1
+
+  fetch-vietlott:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
       - run: node fetch-vietlott.js
+      - run: |
+          set +e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --soft origin/main
+            git add vietlott-data.js
+            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
+            git commit -m "🔄 Vietlott update"
+            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
+            echo "⚠️ Push lỗi, thử lại..."; sleep 3
+          done
+          echo "❌ Push thất bại sau 5 lần."; exit 1
+
+  # ── Verify + Archive (tính năng Prediction Center) — TÁCH RIÊNG khỏi
+  #    3 job trên. Lỗi ở đây KHÔNG còn làm Powerball/Vietlott bị kẹt theo
+  #    như bản cũ (trước đây archive.js lỗi là kéo sập luôn cả 2 cái kia). ──
+  verify-and-archive:
+    runs-on: ubuntu-latest
+    needs: fetch-powerball   # đợi Powerball xong để verify.js có draws-data.js mới nhất (không bắt buộc phải thành công)
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
       - run: node verify.js
       - run: node archive.js
       - run: |
           set +e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # ⚔️ "set +e" ở trên: TẮT hẳn chế độ tự-chết-khi-lỗi (errexit) của
-          # GitHub Actions cho RIÊNG bước này — để dù bất kỳ lệnh git nào bên
-          # dưới trả về lỗi, script vẫn tiếp tục chạy tới dòng tiếp theo thay
-          # vì bị giết ngang giữa chừng (nghi vấn chính gây ra hiện tượng
-          # script "chết lì" ngay sau lần push đầu tiên mà không thấy được
-          # log của các lần thử lại). Ta tự kiểm soát exit code bằng $? thay
-          # vì để bash tự động xử lý.
-
-          success=0
           for i in 1 2 3 4 5; do
-            echo "── Lần thử $i ──"
-
-            # ⚔️ ĐỒNG BỘ TRƯỚC KHI COMMIT (không chỉ khi push fail) — đưa
-            # nhánh local về đúng remote mới nhất NGAY TỪ ĐẦU mỗi vòng lặp,
-            # giữ nguyên working tree (file *-data.js vừa sinh ra), để giảm
-            # tối đa khung thời gian dễ bị đụng độ với commit khác.
             git fetch origin main
             git reset --soft origin/main
-
-            git add draws-data.js verified-data.js archive-data.js vietlott-data.js
-
-            if git diff --staged --quiet; then
-              echo "ℹ️  Không có gì thay đổi, bỏ qua commit."
-              exit 0
-            fi
-
-            git commit -m "🔄 Pipeline update"
-
-            git push origin main
-            pushResult=$?
-
-            if [ $pushResult -eq 0 ]; then
-              echo "✅ Push thành công (lần thử $i)"
-              success=1
-              break
-            fi
-
-            echo "⚠️  Push thất bại (lần thử $i, exit code $pushResult) — sẽ đồng bộ lại và thử tiếp..."
-            sleep 3
+            git add verified-data.js archive-data.js
+            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
+            git commit -m "🔄 Verify+Archive update"
+            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
+            echo "⚠️ Push lỗi, thử lại..."; sleep 3
           done
-
-          if [ $success -eq 1 ]; then
-            exit 0
-          fi
-
-          echo "❌ Push thất bại sau 5 lần thử."
-          exit 1
+          echo "❌ Push thất bại sau 5 lần."; exit 1
