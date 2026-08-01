@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>EurekaLott | Where Dreams Begin</title>
 <script src="draws-data.js"></script>
+<script src="megamillions-data.js"></script>
+<script src="lottotexas-data.js"></script>
 <script src="vietlott-data.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -203,7 +205,8 @@ body{
       </button>
       <div class="dropdown-menu" id="dropdownMenu">
         <div class="dd-item" onclick="selectLottery('powerball')">🎱 Powerball USA</div>
-        <div class="dd-item disabled">🎲 Mega Millions <span class="coming">Soon</span></div>
+        <div class="dd-item" onclick="selectLottery('megamillions')">🎲 Mega Millions</div>
+        <div class="dd-item" onclick="selectLottery('lottotexas')">🤠 Lotto Texas</div>
         <div class="dd-item disabled">🇪🇺 EuroMillions <span class="coming">Soon</span></div>
         <div class="dd-item disabled">🇦🇺 Oz Lotto <span class="coming">Soon</span></div>
 
@@ -233,9 +236,9 @@ body{
        bên dưới, đổi số + tên file, dán vào, xong — không sửa gì khác. -->
   <div class="dropdown-menu" id="neuralMenu">
 
-    <div class="dd-item"
-         onclick="window.location.href='EurekaLott-1C.html'">
+    <div class="dd-item disabled">
       🎱 Powerball 1
+      <span class="coming">Soon</span>
     </div>
 
     <div class="dd-item"
@@ -268,9 +271,9 @@ body{
       🎱 Powerball 7
     </div>
 
-    <div class="dd-item"
-         onclick="window.location.href='EurekaLott-8.html'">
+    <div class="dd-item disabled">
       🎱 Powerball 8
+      <span class="coming">Soon</span>
     </div>
 
     <div class="dd-item disabled">
