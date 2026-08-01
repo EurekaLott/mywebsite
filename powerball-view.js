@@ -9,12 +9,29 @@
  */
 import { fmtDate, parseDrawDate, dateKeyLocal, copyToClipboard, showToast } from './common.js';
 
-/* ── RENDER BALLS (latest) ── */
+/* ── DATA MODE (Raw / Sorted) — khai báo TRƯỚC renderBalls vì cần dùng ngay ── */
+let dataMode='raw';
+
+function formatForNeuralInput(d){
+  const w=d.white||[];
+  const pb=(d.pb!==undefined)?d.pb:d.powerball;
+  return `${w[0]} ${w[1]} ${w[2]} ${w[3]} ${w[4]} ${pb}`;
+}
+
+/* ── RENDER BALLS (latest) ──
+   ⚔️ SỬA 2 LỖI:
+   1. Giờ có nút "📋 Copy" ngay cạnh ngày, giống hệt pattern Keno/Vietlott.
+   2. Giờ tôn trọng dataMode (raw/sorted) — trước đây luôn hiện raw dù
+      đang bấm tab Sorted, chỉ có bảng Recent 30 bên dưới là đổi theo. */
 export function renderBalls(white,pb,dateStr,source){
+  const whitesShown = dataMode==='sorted' ? (white||[]).slice().sort((a,b)=>a-b) : white;
   document.getElementById('latestBalls').innerHTML=
-    white.map(n=>`<div class="ball">${n}</div>`).join('')+
+    whitesShown.map(n=>`<div class="ball">${n}</div>`).join('')+
     `<div class="ball pb">${pb}</div>`;
-  document.getElementById('latestDate').textContent=fmtDate(dateStr)||'';
+  const line = formatForNeuralInput({white: whitesShown, pb});
+  document.getElementById('latestDate').innerHTML=
+    (fmtDate(dateStr)||'') +
+    ` <button class="btn-copy-row" onclick="copyToClipboard('${line}','✅ Copied latest draw (${dataMode==='sorted'?'Sorted':'Raw'})')">📋 Copy</button>`;
   document.getElementById('latestSource').textContent=source||'';
   document.getElementById('resultError').style.display='none';
 }
@@ -38,12 +55,12 @@ export function fetchLatestDraw(){
 }
 
 /* ── DATA MODE (Raw / Sorted) ── */
-let dataMode='raw';
 export function setDataMode(mode){
   dataMode=mode;
   document.querySelectorAll('.mode-tab').forEach(t=>{
     t.classList.toggle('active', t.dataset.mode===mode);
   });
+  fetchLatestDraw();   // ⚔️ THIẾU dòng này là nguyên nhân lỗi #2 — Latest Draw không đổi theo Sorted
   renderRecent30(null);
 }
 
@@ -70,12 +87,6 @@ export function renderRecent30(data){
       <td><button class="btn-copy-row" onclick='copyRow(${JSON.stringify(d.date)}, ${JSON.stringify(whitesShown)}, ${pbVal}, this)'>📋</button></td>`;
     tbody.appendChild(row);
   });
-}
-
-function formatForNeuralInput(d){
-  const w=d.white||[];
-  const pb=(d.pb!==undefined)?d.pb:d.powerball;
-  return `${w[0]} ${w[1]} ${w[2]} ${w[3]} ${w[4]} ${pb}`;
 }
 
 export function copyRow(dateStr,white,pb,btn){
