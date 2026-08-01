@@ -1,18 +1,16 @@
 /**
- * ⚔️ router.js — "Cầu nối" duy nhất giữa Powerball / Vietlott / Keno.
- * Đây là NƠI DUY NHẤT được phép biết cả 3 module kia cùng lúc — mục
- * đích để powerball-view.js, vietlott-view.js, keno-live.js không cần
- * biết tới nhau (trừ vietlott-view.js gọi keno-live.js, xem file đó).
+ * ⚔️ router.js — "Cầu nối" duy nhất giữa Xổ Số Mỹ (Powerball/Mega
+ * Millions/Lotto Texas) / Vietlott / Keno.
  *
- * Chứa: selectLottery (bấm chọn loại xổ số nào trong menu View Results),
- * showPowerballControls (ẩn/hiện nút riêng cho Powerball),
- * handleRefreshClick (nút Refresh — sửa bug "bấm Refresh ở Keno lại ra
- * số Powerball" đã từng xảy ra, bằng cách LUÔN kiểm tra đang xem gì
- * trước khi quyết định gọi hàm nào).
+ * Muốn thêm 1 loại xổ số Mỹ mới (VD: Cash Five) → CHỈ cần thêm entry
+ * vào us-lottery-constants.js + 1 fetch script + 1 job pipeline —
+ * router.js này KHÔNG cần sửa gì, vì đã tổng quát hóa qua
+ * US_LOTTERY_CONFIGS thay vì hard-code từng loại.
  */
-import { fetchLatestDraw, renderRecent30, setDataMode } from './powerball-view.js';
-import { renderVietlott, currentVietlottKey } from './vietlott-view.js';
+import { fetchLatestDraw, renderRecent30, setDataMode, selectUsLottery } from './us-lottery-view.js';
+import { renderVietlott, currentVietlottKey, resetVietlottKey } from './vietlott-view.js';
 import { fetchKenoLive } from './keno-live.js';
+import { US_LOTTERY_CONFIGS } from './us-lottery-constants.js';
 
 export function showPowerballControls(show){
   document.getElementById('copy24Btn').style.display  = show?'':'none';
@@ -26,14 +24,12 @@ export function selectLottery(type){
   const panel=document.getElementById('resultPanel');
   panel.classList.add('open');
 
-  if(type==='powerball'){
+  if(US_LOTTERY_CONFIGS[type]){
+    // ⚔️ Powerball / Mega Millions / Lotto Texas — mọi loại xổ số Mỹ
+    // đều đi qua CHUNG 1 nhánh này (không hard-code riêng từng loại).
+    resetVietlottKey(); // tránh bug: currentVietlottKey còn sót giá trị cũ từ tab Vietlott/Keno trước đó
     showPowerballControls(true);
-    document.getElementById('resultTitle').textContent='🎱 Powerball USA';
-    document.getElementById('recentTableHead').innerHTML='<th>Date</th><th>White Balls</th><th>PB</th><th>Copy</th>';
-    document.getElementById('recentNote').textContent='(not counting the latest draw already shown above)';
-    setDataMode('raw');
-    fetchLatestDraw();
-    renderRecent30(null);
+    selectUsLottery(type);
   } else if(type.startsWith('vietlott_')){
     showPowerballControls(false);
     const key=type.replace('vietlott_','');
@@ -45,8 +41,10 @@ export function selectLottery(type){
 /* ── DISPATCHER: nút Refresh biết đúng ngữ cảnh đang xem ──
    Bug đã từng xảy ra: nút Refresh LUÔN gọi fetchLatestDraw() (chỉ dành
    cho Powerball) bất kể đang xem Vietlott/Keno gì. Giờ LUÔN kiểm tra
-   currentVietlottKey (import trực tiếp từ vietlott-view.js, live-binding
-   nên luôn đọc đúng giá trị mới nhất) trước khi quyết định. */
+   currentVietlottKey (live-binding từ vietlott-view.js) trước khi
+   quyết định gọi hàm nào — fetchLatestDraw() giờ tự biết đang xem loại
+   xổ số Mỹ nào (Powerball/Mega Millions/Lotto Texas) qua currentUsLotteryKey
+   nội bộ trong us-lottery-view.js, không cần router truyền tham số. */
 export function handleRefreshClick(){
   if(!currentVietlottKey){
     fetchLatestDraw();
