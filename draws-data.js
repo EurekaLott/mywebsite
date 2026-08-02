@@ -4,7 +4,7 @@
 // Last updated: 2026-08-01T03:33:55.770Z
 // ⚠️  white[] = RAW ORDER (thứ tự bóng rơi thực tế, KHÔNG sorted)
 
-const draws = [
+var draws = [
   {
     "date": "2010-02-03",
     "white": [
