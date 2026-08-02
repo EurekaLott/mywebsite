@@ -97,7 +97,7 @@ function get(url) {
 // Last updated: ${new Date().toISOString()}
 // ⚠️  white[] = RAW ORDER (thứ tự bóng rơi thực tế, KHÔNG sorted)
 
-const megamillions = ${json};
+var megamillions = ${json};
 
 // End of megamillions-data.js
 `);
