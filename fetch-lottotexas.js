@@ -88,7 +88,7 @@ function get(url) {
 // ⚠️  white[] = RAW ORDER (thứ tự bóng rơi thực tế, KHÔNG sorted)
 // ⚠️  Lotto Texas KHÔNG có bonus ball riêng — cả 6 số CÙNG 1 pool (1-54)
 
-const lottotexas = ${json};
+var lottotexas = ${json};
 
 // End of lottotexas-data.js
 `);
