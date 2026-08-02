@@ -94,7 +94,7 @@ function get(url) {
 // Last updated: ${new Date().toISOString()}
 // ⚠️  white[] = RAW ORDER (thứ tự bóng rơi thực tế, KHÔNG sorted)
 
-const draws = ${json};
+var draws = ${json};
 
 // End of draws-data.js
 `);
