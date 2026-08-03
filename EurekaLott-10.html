@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Neural Networks for Jackpot Game #10 | EurekaLott</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<style>
+  :root { --bg: #07131a; --card: #0f2330; --muted: #8fb2c1; --accent: #ff2a6d; --ok: #3ad29f; }
+  body { margin:0; font-family:Inter,system-ui,sans-serif; color:#e8f6ff; background:var(--bg); }
+  header { padding:12px 18px; background:#071e29; border-bottom:1px solid #123; }
+  h1 { margin:0; font-size:16px; }
+  main { padding:14px; display:grid; grid-template-columns:420px 1fr; gap:14px; }
+  .card { background:var(--card); border:1px solid #123545; border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
+  label { font-size:12px; color:var(--muted); font-weight:700; }
+  input, button, textarea, select { width:100%; padding:8px 10px; margin:6px 0; border-radius:8px; border:1px solid #204454; background:#0c1e29; color:#e8f6ff; font-size:13px; }
+  textarea { min-height:160px; font-family:monospace; }
+  button { cursor:pointer; background:var(--accent); color:#062430; font-weight:800; border:0; }
+  button:active { transform:translateY(1px); }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  #status { font-size:12px; color:#aee6ff; margin-top:6px; white-space:pre-line; }
+  pre { background:#06151d; padding:10px; border-radius:8px; border:1px solid #10394b; min-height:80px; overflow:auto; white-space:pre-wrap; }
+  canvas { background:#06151d; border:1px solid #10394b; border-radius:8px; width:100% !important; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  #finalPrediction { margin-top:20px; padding:20px; background:linear-gradient(135deg,#0a2a3f,#071e29); border:2px solid #ff2a6d; border-radius:12px; text-align:center; box-shadow:0 8px 25px rgba(255,42,109,0.25); }
+  #finalNumbers { font-size:32px; letter-spacing:6px; font-family:monospace; color:#ffd700; font-weight:bold; min-height:48px; }
+  @keyframes pulse { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.04);opacity:0.92} 100%{transform:scale(1);opacity:1} }
+  #finalNumbers.ready { animation:pulse 2s infinite; }
+  .nav{margin:14px 18px 0;display:flex;flex-wrap:wrap;gap:10px;}
+  .nav a{text-decoration:none;background:white;color:#0a2e73;padding:8px 16px;border-radius:10px;font-weight:700;font-size:13px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠 Neural Networks for Jackpot Game — EurekaLott Powerball 10 (PROMETHEUS v1 Transformer+EBM)</h1>
+</header>
+<div class="nav">
+  <a href="index.html">🏠 Home</a>
+  <a href="powerball.html">🎯 Powerball USA Forecast</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TESLA 369 VORTEX MATH — CANVAS THU NHỎ + HƯỚNG DẪN SỬ DỤNG (bản mới)
+     ⚔️ ĐẶT LÊN ĐẦU TRANG (trước phần nhập liệu/kết quả) — người
+     chơi BẮT BUỘC đọc qua phần này trước khi cuộn xuống phần
+     tính toán, tránh trường hợp bấm "Train & Predict" ngay với
+     MAX_NUM mặc định sai, dẫn tới kết quả lỗi rồi đánh giá oan
+     chất lượng hệ thống.
+     ═══════════════════════════════════════════════════════════ -->
+<div style="display:flex; flex-direction:column; align-items:center; padding:16px 18px 8px; background:#030a16;">
+  <!-- ⚔️ Canvas thu nhỏ: giữ nguyên toán học vẽ hoạt hình gốc (800x600),
+       chỉ bọc trong khung max-width để hiển thị nhỏ gọn hơn hẳn, không
+       chiếm hết màn hình như bản cũ. -->
+  <div style="width:100%; max-width:420px; margin:0 auto;">
+    <canvas id="networkCanvas" width="800" height="600" style="width:100% !important; height:auto; background:radial-gradient(circle,#081b33 0%,#020710 100%); box-shadow:0 0 20px rgba(0,0,0,0.8); border-radius:4px;"></canvas>
+  </div>
+
+  <div style="width:100%; max-width:780px; box-sizing:border-box; padding:18px; border-radius:6px; margin-top:14px; background:#0a1f2e; border:1px solid #ff2a6d;">
+
+    <!-- ⚔️ Notice tài trợ — đặt ngay đầu khối hướng dẫn -->
+    <div style="background:#071826; border:1px solid #2a6b8f; border-radius:6px; padding:12px 14px; margin-bottom:16px;">
+      <label style="color:#5ec9ff; font-weight:bold; font-size:14px; display:block; margin-bottom:6px;">📢 Notice from EurekaLott</label>
+      <div style="font-size:13px; line-height:1.6; color:#c8e6ff;">
+        EurekaLott is currently operating on a completely free platform. As a result, this free service queues users on a first-come, first-served basis, which may cause processing to be a bit slow. You can start the program, go do other things, and come back later to retrieve your results to buy your lottery tickets without waiting anxiously.<br><br>
+        Temporarily, we had to reduce the original design configuration to its lowest level to avoid timeouts on the free server, so the output might not fully match our initial design. Once we secure funding to rent a dedicated domain, EurekaLott will provide a much better, faster experience.
+      </div>
+    </div>
+
+    <label style="color:#ffd700; font-weight:bold; font-size:16px; display:block;">📜 CORE SYSTEM RULES &amp; VORTEX MATH PRINCIPLES</label>
+    <div style="font-size:13.5px; line-height:1.6; color:#a8d4ff; margin-top:10px;">
+      <strong>• MAX_NUM</strong><br>
+      Adjust this according to your specific lottery type (e.g., <strong style="color:#fff;">Mega Millions 70, Powerball 69, Vietlott 55</strong>).<br><br>
+
+      <strong>• Vortex Math 369 (Marko Rodin • Nikola Tesla)</strong><br>
+      As illustrated on the canvas, the numbers 3, 6, and 9 are commonly presented together, with 9 symbolizing the final point of convergence. However, both the natural number system and modern lottery matrices also include the digit 0.<br>
+      For this reason, at the convergence point represented by 9, in addition to the values 3 and 6, the system generates two representative numbers:<br>
+      • <strong>Left Branch:</strong> 69<br>
+      • <strong>Right Branch:</strong> 30<br>
+      The system generates four core prediction numbers representing these two branches. Success does not require all four numbers to appear at once. The model achieves victory as soon as even one number carrying the energy of Big Bang 369 aligns precisely at the center.<br><br>
+
+      <strong>• Output Mode Strategy</strong><br>
+      • <strong>Default Operating Mode:</strong> Always operate in Mode 10 under normal conditions. This is because both natural number systems and modern lottery matrices include the digit 0.<br>
+      • In rare instances, the network's energy flow may temporarily fall out of natural balance. During such periods, the internal vector alignment may shift from Mode 10 to Mode 9.<br>
+      <em>Note: Mode 10 is the standard operating mode. Mode 9 should be used solely as a verification mode when Mode 10 produces inconsistent or inaccurate results.</em><br><br>
+
+      <strong>• Input Matters. Raw or Sorted?</strong><br>
+      Some programs work better with Raw, others with Sorted. Experiment and discover what works best.<br><br>
+
+      <strong>• Input Rule (3 Checkpoints Strategy - Example)</strong><br>
+      If today is Monday and you want to play:<br>
+      • Take the latest 24 raw draws from the <strong>previous Monday</strong>.<br>
+      • You can copy this directly from our website using the <strong>View Result</strong> button, which has a built-in feature to copy the 24 raw numbers (already adjusted for the correct date) for you. Once copied, input the data using the <strong>Other Lottery</strong> button.<br>
+      • After getting the result, check whether the Wednesday and Saturday draws from last week have already come out.<br>
+      • If they have <strong>not yet appeared</strong> → Today (Monday) is the final time you can use this prediction.<br>
+      <em>In short: Previous Monday data → Check Wed &amp; Sat → Final decision on current Monday.</em><br><br>
+
+      <div style="font-style:italic; color:#d1e8ff; margin-top:10px; padding-left:15px; border-left:3px solid #ff2a6d;">
+        Germans have a saying: Aller guten Dinge sind drei. ("All good things come in threes.")<br>
+        The English say: Good things come in threes.<br>
+        The French have a saying: Jamais deux sans trois. ("Never two without three.")<br>
+        The Spanish say: A la tercera va la vencida. ("Third time's the charm.")<br>
+        Italians also say: Non c'è due senza tre. ("There is no two without three.")<br>
+        <strong>AI Neural Network also designed with 3 checkpoints.</strong>
+      </div><br>
+
+      <strong style="color:#ffd700;">• ⚠️ Powerball USA — Auto Run Button (Important)</strong><br>
+      The <strong>"⚡ Powerball USA — Auto Run"</strong> button is built <strong>ONLY</strong> for Powerball USA because it automatically fetches the 24 drawings specifically for Powerball. For other types of lotteries, use the <strong>Other Lottery</strong> button below and paste your 24 draws according to the instructions:<br>
+      <em>Previous Monday data → Check last week Wed &amp; Sat → Final decision on current Monday</em> (Remember to adjust your MAX_NUM to match).<br><br>
+      This Auto button already automatically fetches last week's archive for you (following the 3-Checkpoint rule above). Before you even use it, the system automatically checks the 3 checkpoints for you:<br>
+      • If you see an <strong>❌ CANCELLED — DO NOT USE THIS PREDICTION</strong>, it means the numbers have already hit and you should not use them today.<br>
+      • If you do <strong>NOT</strong> see an <strong>❌ CANCELLED — DO NOT USE THIS PREDICTION</strong>, use the numbers today to buy your tickets.<br>
+      <em>Example: If today is Tuesday, the system has already checked last week's Monday and Saturday drawings for you. If those numbers already came out → the system displays an ❌ CANCELLED. If they are not yet out → the numbers will not have an ❌ CANCELLED, meaning you should use them today to buy your ticket.</em>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     KHU VỰC NHẬP LIỆU + TRAIN/PREDICT — nằm SAU phần hướng dẫn
+     ═══════════════════════════════════════════════════════════ -->
+<main>
+  <section class="card">
+    <label>Data (each line has 6 or 7 numbers, or paste raw Texas Lottery CSV directly)</label>
+    <textarea id="dataInput">41 42 46 11 29 09 07
+37 15 22 29 17 24 54
+26 15 45 55 52 11 36
+09 01 44 37 18 12 11
+10 21 20 03 24 19 07
+27 30 14 53 54 02 16
+49 13 32 16 51 39 11
+51 04 35 16 29 30 48</textarea>
+
+    <!-- ⚔️ Chỉ giữ lại 2 ô nhập cho người dùng: MAX_NUM và Vô Chỉ Thiền — Output Mode.
+         Mọi tham số huấn luyện khác (SEQ_LEN, Epochs, Pos A/B...) đã chuyển hẳn
+         vào server bí mật — trình duyệt không còn biết gì về chúng nữa. -->
+    <div class="row">
+      <div><label>MAX_NUM</label><input id="maxNum" type="number" value="69"/></div>
+      <div>
+        <label>⚔️ Vô Chỉ Thiền — Output Mode</label>
+        <select id="outputMode">
+          <option value="10" selected>Mode 10</option>
+          <option value="9">Mode 9</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div><button id="autoRunBtn">⚡ Powerball USA — Auto Run</button></div>
+    </div>
+    <div class="row">
+      <div><button id="trainBtn">🎲 Other Lottery (Change MAX_NUM Before Click)</button></div>
+    </div>
+    <div id="status">Ready...</div>
+    <pre id="result"></pre>
+  </section>
+  <section class="card">
+    <label>Loss Chart (Green: Smoothed E_e • Red: R_e)</label>
+    <canvas id="lossChart" height="260"></canvas>
+  </section>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════
+     🌟 KẾT QUẢ DỰ ĐOÁN — ĐẶT XUỐNG DƯỚI CÙNG TRANG (theo yêu cầu:
+     bắt buộc người chơi đọc hướng dẫn + nhập/train trước khi thấy
+     kết quả, tránh lướt quá nhanh rồi đánh giá oan chất lượng hệ
+     thống nếu chưa hiểu cách vận hành).
+     ═══════════════════════════════════════════════════════════ -->
+<div style="padding:0 14px 24px;">
+  <div id="finalPrediction">
+    <div style="font-size:12px;color:#8fb2c1;margin-bottom:4px;">🌟 FINAL PREDICTION — only pos2 • pos4 • pos5 • pos7 shown</div>
+    <div id="finalNumbers">— not run yet —</div>
+  </div>
+
+  <!-- ⚔️ Trạng thái Checkpoint (Latest / CP1 / CP2) — dùng màu SÁNG (hồng/vàng)
+       cho dấu ❌, KHÔNG dùng màu đen, vì nền trang tối sẽ khiến chữ đen vô hình. -->
+  <div id="checkpointBox" style="margin-top:14px; display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <label style="margin:0;">🎯 Checkpoint Status (Latest • CP1 • CP2)</label>
+      <button id="checkCheckpointsBtn" style="width:auto; padding:6px 14px; font-size:12px; margin:0;">🔄 Check Now</button>
+    </div>
+    <div id="checkpointStatus" style="font-size:13px; line-height:1.8; background:#06151d; border:1px solid #10394b; border-radius:8px; padding:12px;"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   ⚔️ FRONTEND MỎNG — KHÔNG CÒN 1 DÒNG THUẬT TOÁN NÀO Ở ĐÂY.
+   Toàn bộ TitanRNN / BPTT / EBM Contrastive / Self-Curriculum /
+   ASP / Gap Discovery / Fibonacci True Search đã chuyển hẳn vào
+   server bí mật (Render). Trang này CHỈ:
+     1. Thu thập input (dataInput, maxNum, outputMode)
+     2. Gửi lên /api/predict/powerball10 (same-origin, Worker frontend
+        sẽ tự relay sang server bí mật — trình duyệt không bao giờ
+        thấy URL hay code thật của server bí mật)
+     3. Nhận JSON kết quả ĐÃ CHE SỐ về, hiển thị lên màn hình
+   ══════════════════════════════════════════════════════════ */
+
+// ⚔️ Trang này giờ được phục vụ bởi Render "Static Site" (luôn nhanh, không
+// ngủ) — còn API/thuật toán thật nằm ở Render "Web Service" riêng (có ngủ,
+// chỉ thức khi gọi tới). Vì 2 domain khác nhau, phải gọi bằng URL đầy đủ.
+// ⚠️ SỬA ĐÚNG URL Web Service thật của ngài ở đây nếu có thay đổi
+const API_BASE = 'https://eurekalott-engine-render.onrender.com';
+
+const qs = id => document.getElementById(id);
+const setStatus = (text, append = false) => {
+  const el = qs('status');
+  if (!append) el.innerText = text;
+  else el.innerText += '\n' + text;
+};
+
+let chart = null;
+function renderChart(history) {
+  if (chart) chart.destroy();
+  chart = new Chart(qs('lossChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: history.map(h => h.epoch),
+      datasets: [
+        { label: 'Smoothed E_e', data: history.map(h => h.e), borderColor: '#3ad29f', tension: 0.2, borderWidth: 2 },
+        { label: 'Reference R_e', data: history.map(h => h.r), borderColor: '#ff4444', tension: 0.2, borderWidth: 2 }
+      ]
+    },
+    options: { scales: { y: { beginAtZero: false } } }
+  });
+}
+
+// ⚔️ Chờ ms mili-giây (dùng cho khoảng nghỉ giữa các lần poll)
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ⚔️ Các hàm dùng CHUNG cho cả "Auto Run" lẫn tính năng "Checkpoint Status" mới —
+// tách ra phạm vi toàn cục thay vì giấu trong 1 hàm, để tái sử dụng được.
+const POWERBALL_DRAW_DAYS = [1, 3, 6];
+// ⚔️ BUG THẬT ĐÃ TÌM RA: "today" trước đây lấy thẳng new Date() = giờ LOCAL
+// của trình duyệt người dùng. Texas Lottery (Powerball) quay số theo giờ Mỹ
+// (Central Time). Múi giờ Việt Nam (UTC+7) đi trước Mỹ Central khoảng
+// 12–13 tiếng, nên khi ở Việt Nam đã sang NGÀY MỚI, bên Mỹ vẫn còn là ngày
+// hôm trước — dùng new Date() khiến nextDraw/cutoff bị tính NHẢY SỚM 1 kỳ
+// quay, kéo theo "Latest" bị lệch từ 22/7 thành 25/7 (đúng như phát hiện).
+// Sửa: luôn quy đổi "today" về đúng ngày dương lịch tại America/Chicago.
+function getUSLotteryToday() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const y = Number(parts.find(p => p.type === 'year').value);
+  const m = Number(parts.find(p => p.type === 'month').value);
+  const d = Number(parts.find(p => p.type === 'day').value);
+  return new Date(y, m - 1, d);
+}
+function getNextDrawDate(today) {
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  for (let i = 0; i < 7; i++) {
+    if (POWERBALL_DRAW_DAYS.includes(d.getDay())) return d;
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+function getCutoffDate(today) {
+  const nextDraw = getNextDrawDate(today);
+  const cutoff = new Date(nextDraw);
+  cutoff.setDate(cutoff.getDate() - 7);
+  return cutoff;
+}
+function parsePowerballCSV(rawText) {
+  const lines = rawText.split(/\r?\n/);
+  const rows = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!/^powerball\s*,/i.test(trimmed)) continue;
+    const f = trimmed.split(',').map(s => s.trim());
+    if (f.length < 10) continue;
+    const month = parseInt(f[1], 10), day = parseInt(f[2], 10), year = parseInt(f[3], 10);
+    if (!month || !day || !year) continue;
+    const nums6 = f.slice(4, 10).map(Number);
+    if (nums6.length !== 6 || nums6.some(isNaN)) continue;
+    rows.push({ date: new Date(year, month - 1, day), nums6 });
+  }
+  rows.sort((a, b) => a.date - b.date);
+  return rows;
+}
+// ⚔️ SỬA LỖI MÚI GIỜ: KHÔNG dùng toISOString() (nó quy đổi sang UTC, gây lệch
+// 1 ngày với múi giờ Việt Nam UTC+7 — ví dụ 0h ngày 11/7 giờ VN sẽ bị quy đổi
+// thành 17h ngày 10/7 UTC, hiển thị sai thành "2026-07-10"). Lấy trực tiếp
+// năm/tháng/ngày theo giờ địa phương của trình duyệt, khớp đúng với cách
+// Date được tạo ra ở parsePowerballCSV (new Date(year, month-1, day)).
+function dateKey(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// ══════════════════════════════════════════════════════════
+// ⚔️ CHECKPOINT STATUS — sau khi dự đoán ra 4 số, kiểm tra xem chúng
+// có "nổ" (trùng) ở draw Latest / CP1 / CP2 hay chưa — hiển thị dấu ❌
+// TRỰC TIẾP lên từng số trong khung FINAL PREDICTION (không phải danh
+// sách riêng dài dòng). Chỉ áp dụng cho Auto Run (Powerball USA) — vì
+// đây là chế độ DUY NHẤT biết chắc chắn "latest" là draw thật ngày nào.
+// Lưu trong trình duyệt (localStorage), không gửi lên server.
+// ══════════════════════════════════════════════════════════
+const CHECKPOINT_STORAGE_KEY = 'eurekalott_powerball10_latest_prediction';
+
+function loadSavedPrediction() {
+  try {
+    return JSON.parse(localStorage.getItem(CHECKPOINT_STORAGE_KEY) || 'null');
+  } catch (e) { return null; }
+}
+function saveSavedPrediction(entry) {
+  localStorage.setItem(CHECKPOINT_STORAGE_KEY, JSON.stringify(entry));
+}
+
+// ⚔️ trueLatestDrawDate PHẢI là draw THẬT MÀ THUẬT TOÁN ĐÃ DÙNG LÀM INPUT
+// (tức draw cuối cùng trong 24 draws đã cutoff theo luật 3-Checkpoint) —
+// KHÔNG được lấy nhầm draw mới nhất tuyệt đối trong toàn bộ CSV (đó chính
+// là bug gây sai ngày ở bản trước, khiến bỏ sót các lần trùng thật).
+function saveNewPrediction(revealedNumbers, trueLatestDrawDate) {
+  if (!trueLatestDrawDate) return; // chế độ "Other Lottery" thủ công — không có ngày thật để đối chiếu, bỏ qua
+  saveSavedPrediction({
+    createdAt: new Date().toISOString(),
+    numbers: revealedNumbers,
+    latestDrawDate: dateKey(trueLatestDrawDate),
+  });
+}
+
+async function checkAndRenderCheckpoints() {
+  const entry = loadSavedPrediction();
+  if (!entry) {
+    qs('checkpointBox').style.display = 'none';
+    return;
+  }
+  qs('checkpointBox').style.display = 'block';
+  qs('checkpointStatus').innerHTML = '🔄 Checking...';
+
+  let rows = [];
+  try {
+    const resp = await fetch(`${API_BASE}/api/powerball`);
+    if (resp.ok) rows = parsePowerballCSV(await resp.text());
+  } catch (e) { /* để rows rỗng, vẫn hiển thị được trạng thái "đang chờ" */ }
+
+  const latestDrawDate = new Date(entry.latestDrawDate);
+  const latestRow = rows.find(r => dateKey(r.date) === entry.latestDrawDate);
+  const afterLatest = rows.filter(r => r.date > latestDrawDate).sort((a, b) => a.date - b.date);
+  const cp1 = afterLatest[0] || null;
+  const cp2 = afterLatest[1] || null;
+
+  // ⚔️ Với mỗi số trong 4 số dự đoán, tìm xem nó "nổ" ở checkpoint nào
+  function findHitCheckpoint(num) {
+    if (latestRow && latestRow.nums6.includes(num)) return { label: 'Latest', date: entry.latestDrawDate };
+    if (cp1 && cp1.nums6.includes(num)) return { label: 'CP1', date: dateKey(cp1.date) };
+    if (cp2 && cp2.nums6.includes(num)) return { label: 'CP2', date: dateKey(cp2.date) };
+    return null;
+  }
+  const hitDetails = entry.numbers.map(num => ({ num, hit: findHitCheckpoint(num) })).filter(x => x.hit);
+  const anyHit = hitDetails.length > 0;
+
+  // ⚔️ NGUYÊN TẮC AN TOÀN: chỉ cần 1 SỐ BẤT KỲ đã nổ → HỦY TOÀN BỘ bộ 4 số,
+  // không hiển thị kiểu "từng số riêng lẻ, có số vẫn clean" — vì cách hiển
+  // thị đó khiến khách phổ thông hiểu nhầm là "vẫn còn dùng được 1 phần".
+  // Đây là 1 banner TỔNG DUY NHẤT, rõ ràng, không mập mờ.
+  let bannerHtml;
+  if (anyHit) {
+    const hitList = hitDetails.map(x => `${String(x.num).padStart(2,'0')} (${x.hit.label} ${x.hit.date})`).join(', ');
+    bannerHtml = `
+      <div style="background:#3d0a1a; border:2px solid #ff2a6d; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#ff2a6d; font-weight:bold; font-size:18px;">❌ CANCELLED — DO NOT USE THIS PREDICTION</div>
+        <div style="color:#ffb3c6; font-size:12px; margin-top:6px;">Already hit: ${hitList}. Per EurekaLott rule: if ANY number already appeared, the ENTIRE set of 4 is invalid — wait for the next prediction.</div>
+      </div>`;
+  } else if (cp2) {
+    bannerHtml = `
+      <div style="background:#06251a; border:2px solid #3ad29f; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#3ad29f; font-weight:bold; font-size:18px;">✅ CONFIRMED CLEAN — safe through CP2</div>
+        <div style="color:#8fdcc0; font-size:12px; margin-top:6px;">None of the 4 numbers appeared at Latest, CP1, or CP2. This prediction remained valid through its full verification window.</div>
+      </div>`;
+  } else {
+    bannerHtml = `
+      <div style="background:#1a2530; border:2px solid #8fb2c1; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#aee6ff; font-weight:bold; font-size:16px;">⏳ Still pending — waiting for CP2 draw</div>
+        <div style="color:#8fb2c1; font-size:12px; margin-top:6px;">No hits so far, but final confirmation requires CP2 (${cp1 ? 'after CP1 ' + dateKey(cp1.date) : 'not yet available'}). Come back after the next draw.</div>
+      </div>`;
+  }
+
+  qs('checkpointStatus').innerHTML = `
+    <div style="font-size:11px; color:#8fb2c1; margin-bottom:6px; text-align:center;">
+      Reference: Latest ${entry.latestDrawDate}${cp1 ? ` • CP1 ${dateKey(cp1.date)}` : ''}${cp2 ? ` • CP2 ${dateKey(cp2.date)}` : ''}
+    </div>
+    ${bannerHtml}
+  `;
+}
+
+qs('checkCheckpointsBtn').addEventListener('click', () => {
+  checkAndRenderCheckpoints().catch(e => console.error(e));
+});
+// ⚔️ Tự kiểm tra ngay khi vào trang — cho biết dự đoán gần nhất đã "nổ" chưa
+window.addEventListener('load', () => {
+  checkAndRenderCheckpoints().catch(e => console.error(e));
+});
+
+async function runPredict(trueLatestDrawDate = null) {
+  qs('result').innerText = '';
+  qs('finalNumbers').innerText = '— processing —';
+  qs('finalNumbers').classList.remove('ready');
+  // ⚔️ Ẩn ngay khung Checkpoint Status cũ khi bắt đầu chạy — tránh hiển thị
+  // dữ liệu của LẦN CHẠY TRƯỚC (có thể thuộc loại vé số khác, hoặc kỳ quay
+  // khác) trong lúc lần chạy mới đang "processing", gây hiểu nhầm nghiêm
+  // trọng cho khách hàng (tưởng số cũ là kết quả check của số mới).
+  qs('checkpointBox').style.display = 'none';
+  setStatus('🔄 Sending data to the server for training... (this may take a few minutes on our free server — please do not close this page)');
+
+  const payload = {
+    dataInput: qs('dataInput').value,
+    maxNum: +qs('maxNum').value,
+    outputMode: +qs('outputMode').value,
+  };
+
+  // ── BƯỚC 1 — Tạo job, nhận jobId gần như ngay lập tức ──
+  const resp = await fetch(`${API_BASE}/api/predict/powerball10`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const errBody = await resp.json().catch(() => ({}));
+    throw new Error(errBody.error || `Server error HTTP ${resp.status}`);
+  }
+
+  const { jobId } = await resp.json();
+  if (!jobId) throw new Error('Server did not return a jobId.');
+
+  // ── BƯỚC 2 — Hỏi thăm tiến độ mỗi 2.5 giây cho tới khi xong ──
+  let data = null;
+  const maxPolls = 240; // tối đa ~10 phút (240 * 2.5s) trước khi bỏ cuộc
+  for (let i = 0; i < maxPolls; i++) {
+    await sleep(2500);
+    const pollResp = await fetch(`${API_BASE}/api/predict/status/${jobId}`);
+    if (!pollResp.ok) {
+      const errBody = await pollResp.json().catch(() => ({}));
+      throw new Error(errBody.error || `Status check failed HTTP ${pollResp.status}`);
+    }
+    const pollData = await pollResp.json();
+
+    if (pollData.status === 'queued') {
+      setStatus(
+        `⏳ Our free server is busy right now — you're #${pollData.queuePosition} in line ` +
+        `(${pollData.queueLength} people waiting). Your training will start automatically once it's your turn.`
+      );
+      continue;
+    }
+    if (pollData.status === 'running') {
+      const p = pollData.progress || {};
+      setStatus(
+        `🔄 Training in progress... epoch ${p.epochsCompleted ?? 0}/${p.epochsTotal ?? '?'} ` +
+        `(this may take a few minutes on our free server — please do not close this page)`
+      );
+      continue;
+    }
+    if (pollData.status === 'error') {
+      throw new Error(pollData.error || 'Unknown error during training.');
+    }
+    if (pollData.status === 'not_found') {
+      throw new Error('The job expired or was lost (server may have restarted). Please try again.');
+    }
+    if (pollData.status === 'done') {
+      data = pollData.result;
+      break;
+    }
+  }
+
+  if (!data) throw new Error('Training took too long and timed out on the client side. Please try again.');
+
+  qs('result').innerText =
+    `WF-CV MAE: ${data.wfMAE.toFixed(4)}\n` +
+    `Final Energy (EBM): ${data.finalEnergy.toFixed(4)}\n` +
+    `Smoothed Loss: ${data.smoothedLoss.toFixed(6)}\n` +
+    `Epochs: ${data.epochsCompleted}/${data.epochsRequested}\n` +
+    `Architecture: ${data.architecture}\n` +
+    `Prediction: ${data.maskedPrediction}`;
+
+  setStatus(`🌟 **Final prediction**: ${data.maskedPrediction}`, true);
+  qs('finalNumbers').innerText = data.maskedPrediction;
+  qs('finalNumbers').classList.add('ready');
+  if (data.chartHistory && data.chartHistory.length) renderChart(data.chartHistory);
+  setStatus('✅ Done.', true);
+
+  // ⚔️ Lưu lại 4 số vừa lộ ra + draw thật gần nhất MÀ THUẬT TOÁN ĐÃ DÙNG LÀM
+  // INPUT (trueLatestDrawDate — truyền vào từ autoFetchAndRun, chỉ có khi
+  // chạy Auto Run Powerball; chế độ "Other Lottery" thủ công thì bỏ qua vì
+  // không biết chắc chắn ngày draw thật để đối chiếu).
+  const revealedNumbers = data.maskedPrediction.split(/\s+/).filter(t => t.toLowerCase() !== 'xx').map(Number);
+  saveNewPrediction(revealedNumbers, trueLatestDrawDate);
+  // ⚔️ Checkpoint Status CHỈ áp dụng cho Auto Run Powerball (có ngày draw
+  // thật để đối chiếu). Chế độ "Other Lottery" thủ công KHÔNG có ngày draw
+  // đáng tin cậy để so — giữ khung này ẨN HẲN, không hiện lại số của lần
+  // Auto Run trước đó (tránh gây hiểu nhầm số đó liên quan tới vé số vừa
+  // mới chạy, dù thực ra là 2 loại vé/2 lần chạy hoàn toàn khác nhau).
+  if (trueLatestDrawDate) {
+    await checkAndRenderCheckpoints();
+  } else {
+    qs('checkpointBox').style.display = 'none';
+  }
+}
+
+async function autoFetchAndRun() {
+  setStatus('🔄 Automatically fetching the latest 24 draws from Texas Lottery...');
+  const resp = await fetch(`${API_BASE}/api/powerball`);
+  if (!resp.ok) throw new Error(`Could not fetch data (HTTP ${resp.status}).`);
+  const rawText = await resp.text();
+
+  // ⚔️ getNextDrawDate / getCutoffDate / parsePowerballCSV đã tách ra phạm vi
+  // toàn cục ở trên (dùng chung với tính năng Checkpoint Status) — không định
+  // nghĩa lại ở đây nữa.
+  const rows = parsePowerballCSV(rawText);
+  if (rows.length === 0) throw new Error('Could not parse any rows from the Texas Lottery data returned.');
+
+  const today = getUSLotteryToday();
+  const nextDraw = getNextDrawDate(today);
+  const cutoff = getCutoffDate(today);
+  const selected = rows.filter(r => r.date <= cutoff).slice(-24);
+  if (selected.length === 0) throw new Error('No draws found before the cutoff — please check the source data.');
+
+  qs('dataInput').value = selected.map(r => r.nums6.join(' ')).join('\n');
+  setStatus(
+    `✅ Automatically updated ${selected.length} draws (up to ${cutoff.toDateString()}) ` +
+    `— preparing for the ${nextDraw.toDateString()} drawing.`, true
+  );
+
+  // ⚔️ "latest" THẬT dùng cho Checkpoint Status PHẢI là draw cuối cùng trong
+  // "selected" (đã áp dụng cutoff 3-Checkpoint) — KHÔNG phải draw mới nhất
+  // tuyệt đối trong toàn bộ CSV (2 cái này có thể khác ngày nhau, gây bug
+  // sai lệch checkpoint như đã phát hiện).
+  const trueLatestDrawDate = selected[selected.length - 1].date;
+  await runPredict(trueLatestDrawDate);
+}
+
+qs('trainBtn').addEventListener('click', () => {
+  runPredict().catch(e => setStatus('❌ Error: ' + (e.message || String(e))));
+});
+
+qs('autoRunBtn').addEventListener('click', async () => {
+  qs('autoRunBtn').disabled = true;
+  try {
+    await autoFetchAndRun();
+  } catch (e) {
+    console.error(e);
+    setStatus(
+      '❌ Could not auto-fetch data: ' + (e.message || String(e)) +
+      '\n👉 Please paste the data manually, then click "Other Lottery (Change MAX_NUM Before Click)" below.'
+    );
+  } finally {
+    qs('autoRunBtn').disabled = false;
+  }
+});
+</script>
+
+<script>
+(function(){
+  // ⚔️ Canvas minh họa Vortex Math 369 — thuần hiệu ứng hình ảnh, không liên quan
+  // đến logic dự đoán thật (nằm hoàn toàn trên server bí mật). Toán học vẽ giữ
+  // nguyên 100% so với bản gốc (canvas nội bộ vẫn 800x600) — CHỈ hiển thị nhỏ
+  // hơn nhờ khung bọc max-width:420px ở phần HTML phía trên.
+  const canvas = document.getElementById('networkCanvas');
+  const ctx = canvas.getContext('2d');
+  const nodes = {
+    1: { x: 500, y: 190 }, 2: { x: 550, y: 280 }, 3: { x: 540, y: 440, label: "+ 3" },
+    4: { x: 450, y: 510 }, 5: { x: 350, y: 510 }, 6: { x: 260, y: 440, label: "+ 6" },
+    7: { x: 250, y: 280 }, 8: { x: 300, y: 190 }
+  };
+  const centerNode = { x: 400, y: 400, label: "9" };
+  const lines = [
+    [nodes[1], nodes[2]], [nodes[4], centerNode], [nodes[5], centerNode], [nodes[7], nodes[8]],
+    [nodes[1], centerNode], [nodes[8], centerNode], [nodes[4], nodes[2]], [nodes[5], nodes[7]]
+  ];
+  const particles = [];
+  lines.forEach(line => {
+    for (let i = 0; i < 30; i++) {
+      particles.push({
+        start: line[0], end: line[1], progress: Math.random(),
+        speed: 0.002 + Math.random() * 0.003, size: 1 + Math.random() * 3,
+        color: Math.random() > 0.5 ? '#ff7700' : '#ffcc00'
+      });
+    }
+  });
+  function setGlow(color, blur) { ctx.shadowBlur = blur; ctx.shadowColor = color; }
+  function drawVortex() {
+    ctx.fillStyle = 'rgba(3, 10, 22, 0.3)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.progress += p.speed;
+      if (p.progress > 1) p.progress = 0;
+      const cx = p.start.x + (p.end.x - p.start.x) * p.progress;
+      const cy = p.start.y + (p.end.y - p.start.y) * p.progress;
+      setGlow(p.color, 8); ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(cx, cy, p.size, 0, Math.PI * 2); ctx.fill();
+    });
+    setGlow('#ffffaa', 35);
+    ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
+    ctx.beginPath(); ctx.arc(centerNode.x, centerNode.y, 35, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(centerNode.x, centerNode.y, 14, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let key in nodes) {
+      const node = nodes[key];
+      if (node.label) {
+        setGlow('#00ffff', 25); ctx.fillStyle = '#00ffff';
+        ctx.font = 'bold 32px Arial'; ctx.fillText(node.label, node.x, node.y);
+      } else {
+        setGlow('#77bbff', 10); ctx.fillStyle = '#aaddff'; ctx.font = 'bold 24px Arial';
+        let offsetY = 0;
+        if (key == 1 || key == 8) offsetY = -25;
+        if (key == 4 || key == 5) offsetY = 25;
+        if (key == 2) offsetY = -5;
+        if (key == 7) offsetY = -5;
+        ctx.fillText(key, node.x, node.y + offsetY);
+      }
+    }
+    setGlow('#ff3333', 15); ctx.fillStyle = '#ff3333'; ctx.fillRect(385, 95, 30, 15);
+    setGlow('#000000', 0); ctx.fillStyle = '#111111'; ctx.font = 'bold 22px Arial';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(centerNode.label, centerNode.x, centerNode.y);
+    requestAnimationFrame(drawVortex);
+  }
+  drawVortex();
+})();
+</script>
+</body>
+</html>
