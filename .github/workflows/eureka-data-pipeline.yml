@@ -8,28 +8,19 @@ permissions:
   contents: write
 
 # ═══════════════════════════════════════════════════════════════
-# ⚔️ KIẾN TRÚC MỚI — TỪNG NGUỒN DỮ LIỆU LÀ 1 JOB ĐỘC LẬP HOÀN TOÀN.
+# ⚔️ CẬP NHẬT LỚN — View Results (Powerball/Mega Millions/Lotto Texas/
+# Vietlott Power655/645/535/Bingo18) giờ LIVE 100% qua worker.js
+# (/api/us-live, /api/us-copy24, /api/vietlott-live, /api/vietlott-copy24),
+# y hệt Keno từ trước — KHÔNG còn cần fetch-megamillions/fetch-lottotexas/
+# fetch-vietlott chạy hằng ngày nữa. 3 job đó đã bị XOÁ khỏi pipeline này.
 #
-# Vấn đề bản cũ: TẤT CẢ nguồn dữ liệu chạy tuần tự trong CÙNG 1 job,
-# rồi mới commit 1 lần duy nhất ở cuối. Chỉ cần 1 bước ở giữa lỗi
-# (ví dụ archive.js) → toàn bộ dừng lại → dù fetch-draws.js/
-# fetch-vietlott.js đã chạy thành công, dữ liệu mới đó CŨNG KHÔNG BAO
-# GIỜ được commit, vì bước git nằm ở cuối cùng, sau tất cả. Đây chính
-# là lý do Powerball + Vietlott cùng đứng yên trong khi Keno (không đi
-# qua pipeline này) vẫn sống.
-#
-# Bản mới: mỗi nguồn (Powerball, Mega Millions, Lotto Texas, Vietlott,
-# Verify+Archive) là 1 JOB RIÊNG, chạy song song, mỗi job TỰ COMMIT
-# ĐÚNG FILE CỦA MÌNH. Job này lỗi/treo hoàn toàn không ảnh hưởng job
-# khác. Sau này thêm nguồn mới (VD: EuroMillions) → chỉ copy 1 khối
-# job y hệt bên dưới, đổi tên/script/file — KHÔNG đụng job nào khác.
+# fetch-powerball VẪN GIỮ LẠI — không phải cho View Results (phần đó đã
+# live), mà vì verify.js/archive.js (tính năng Prediction Center, khác
+# hẳn View Results) vẫn cần đọc draws-data.js làm mốc "kỳ quay gần nhất"
+# mỗi ngày. Xoá job này sẽ làm hỏng Prediction Center.
 # ═══════════════════════════════════════════════════════════════
 
 jobs:
-
-  # ── Hàm dùng chung (copy giống nhau ở mỗi job, xem "COMMIT_STEP" bên dưới) ──
-  # Mỗi job đều có bước cuối giống hệt nhau: fetch+reset+add+commit+push,
-  # retry 5 lần, chỉ khác đúng 2 chỗ: (1) script nào chạy, (2) file nào commit.
 
   fetch-powerball:
     runs-on: ubuntu-latest
@@ -54,78 +45,8 @@ jobs:
           done
           echo "❌ Push thất bại sau 5 lần."; exit 1
 
-  fetch-megamillions:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: node fetch-megamillions.js
-      - run: |
-          set +e
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for i in 1 2 3 4 5; do
-            git fetch origin main
-            git reset --soft origin/main
-            git add megamillions-data.js
-            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
-            git commit -m "🔄 Mega Millions update"
-            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
-            echo "⚠️ Push lỗi, thử lại..."; sleep 3
-          done
-          echo "❌ Push thất bại sau 5 lần."; exit 1
-
-  fetch-lottotexas:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: node fetch-lottotexas.js
-      - run: |
-          set +e
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for i in 1 2 3 4 5; do
-            git fetch origin main
-            git reset --soft origin/main
-            git add lottotexas-data.js
-            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
-            git commit -m "🔄 Lotto Texas update"
-            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
-            echo "⚠️ Push lỗi, thử lại..."; sleep 3
-          done
-          echo "❌ Push thất bại sau 5 lần."; exit 1
-
-  fetch-vietlott:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: node fetch-vietlott.js
-      - run: |
-          set +e
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for i in 1 2 3 4 5; do
-            git fetch origin main
-            git reset --soft origin/main
-            git add vietlott-data.js
-            if git diff --staged --quiet; then echo "Không đổi gì."; exit 0; fi
-            git commit -m "🔄 Vietlott update"
-            git push origin main && { echo "✅ Push OK (lần $i)"; exit 0; }
-            echo "⚠️ Push lỗi, thử lại..."; sleep 3
-          done
-          echo "❌ Push thất bại sau 5 lần."; exit 1
-
-  # ── Verify + Archive (tính năng Prediction Center) — TÁCH RIÊNG khỏi
-  #    3 job trên. Lỗi ở đây KHÔNG còn làm Powerball/Vietlott bị kẹt theo
-  #    như bản cũ (trước đây archive.js lỗi là kéo sập luôn cả 2 cái kia). ──
+  # ── Verify + Archive (tính năng Prediction Center) — vẫn tách riêng
+  #    khỏi fetch-powerball, lỗi ở đây không ảnh hưởng job kia. ──
   verify-and-archive:
     runs-on: ubuntu-latest
     needs: fetch-powerball   # đợi Powerball xong để verify.js có draws-data.js mới nhất (không bắt buộc phải thành công)
