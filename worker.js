@@ -199,12 +199,306 @@ async function handleKenoCopy24() {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   ⚔️ US LOTTERY LIVE (Powerball / Mega Millions / Lotto Texas)
+   ============================================================
+   Trước đây: fetch-draws.js/fetch-megamillions.js/fetch-lottotexas.js chạy
+   1 lần/ngày qua GitHub Actions, ghi ra file tĩnh (draws-data.js v.v.),
+   front-end đọc file tĩnh đó. Nhược điểm: phụ thuộc pipeline chạy đúng
+   giờ + commit thành công thì mới có dữ liệu mới.
+
+   Giờ: fetch trực tiếp từ texaslottery.com MỖI LẦN khách xem trang, y hệt
+   cơ chế Keno live phía trên. Không cần file tĩnh, không cần GitHub
+   Actions cho phần hiển thị này nữa.
+
+   ⚠️ Chỉ cần ~30 kỳ gần nhất để hiển thị + Copy 24 Draws — KHÔNG cần tải
+   nguyên file CSV toàn bộ lịch sử (có thể vài trăm KB) mỗi lần. Dùng HTTP
+   Range để chỉ tải ĐUÔI file (vài chục KB cuối) — nếu server không hỗ trợ
+   Range thì tự động nhận về full file, code vẫn chạy đúng, chỉ nặng hơn
+   chút ở lần đó (không lỗi). Dòng đầu tiên trong đoạn tail có thể bị cắt
+   dở — không cần xử lý riêng vì bộ parse bên dưới tự bỏ qua dòng không
+   hợp lệ (kiểm tra tên cột + NaN) mà không cần biết trước dòng nào lỗi.
+   ═══════════════════════════════════════════════════════════════════ */
+
+const TEXAS_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'text/csv,*/*',
+};
+
+const US_LOTTERY_CSV_CONFIGS = {
+  powerball: {
+    url: 'https://www.texaslottery.com/export/sites/lottery/Games/Powerball/Winning_Numbers/powerball.csv',
+    csvName: 'Powerball',
+    specialKey: 'powerball',
+    numCount: 5,
+    drawDays: [1, 3, 6], // Mon/Wed/Sat
+  },
+  megamillions: {
+    url: 'https://www.texaslottery.com/export/sites/lottery/Games/Mega_Millions/Winning_Numbers/megamillions.csv',
+    csvName: 'Mega Millions',
+    specialKey: 'megaball',
+    numCount: 5,
+    drawDays: [2, 5], // Tue/Fri
+  },
+  lottotexas: {
+    url: 'https://www.texaslottery.com/export/sites/lottery/Games/Lotto_Texas/Winning_Numbers/lottotexas.csv',
+    csvName: 'Lotto Texas',
+    specialKey: null,
+    numCount: 6,
+    drawDays: [1, 3, 6], // Mon/Wed/Sat
+  },
+};
+
+/* ── Tải ĐUÔI file qua HTTP Range (fallback tự động về full file nếu
+   server không hỗ trợ) — dùng chung cho cả CSV (Texas Lottery) lẫn
+   JSONL (Vietlott GitHub) bên dưới. ── */
+async function fetchTail(url, headers, tailBytes = 60000) {
+  const res = await fetch(url, {
+    headers: { ...headers, 'Range': `bytes=-${tailBytes}` },
+    cf: { cacheTtl: 0 },
+  });
+  if (!res.ok && res.status !== 206) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return res.text();
+}
+
+function parseTexasCsvRows(text, cfg) {
+  const out = [];
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const cols = line.trim().split(',').map(c => c.trim().replace(/"/g, ''));
+    if (cols.length < 4 + cfg.numCount || cols[0] !== cfg.csvName) continue;
+
+    const month = cols[1].padStart(2, '0');
+    const day = cols[2].padStart(2, '0');
+    const year = cols[3];
+    const date = `${year}-${month}-${day}`;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+    const white = [];
+    let bad = false;
+    for (let i = 0; i < cfg.numCount; i++) {
+      const n = parseInt(cols[4 + i], 10);
+      if (isNaN(n) || n < 1) { bad = true; break; }
+      white.push(n);
+    }
+    if (bad) continue;
+
+    let special = null;
+    if (cfg.specialKey) {
+      const s = parseInt(cols[4 + cfg.numCount], 10);
+      if (isNaN(s) || s < 1) continue;
+      special = s;
+    }
+
+    out.push({ date, white, special });
+  }
+  out.sort((a, b) => a.date.localeCompare(b.date));
+  // khử trùng theo date (đề phòng dòng lặp/rác ở mép đầu đoạn tail)
+  const seen = new Set();
+  return out.filter(r => (seen.has(r.date) ? false : (seen.add(r.date), true)));
+}
+
+function getNextDrawDateGeneric(today, drawDays) {
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  for (let i = 0; i < 7; i++) {
+    if (drawDays.includes(d.getDay())) return d;
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+function getCutoffDateGeneric(today, drawDays) {
+  const nextDraw = getNextDrawDateGeneric(today, drawDays);
+  const cutoff = new Date(nextDraw);
+  cutoff.setDate(cutoff.getDate() - 7);
+  return cutoff;
+}
+function dateKeyLocal(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+async function handleUsLotteryLive(gameKey) {
+  const cfg = US_LOTTERY_CSV_CONFIGS[gameKey];
+  if (!cfg) return new Response(JSON.stringify({ ok: false, error: `Không rõ game "${gameKey}"` }), { status: 400, headers: jsonHeaders });
+  try {
+    const text = await fetchTail(cfg.url, TEXAS_HEADERS, 60000);
+    const rows = parseTexasCsvRows(text, cfg);
+    if (rows.length === 0) {
+      return new Response(JSON.stringify({ ok: false, error: 'Không parse được kỳ nào — CSV có thể đã đổi định dạng, hoặc đoạn tail chưa chạm tới dòng hợp lệ nào.' }), { status: 502, headers: jsonHeaders });
+    }
+    const recent = rows.slice(-31).reverse(); // rows[0] = mới nhất
+    return new Response(JSON.stringify({
+      ok: true, fetchedAt: new Date().toISOString(), source: 'texaslottery.com (live)', rows: recent,
+    }), { status: 200, headers: jsonHeaders });
+  } catch (err) {
+    return new Response(JSON.stringify({ ok: false, error: 'Lỗi kết nối texaslottery.com: ' + (err && err.message ? err.message : String(err)) }), { status: 502, headers: jsonHeaders });
+  }
+}
+
+async function handleUsLotteryCopy24(gameKey) {
+  const cfg = US_LOTTERY_CSV_CONFIGS[gameKey];
+  if (!cfg) return new Response(JSON.stringify({ ok: false, error: `Không rõ game "${gameKey}"` }), { status: 400, headers: jsonHeaders });
+  try {
+    const text = await fetchTail(cfg.url, TEXAS_HEADERS, 60000);
+    const rows = parseTexasCsvRows(text, cfg);
+    if (rows.length === 0) {
+      return new Response(JSON.stringify({ ok: false, error: 'Không parse được kỳ nào.' }), { status: 502, headers: jsonHeaders });
+    }
+    const today = new Date();
+    const cutoff = getCutoffDateGeneric(today, cfg.drawDays);
+    const cutoffKey = dateKeyLocal(cutoff);
+    const selected = rows.filter(d => d.date <= cutoffKey).slice(-24);
+    return new Response(JSON.stringify({
+      ok: true, fetchedAt: new Date().toISOString(), cutoffDate: cutoffKey, rows: selected,
+    }), { status: 200, headers: jsonHeaders });
+  } catch (err) {
+    return new Response(JSON.stringify({ ok: false, error: 'Lỗi kết nối texaslottery.com: ' + (err && err.message ? err.message : String(err)) }), { status: 502, headers: jsonHeaders });
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ⚔️ VIETLOTT LIVE (Power 6/55, Mega 6/45, Power 5/35, Bingo18)
+   ============================================================
+   Keno của Vietlott đã live sẵn từ trước (dùng chung 2 route
+   /api/keno-live, /api/keno-copy24 phía trên — KHÔNG đụng tới ở đây).
+   4 sản phẩm còn lại giờ cũng live: nguồn chính GitHub
+   vietvudanh/vietlott-data (JSONL), fallback Minh Ngọc cho riêng
+   Power655/Power645 nếu GitHub lỗi (giữ đúng thiết kế cũ của
+   fetch-vietlott.js, chỉ chuyển từ chạy 1 lần/ngày sang chạy live).
+   ═══════════════════════════════════════════════════════════════════ */
+
+const VIETLOTT_GITHUB_BASE = 'https://raw.githubusercontent.com/vietvudanh/vietlott-data/main/data';
+const VIETLOTT_HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; EurekaLott-Bot/1.0)', 'Accept': '*/*' };
+
+const VIETLOTT_LIVE_CONFIGS = {
+  power655: { githubFile: 'power655', hasFallback: true, continuous: false, drawDays: [2, 4, 6] },
+  power645: { githubFile: 'power645', hasFallback: true, continuous: false, drawDays: [0, 3, 5] },
+  power535: { githubFile: 'power535', hasFallback: false, continuous: false, drawDays: [0, 1, 2, 3, 4, 5, 6] },
+  bingo18: { githubFile: 'bingo18', hasFallback: false, continuous: true },
+};
+
+const MINHNGOC_URLS = {
+  power655: 'https://www.minhngoc.net.vn/ket-qua-xo-so/dien-toan-vietlott/power-6x55.html',
+  power645: 'https://www.minhngoc.net.vn/ket-qua-xo-so/dien-toan-vietlott/mega-6x45.html',
+};
+
+function parseVietlottJsonlTail(text) {
+  const out = [];
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t) continue;
+    try {
+      const obj = JSON.parse(t);
+      if (!obj.date || !Array.isArray(obj.result)) continue;
+      out.push({ date: obj.date, id: obj.id || '', numbers: obj.result });
+    } catch { /* dòng đầu đoạn tail có thể bị cắt dở → JSON.parse lỗi → bỏ qua, không sao */ }
+  }
+  out.sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
+  return out;
+}
+
+function stripTagsGeneric(html) {
+  return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function parseMinhNgocListing(html) {
+  const out = [];
+  const blocks = html.split(/Kỳ vé\s*:/i).slice(1);
+  for (const blockRaw of blocks) {
+    const cutIdx = blockRaw.search(/Giải thưởng/i);
+    const block = cutIdx > -1 ? blockRaw.slice(0, cutIdx) : blockRaw.slice(0, 2000);
+    const dateMatch = block.match(/Ngày quay thưởng\D*(\d{2})\/(\d{2})\/(\d{4})/i);
+    const idMatch = block.match(/#?\s*(\d{4,6})/);
+    if (!dateMatch) continue;
+    const date = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+    const id = idMatch ? idMatch[1] : '';
+    const afterDate = block.slice(block.indexOf(dateMatch[0]) + dateMatch[0].length);
+    const text = stripTagsGeneric(afterDate);
+    const numbers = (text.match(/\b\d{1,2}\b/g) || []).map(n => parseInt(n, 10)).filter(n => n >= 0 && n <= 55);
+    if (numbers.length >= 5) out.push({ date, id, numbers });
+  }
+  out.sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
+  return out;
+}
+
+/* ── Trả về mảng draws đã sort tăng dần (nguồn GitHub, fallback Minh Ngọc
+   nếu có cấu hình) — dùng chung cho cả live lẫn copy24 bên dưới. ── */
+async function fetchVietlottRows(productKey) {
+  const cfg = VIETLOTT_LIVE_CONFIGS[productKey];
+  if (!cfg) throw new Error(`Không rõ sản phẩm "${productKey}"`);
+
+  try {
+    const text = await fetchTail(`${VIETLOTT_GITHUB_BASE}/${cfg.githubFile}.jsonl`, VIETLOTT_HEADERS, 120000);
+    const rows = parseVietlottJsonlTail(text);
+    if (rows.length > 0) return { rows, source: 'GitHub vietvudanh/vietlott-data (live)' };
+  } catch (_) { /* rơi xuống fallback nếu có */ }
+
+  if (cfg.hasFallback && MINHNGOC_URLS[productKey]) {
+    const res = await fetch(MINHNGOC_URLS[productKey], {
+      headers: { ...VIETLOTT_HEADERS, 'Accept-Language': 'vi-VN,vi;q=0.9', 'Referer': 'https://www.minhngoc.net.vn/' },
+      cf: { cacheTtl: 0 },
+    });
+    if (res.ok) {
+      const html = await res.text();
+      const rows = parseMinhNgocListing(html);
+      if (rows.length > 0) return { rows, source: 'Minh Ngọc (fallback, live)' };
+    }
+  }
+
+  throw new Error('Không lấy được dữ liệu từ GitHub' + (cfg.hasFallback ? ' lẫn Minh Ngọc' : ' (sản phẩm này không có nguồn dự phòng)'));
+}
+
+async function handleVietlottLive(productKey) {
+  try {
+    const { rows, source } = await fetchVietlottRows(productKey);
+    const recent = rows.slice(-31).reverse(); // rows[0] = mới nhất
+    return new Response(JSON.stringify({
+      ok: true, fetchedAt: new Date().toISOString(), source, rows: recent,
+    }), { status: 200, headers: jsonHeaders });
+  } catch (err) {
+    return new Response(JSON.stringify({ ok: false, error: err.message }), { status: 502, headers: jsonHeaders });
+  }
+}
+
+async function handleVietlottCopy24(productKey) {
+  const cfg = VIETLOTT_LIVE_CONFIGS[productKey];
+  if (!cfg) return new Response(JSON.stringify({ ok: false, error: `Không rõ sản phẩm "${productKey}"` }), { status: 400, headers: jsonHeaders });
+  try {
+    const { rows } = await fetchVietlottRows(productKey);
+    let selected, cutoffLabel;
+    if (cfg.continuous) {
+      const withoutLast3 = rows.slice(0, -3);
+      selected = withoutLast3.slice(-24);
+      const cutoffRow = withoutLast3[withoutLast3.length - 1];
+      cutoffLabel = cutoffRow ? `kỳ #${cutoffRow.id || '?'} (${cutoffRow.date})` : '—';
+    } else {
+      const today = new Date();
+      const cutoff = getCutoffDateGeneric(today, cfg.drawDays);
+      const cutoffKey = dateKeyLocal(cutoff);
+      selected = rows.filter(d => d.date <= cutoffKey).slice(-24);
+      cutoffLabel = cutoffKey;
+    }
+    return new Response(JSON.stringify({
+      ok: true, fetchedAt: new Date().toISOString(), cutoffLabel, rows: selected,
+    }), { status: 200, headers: jsonHeaders });
+  } catch (err) {
+    return new Response(JSON.stringify({ ok: false, error: err.message }), { status: 502, headers: jsonHeaders });
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/keno-live') return handleKenoLive();
     if (url.pathname === '/api/keno-copy24') return handleKenoCopy24();
+
+    if (url.pathname === '/api/us-live') return handleUsLotteryLive(url.searchParams.get('game') || '');
+    if (url.pathname === '/api/us-copy24') return handleUsLotteryCopy24(url.searchParams.get('game') || '');
+
+    if (url.pathname === '/api/vietlott-live') return handleVietlottLive(url.searchParams.get('product') || '');
+    if (url.pathname === '/api/vietlott-copy24') return handleVietlottCopy24(url.searchParams.get('product') || '');
 
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
