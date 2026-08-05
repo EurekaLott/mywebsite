@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesla 369 Neural Network & Fibonacci Universe</title>
+    <style>
+        :root {
+          --bg-main: #F8F9FA;
+          --bg-card: #FFFFFF;
+          --header-bg: #232F3E;
+          --text-main: #0F1111;
+          --text-muted: #565959;
+          --accent-yellow: #FFD814;
+          --accent-orange: #FA8900;
+          --link-color: #007185;
+          --border-color: #D5D9D9;
+        }
+        body {
+            margin: 0;
+            padding: 0 0 40px;
+            background-color: var(--bg-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Inter','Helvetica Neue',Arial,sans-serif;
+            color: var(--text-main);
+            overflow-y: auto;
+        }
+        canvas {
+            background: radial-gradient(circle, #081b33 0%, #020710 100%);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .card {
+            width:min(780px,95%);
+            box-sizing: border-box;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 15px; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .card-title {
+            color: var(--header-bg); 
+            font-weight: 700; 
+            font-size: 18px; 
+            display: block;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+        .card-content {
+            font-size: 14px; 
+            line-height: 1.6; 
+            color: var(--text-main);
+        }
+        .section-title {
+            color: var(--accent-orange);
+            font-weight: 700;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        .highlight {
+            color: var(--header-bg);
+            font-weight: 700;
+        }
+        ul {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+<div style="
+width:100%;
+background:#232F3E;
+padding:18px 30px;
+box-sizing:border-box;
+display:flex;
+align-items:center;
+gap:15px;
+box-shadow:0 2px 4px rgba(0,0,0,.1);
+">
+
+<a href="index.html"
+style="
+text-decoration:none;
+background:#FFD814;
+color:#0F1111;
+padding:10px 18px;
+border-radius:8px;
+font-weight:700;
+border:1px solid #FCD200;
+">
+🏠 Back to Home
+</a>
+
+<div style="
+color:white;
+font-size:22px;
+font-weight:700;
+margin-left:10px;
+">
+Prediction Center
+</div>
+
+</div>
+    
+
+    <!-- 1. TESLA NETWORK CANVAS VIEW (ANIMATED ILLUSTRATION) -->
+   <canvas
+id="networkCanvas"
+style="
+width:95%;
+max-width:800px;
+height:auto;
+aspect-ratio:4/3;
+"></canvas>
+
+    <!-- 2. THE TRAVELER & FIBONACCI UNIVERSE INSTRUCTIONS -->
+    <div class="card">
+      <div class="card-title">📢 The Traveler & The Fibonacci Universe</div>
+      
+      <div class="card-content">
+        <p>✅ The Traveler walks through the Fibonacci Universe until he finds the Purple Planet—or keeps walking for the rest of his life.</p>
+        <p>🪐 Only when the Purple Planet appears does the hidden Fibonacci Pattern begin to reveal itself for Today's Drawing.</p>
+        <p>⚡ EurekaLott believes that prediction is not about guessing the future—it is about recognizing the pattern that has always been there.</p>
+
+        <hr style="border: 0; border-top: 1px solid #D5D9D9; margin: 20px 0;">
+
+        <div class="section-title">• Vortex Math 369 Convergence</div>
+        <p>Once the Fibonacci Pattern has been established, the Prediction Center continues its convergence process through the conceptual framework of Vortex Math 369 (Marko Rodin • Nikola Tesla).</p>
+        <p>As illustrated on the canvas, the numbers 3, 6, and 9 are commonly presented together, with 9 symbolizing the final point of convergence. However, both the natural number system and modern lottery matrices also include the digit 0.</p>
+        <p>For this reason, at the convergence point represented by 9, in addition to the values 3 and 6, the system generates two representative numbers:</p>
+        <ul>
+            <li>One represents the <span class="highlight">Left Branch</span>.</li>
+            <li>One represents the <span class="highlight">Right Branch</span>.</li>
+        </ul>
+        <p>This is why the Prediction Center always produces exactly two prediction numbers.</p>
+
+        <div class="section-title">• The Final Decision</div>
+        <p>The system does not make the final decision for the player. Instead, it identifies the two most promising convergence points based on its analytical model. The player then chooses one of these two numbers.</p>
+        <p>In other words, the player is choosing either:</p>
+        <ul>
+            <li>The symbolic convergence point 9 through the <span class="highlight">Left Branch</span>, or</li>
+            <li>The symbolic convergence point 9 through the <span class="highlight">Right Branch</span>.</li>
+        </ul>
+        <p>This represents the Traveler's final decision after completing the journey through the Fibonacci Universe.</p>
+      </div>
+    </div>
+
+    <!-- 3. CANVAS ANIMATION SCRIPT -->
+    <script>
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Precise node positions
+        const nodes = {
+            1: { x: 500, y: 190 },
+            2: { x: 550, y: 280 },
+            3: { x: 540, y: 440, label: "+ 3" }, 
+            4: { x: 450, y: 510 },
+            5: { x: 350, y: 510 },
+            6: { x: 260, y: 440, label: "+ 6" }, 
+            7: { x: 250, y: 280 },
+            8: { x: 300, y: 190 }
+        };
+
+        // Glowing center node corresponding to position 9
+        const centerNode = { x: 400, y: 400, label: "9" };
+
+        // Matrix line configurations
+        const lines = [
+            [nodes[1], nodes[2]],
+            [nodes[4], centerNode],
+            [nodes[5], centerNode],
+            [nodes[7], nodes[8]],
+            // Intersecting diagonals leading to center
+            [nodes[1], centerNode],
+            [nodes[8], centerNode],
+            [nodes[4], nodes[2]],
+            [nodes[5], nodes[7]]
+        ];
+
+        const particles = [];
+
+        // Generate flow particles along the matrix vector lines
+        lines.forEach(line => {
+            for(let i = 0; i < 30; i++) {
+                particles.push({
+                    start: line[0],
+                    end: line[1],
+                    progress: Math.random(),
+                    speed: 0.002 + Math.random() * 0.003,
+                    size: 1 + Math.random() * 3,
+                    color: Math.random() > 0.5 ? '#ff7700' : '#ffcc00'
+                });
+            }
+        });
+
+        function setGlow(color, blur) {
+            ctx.shadowBlur = blur;
+            ctx.shadowColor = color;
+        }
+
+        function draw() {
+            // Motion blur effect
+            ctx.fillStyle = 'rgba(3, 10, 22, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Draw flowing energy particles
+            particles.forEach(p => {
+                p.progress += p.speed;
+                if(p.progress > 1) p.progress = 0;
+
+                const currentX = p.start.x + (p.end.x - p.start.x) * p.progress;
+                const currentY = p.start.y + (p.end.y - p.start.y) * p.progress;
+
+                setGlow(p.color, 8);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 2. Draw intense radiant center node
+            setGlow('#ffffaa', 35);
+            ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
+            ctx.beginPath();
+            ctx.arc(centerNode.x, centerNode.y, 35, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(centerNode.x, centerNode.y, 14, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. Render digits and node tags
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            for (let key in nodes) {
+                const node = nodes[key];
+                
+                if (node.label) {
+                    setGlow('#00ffff', 25); 
+                    ctx.fillStyle = '#00ffff';
+                    ctx.font = 'bold 32px Arial'; 
+                    ctx.fillText(node.label, node.x, node.y);
+                } else {
+                    setGlow('#77bbff', 10);
+                    ctx.fillStyle = '#aaddff';
+                    ctx.font = 'bold 24px Arial';
+                    
+                    let offsetY = 0;
+                    if(key == 1 || key == 8) offsetY = -25;
+                    if(key == 4 || key == 5) offsetY = 25;
+                    if(key == 2) offsetY = -5;
+                    if(key == 7) offsetY = -5;
+
+                    ctx.fillText(key, node.x, node.y + offsetY);
+                }
+            }
+
+            // Top target scanner block
+            setGlow('#ff3333', 15);
+            ctx.fillStyle = '#ff3333';
+            ctx.fillRect(385, 95, 30, 15);
+
+            // 4. Force render node 9 on top layer to ensure high legibility
+            setGlow('#000000', 0); 
+            ctx.fillStyle = '#111111'; 
+            ctx.font = 'bold 22px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(centerNode.label, centerNode.x, centerNode.y);
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+    
+<div id="todayPrediction"></div>
+<!-- ⚔️ Đọc dự đoán hiện tại từ predictions.txt (text thuần, không phải
+     code, xem predictions-parser.js). Trang này đọc tham số ?game= trên
+     URL (VD prediction.html?game=vietlott655 hoặc ?game=powerballusa)
+     để biết đang xem loại nào — 2 loại HOÀN TOÀN ĐỘC LẬP nhau: đăng dự
+     đoán Powerball USA mới KHÔNG đẩy dự đoán Vietlott 655 vào archive,
+     và ngược lại. Không truyền ?game= → mặc định vietlott655. -->
+<script type="module">
+import { fetchPredictions, splitByGame } from './predictions-parser.js';
+
+const gameSlug = new URLSearchParams(location.search).get('game') || 'vietlott655';
+const all = await fetchPredictions();
+const { current, archived } = splitByGame(all, gameSlug);
+const pad2 = n => String(n).length < 2 ? '0' + n : String(n);
+
+if (!current) {
+  document.getElementById('todayPrediction').innerHTML =
+    '<div class="card"><div class="card-content">⏳ Chưa có dự đoán nào được post cho mục này trong predictions.txt.</div></div>';
+} else {
+
+let html = `
+<div class="card">
+
+<div class="card-title">
+🔮 Today's Prediction
+</div>
+
+<div style="
+font-size:24px;
+font-weight:700;
+color:#FA8900;
+text-align:center;
+margin-bottom:25px;
+">
+${current.label}<br>
+${current.dateRaw}
+</div>
+`;
+
+current.pairs.forEach(([a, b]) => {
+    html += `
+    <div style="
+    display:flex;
+    justify-content:center;
+    gap:120px;
+    padding:16px 0;
+    font-size:34px;
+    font-weight:800;
+    border-bottom:1px solid #D5D9D9;
+    color:#232F3E;
+    ">
+        <span>${pad2(a)}</span>
+        <span>${pad2(b)}</span>
+    </div>
+    `;
+});
+
+html += `
+
+<div style="
+margin-top:25px;
+text-align:center;
+font-size:18px;
+color:#565959;
+">
+Choose <b>ONE</b> number from each pair.
+</div>
+
+<div style="text-align:center;margin-top:22px;">
+  <a href="archive.html?game=${gameSlug}" style="
+    display:inline-block;text-decoration:none;background:#FFD814;
+    color:#0F1111;padding:11px 22px;border-radius:8px;font-weight:700;
+    font-size:14px;border:1px solid #FCD200;
+  ">📂 Xem Archive — kỳ trước & kết quả</a>
+</div>
+
+</div>
+`;
+
+document.getElementById("todayPrediction").innerHTML = html;
+
+}
+</script>
+    
+</body>
+</html>
