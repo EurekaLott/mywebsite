@@ -326,9 +326,9 @@ body{
   🇻🇳 Vietlott 6/55
 </div>
 
-    <div class="dd-item disabled">
+    <div class="dd-item"
+       onclick="window.location.href='prediction.html?game=powerballusa'">
       🇺🇸 Powerball USA
-      <span class="coming">Coming Soon</span>
     </div>
 
     <div class="dd-item disabled">
@@ -354,37 +354,14 @@ body{
 
 <div id="bruce-banner"></div>
 
-<!-- ⚔️ HOW TO PLAY — 7-image guide strip + written instructions.
-     Static content only, no JS logic here (per PROJECT_ARCHITECTURE.md
-     rule: banner must never modify unrelated sections). To update for
-     a future draw date, just edit the text inside .howto-spec below. -->
-<div class="howto-wrap">
-  <div class="howto-images">
-    <div class="howto-step"><a href="images/howto-1.png" target="_blank"><img src="images/howto-1.png" alt="How to play - step 1"></a></div>
-    <div class="howto-step"><a href="images/howto-2.png" target="_blank"><img src="images/howto-2.png" alt="How to play - step 2"></a></div>
-    <div class="howto-step"><a href="images/howto-3.png" target="_blank"><img src="images/howto-3.png" alt="How to play - step 3"></a></div>
-    <div class="howto-step"><a href="images/howto-4.png" target="_blank"><img src="images/howto-4.png" alt="How to play - step 4"></a></div>
-    <div class="howto-step"><a href="images/howto-5.png" target="_blank"><img src="images/howto-5.png" alt="How to play - step 5"></a></div>
-    <div class="howto-step"><a href="images/howto-6.png" target="_blank"><img src="images/howto-6.png" alt="How to play - step 6"></a></div>
-    <div class="howto-step"><a href="images/howto-7.png" target="_blank"><img src="images/howto-7.png" alt="How to play - step 7"></a></div>
-  </div>
-
-  <div class="howto-spec">
-    <h3>HOW TO PLAY – AUG 1, 2026 INSTRUCTIONS:</h3>
-    <p>If Saturday, Aug 1 2026 you want to play</p>
-    <p>Press Powerball USA — Auto Run Button</p>
-    <p>Program automatically fetches the 24 drawings in RAW ORDER from Saturday July 25, 2026 for you</p>
-    <p>The system generates four core prediction numbers representing these two branches.</p>
-    <ul>
-      <li>Left Branch: 69</li>
-      <li>Right Branch: 30</li>
-    </ul>
-    <p>Success does not require all four numbers to appear at once. The model achieves victory as soon as even one number carrying the energy of 369 aligns precisely at the center.</p>
-    <p><b>'4 choose 1'</b>: combining multiple EurekaLott programs to pick your 6 ticket numbers is much easier than blindly guessing 6 out of a pool of 69. It is especially helpful when different EurekaLott programs generate the exact same number—like 05, for example—which plays a crucial role in the customer's selection process.</p>
-  </div>
-</div>
-
-  <!-- RESULT PANEL -->
+<!-- ⚔️ RESULT PANEL — CỐ Ý đặt NGAY SAU banner, TRƯỚC howto-wrap (7 ảnh
+     hướng dẫn) và mọi nội dung khác của trang chủ. Trước đây panel này
+     nằm ở cuối trang (sau howto-wrap), nên dù selectLottery() có gọi
+     panel.scrollIntoView() thì khách vẫn phải nhìn animation cuộn qua
+     một quãng dài. Panel càng nằm dưới banner, quãng cuộn càng ngắn —
+     và sẽ CÀNG NGẮN theo thời gian kể cả khi trang chủ có thêm ảnh/nội
+     dung mới bên dưới, vì panel không còn phụ thuộc vị trí howto-wrap
+     nữa. KHÔNG di chuyển khối này xuống dưới howto-wrap lần nữa. -->
 <div class="result-panel" id="resultPanel">
   <h3 id="resultTitle">🎱 Powerball USA</h3>
 
@@ -424,6 +401,36 @@ body{
       </thead>
       <tbody id="recentBody"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- ⚔️ HOW TO PLAY — 7-image guide strip + written instructions.
+     Static content only, no JS logic here (per PROJECT_ARCHITECTURE.md
+     rule: banner must never modify unrelated sections). To update for
+     a future draw date, just edit the text inside .howto-spec below. -->
+<div class="howto-wrap">
+  <div class="howto-images">
+    <div class="howto-step"><a href="images/howto-1.png" target="_blank"><img src="images/howto-1.png" alt="How to play - step 1"></a></div>
+    <div class="howto-step"><a href="images/howto-2.png" target="_blank"><img src="images/howto-2.png" alt="How to play - step 2"></a></div>
+    <div class="howto-step"><a href="images/howto-3.png" target="_blank"><img src="images/howto-3.png" alt="How to play - step 3"></a></div>
+    <div class="howto-step"><a href="images/howto-4.png" target="_blank"><img src="images/howto-4.png" alt="How to play - step 4"></a></div>
+    <div class="howto-step"><a href="images/howto-5.png" target="_blank"><img src="images/howto-5.png" alt="How to play - step 5"></a></div>
+    <div class="howto-step"><a href="images/howto-6.png" target="_blank"><img src="images/howto-6.png" alt="How to play - step 6"></a></div>
+    <div class="howto-step"><a href="images/howto-7.png" target="_blank"><img src="images/howto-7.png" alt="How to play - step 7"></a></div>
+  </div>
+
+  <div class="howto-spec">
+    <h3>HOW TO PLAY – AUG 1, 2026 INSTRUCTIONS:</h3>
+    <p>If Saturday, Aug 1 2026 you want to play</p>
+    <p>Press Powerball USA — Auto Run Button</p>
+    <p>Program automatically fetches the 24 drawings in RAW ORDER from Saturday July 25, 2026 for you</p>
+    <p>The system generates four core prediction numbers representing these two branches.</p>
+    <ul>
+      <li>Left Branch: 69</li>
+      <li>Right Branch: 30</li>
+    </ul>
+    <p>Success does not require all four numbers to appear at once. The model achieves victory as soon as even one number carrying the energy of 369 aligns precisely at the center.</p>
+    <p><b>'4 choose 1'</b>: combining multiple EurekaLott programs to pick your 6 ticket numbers is much easier than blindly guessing 6 out of a pool of 69. It is especially helpful when different EurekaLott programs generate the exact same number—like 05, for example—which plays a crucial role in the customer's selection process.</p>
   </div>
 </div>
 
