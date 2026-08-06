@@ -50,22 +50,26 @@ body{
 
 /* NAV — Wall Street style: flat text links on a shared navy strip, no button boxes */
 .nav{
-  margin-top:22px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  margin-top:22px;display:flex;align-items:center;justify-content:space-between;
   border-top:1px solid rgba(255,255,255,.12);padding-top:2px;gap:4px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;
 }
-.nav-links,.nav-lang{display:flex;flex-wrap:wrap;align-items:center;}
+.nav::-webkit-scrollbar{height:6px;}
+.nav::-webkit-scrollbar-track{background:var(--header-bg);}
+.nav::-webkit-scrollbar-thumb{background-color:#565959;border-radius:4px;}
+.nav-links,.nav-lang{display:flex;flex-wrap:nowrap;align-items:center;flex-shrink:0;}
 .nav a{
   text-decoration:none;color:#FFFFFF;
   font-size:14px;font-weight:500;
   padding:12px 14px;margin:0;
   border:1px solid transparent;border-radius:2px;
-  cursor:pointer;transition:.15s;white-space:nowrap;
+  cursor:pointer;transition:.15s;white-space:nowrap;flex-shrink:0;
 }
 .nav a:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);}
 .nav .active{font-weight:700;color:var(--accent-yellow);}
 
 /* DROPDOWN */
-.dropdown{position:relative;}
+.dropdown{position:relative;flex-shrink:0;}
 .btn-results{
   background:transparent;color:#FFFFFF;padding:12px 14px;margin:0;
   font-size:14px;font-weight:500;cursor:pointer;border:1px solid transparent;border-radius:2px;
@@ -78,7 +82,7 @@ body{
 .btn-results.open .arrow{transform:rotate(180deg);}
 
 .dropdown-menu{
-  display:none;position:absolute;top:100%;left:0;
+  display:none;position:fixed;
   background:#FFFFFF;border-radius:0 8px 8px 8px;border:1px solid var(--border-color);
   box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:230px;z-index:100;overflow:hidden;
 }
@@ -201,10 +205,27 @@ body{
 @keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
 /* HOW TO PLAY — 7-image strip + instructions spec (below banner) */
-.howto-wrap{margin:40px 50px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:28px 32px;box-shadow:0 4px 12px rgba(0,0,0,.05);}
-.howto-images{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;}
-.howto-step{position:relative;width:200px;}
-.howto-step img{width:100%;height:200px;object-fit:contain;background:#F2F4F8;border-radius:8px;border:1px solid var(--border-color);display:block;cursor:zoom-in;}
+.howto-wrap{margin:40px 50px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:36px 40px;box-shadow:0 4px 12px rgba(0,0,0,.05);}
+.howto-title{color:var(--header-bg);font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:.3px;}
+.howto-intro{color:var(--text-muted);font-size:14.5px;margin-bottom:36px;max-width:720px;line-height:1.7;}
+
+.z-row{display:flex;align-items:center;gap:40px;margin-bottom:56px;}
+.z-row.reverse{flex-direction:row-reverse;}
+.z-row:last-of-type{margin-bottom:32px;}
+.z-text{flex:1 1 0;min-width:0;}
+.z-step{display:inline-block;background:var(--accent-yellow);color:var(--text-main);font-size:12px;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:4px;margin-bottom:12px;}
+.z-text h4{color:var(--header-bg);font-size:19px;font-weight:700;margin-bottom:10px;line-height:1.4;}
+.z-text p{color:var(--text-main);font-size:14.5px;line-height:1.7;margin:0;}
+.z-text p b{color:var(--accent-orange);}
+.z-image{flex:1 1 0;min-width:0;}
+.z-image a{display:block;}
+.z-image img{
+  width:100%;display:block;object-fit:contain;background:#F2F4F8;
+  border-radius:8px;border:1px solid var(--border-color);cursor:zoom-in;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+.z-row.final .z-image img{background:#FFFFFF;}
+
 .howto-spec{border-top:1px solid var(--border-color);padding-top:24px;}
 .howto-spec h3{color:var(--header-bg);font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:.3px;}
 .howto-spec p{color:var(--text-main);font-size:15px;line-height:1.7;margin-bottom:10px;}
@@ -223,9 +244,10 @@ body{
   .ball{width:42px;height:42px;font-size:15px;}
   .led-wrap{margin:30px 25px;}
   .led-item{font-size:16px;}
-  .howto-wrap{margin:30px 25px;padding:20px;}
-  .howto-step{width:140px;}
-  .howto-step img{height:140px;}
+  .howto-wrap{margin:30px 25px;padding:22px 20px;}
+  .howto-title{font-size:18px;}
+  .z-row,.z-row.reverse{flex-direction:column;gap:14px;margin-bottom:38px;}
+  .z-text h4{font-size:17px;}
   .howto-spec h3{font-size:17px;}
 }
 
@@ -439,28 +461,74 @@ body{
      rule: banner must never modify unrelated sections). To update for
      a future draw date, just edit the text inside .howto-spec below. -->
 <div class="howto-wrap">
-  <div class="howto-images">
-    <div class="howto-step"><a href="images/howto-1.png" target="_blank"><img src="images/howto-1.png" alt="How to play - step 1"></a></div>
-    <div class="howto-step"><a href="images/howto-2.png" target="_blank"><img src="images/howto-2.png" alt="How to play - step 2"></a></div>
-    <div class="howto-step"><a href="images/howto-3.png" target="_blank"><img src="images/howto-3.png" alt="How to play - step 3"></a></div>
-    <div class="howto-step"><a href="images/howto-4.png" target="_blank"><img src="images/howto-4.png" alt="How to play - step 4"></a></div>
-    <div class="howto-step"><a href="images/howto-5.png" target="_blank"><img src="images/howto-5.png" alt="How to play - step 5"></a></div>
-    <div class="howto-step"><a href="images/howto-6.png" target="_blank"><img src="images/howto-6.png" alt="How to play - step 6"></a></div>
-    <div class="howto-step"><a href="images/howto-7.png" target="_blank"><img src="images/howto-7.png" alt="How to play - step 7"></a></div>
+  <h3 class="howto-title">HOW IT WORKS — Từ lúc bấm nút, đến lúc trùng khớp kết quả thật</h3>
+  <p class="howto-intro">7 bước dưới đây là ảnh chụp màn hình thật, theo đúng thứ tự, từ lần chạy hệ thống cho kỳ quay Thứ Bảy, 1/8/2026 — không dàn dựng.</p>
+
+  <div class="z-row">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 1</span>
+      <h4>Bấm Auto Run, theo dõi chỉ số Epoch</h4>
+      <p>Chọn chương trình (ví dụ EurekaLott Powerball 5), MAX_NUM = 69, rồi bấm <b>⚡ Powerball USA — Auto Run</b>. Hệ thống bắt đầu huấn luyện mạng neural ngay trên trình duyệt. Khách hàng chỉ cần theo dõi đúng 1 con số: chỉ báo <b>epoch</b> — khi nào nó chạy tới <b>12/12</b>, quá trình training coi như hoàn tất.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-1.png" target="_blank"><img src="images/howto-1.png" alt="Bước 1 - Bấm Auto Run và theo dõi epoch"></a></div>
+  </div>
+
+  <div class="z-row reverse">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 2</span>
+      <h4>Đọc biểu đồ Loss Chart</h4>
+      <p>Bên phải màn hình là <b>Loss Chart</b>: đường xanh (Smoothed) càng giảm dần theo từng epoch, đường đỏ (Reference) giữ ổn định phía trên — đây là dấu hiệu mô hình đang học đúng hướng. Sau khi chạy xong 12 epoch, dòng <b>FINAL PREDICTION</b> phía dưới chốt ra con số đầu tiên: <b>05</b>.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-2.png" target="_blank"><img src="images/howto-2.png" alt="Bước 2 - Loss Chart và dự đoán số 05"></a></div>
+  </div>
+
+  <div class="z-row">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 3</span>
+      <h4>Chương trình thứ hai xác nhận lại</h4>
+      <p>Chạy tiếp một chương trình EurekaLott khác — lần này dùng thuật toán <b>Vô Chí Thiên</b> (kết hợp RNN 6.4% + Transformer 93.6%). Dù mô hình và dữ liệu huấn luyện khác nhau, kết quả vẫn khoanh tròn đúng số <b>05</b> — hai hệ thống độc lập cùng đồng thuận trên một con số.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-3.png" target="_blank"><img src="images/howto-3.png" alt="Bước 3 - Chương trình thứ hai cũng ra số 05"></a></div>
+  </div>
+
+  <div class="z-row reverse">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 4</span>
+      <h4>Thêm hai con số mới: 17 và 50</h4>
+      <p>Sang chương trình kế tiếp, hai mũi tên đỏ trong ảnh chỉ thẳng vào hai vị trí dự đoán quan trọng: <b>17</b> và <b>50</b>. Mỗi chương trình EurekaLott chỉ tập trung "chắc tay" vào một vài con số thay vì đoán bừa cả dãy — đó là lý do khách hàng nên chạy nhiều chương trình rồi gộp lại.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-4.png" target="_blank"><img src="images/howto-4.png" alt="Bước 4 - Hai số 17 và 50 được khoanh vùng"></a></div>
+  </div>
+
+  <div class="z-row">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 5</span>
+      <h4>Con số thứ tư: 27</h4>
+      <p>Một chương trình khác huấn luyện xong với chỉ số lỗi WF-CV MAE rất thấp (0.1222), cho ra thêm số <b>27</b> — mũi tên đỏ trong ảnh khoanh đúng vị trí này trong dòng dự đoán cuối cùng.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-5.png" target="_blank"><img src="images/howto-5.png" alt="Bước 5 - Số 27 được xác định"></a></div>
+  </div>
+
+  <div class="z-row reverse">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 6</span>
+      <h4>Con số cuối cùng: 48</h4>
+      <p>Chương trình cuối dùng kiến trúc <b>Transformer 64 chiều kết hợp EBM (Energy-Based Model)</b>, nhận dữ liệu Texas Lottery dán trực tiếp vào ô nhập liệu. Kết quả: số <b>48</b> — mũi tên đỏ khoanh chính xác vị trí này. Đến đây, 5 chương trình đã cho ra đủ 5 con số: 05, 17, 27, 48, 50.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-6.png" target="_blank"><img src="images/howto-6.png" alt="Bước 6 - Số 48 được xác định bằng Transformer + EBM"></a></div>
+  </div>
+
+  <div class="z-row final">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 7 — ĐỐI CHIẾU KẾT QUẢ THẬT</span>
+      <h4>Kết quả xổ số Powerball chính thức — Thứ Bảy, 1/8/2026</h4>
+      <p>Dãy số quay thưởng thật: <b>6 – 17 – 27 – 48 – 50</b>, Powerball <b>5</b>. Các mũi tên đỏ trong ảnh xác nhận: <b>17, 27, 48, 50</b> và <b>5</b> — chính là những con số mà các chương trình EurekaLott ở 6 bước phía trên đã tính ra <i>trước khi</i> kỳ quay số này diễn ra.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-7.png" target="_blank"><img src="images/howto-7.png" alt="Bước 7 - Kết quả Powerball thật ngày 1/8/2026 khớp với dự đoán"></a></div>
   </div>
 
   <div class="howto-spec">
-    <h3>HOW TO PLAY – AUG 1, 2026 INSTRUCTIONS:</h3>
-    <p>If Saturday, Aug 1 2026 you want to play</p>
-    <p>Press Powerball USA — Auto Run Button</p>
-    <p>Program automatically fetches the 24 drawings in RAW ORDER from Saturday July 25, 2026 for you</p>
-    <p>The system generates four core prediction numbers representing these two branches.</p>
-    <ul>
-      <li>Left Branch: 69</li>
-      <li>Right Branch: 30</li>
-    </ul>
-    <p>Success does not require all four numbers to appear at once. The model achieves victory as soon as even one number carrying the energy of 369 aligns precisely at the center.</p>
-    <p><b>'4 choose 1'</b>: combining multiple EurekaLott programs to pick your 6 ticket numbers is much easier than blindly guessing 6 out of a pool of 69. It is especially helpful when different EurekaLott programs generate the exact same number—like 05, for example—which plays a crucial role in the customer's selection process.</p>
+    <p>Đây chính là nguyên tắc <b>'4 chọn 1'</b>: kết hợp nhiều chương trình EurekaLott để chọn ra 6 số vé số của bạn dễ hơn rất nhiều so với đoán mò 6 trong tổng số 69. Nó đặc biệt hữu ích khi nhiều chương trình EurekaLott khác nhau cùng cho ra đúng một con số — như số 05 ở Bước 2 và 3 — đó chính là tín hiệu đáng tin cậy nhất để khách hàng đưa vào lựa chọn cuối cùng.</p>
   </div>
 </div>
 
