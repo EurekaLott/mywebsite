@@ -244,7 +244,13 @@ body{
   border-radius:8px;border:1px solid var(--border-color);overflow:hidden;
   box-shadow:0 4px 12px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;
 }
-.tesla-canvas-wrap canvas{width:100%;height:auto;display:block;}
+.tesla-canvas-wrap canvas{
+  width:100%;
+  height:auto;
+  display:block;
+  aspect-ratio: 4 / 3;
+  min-height: 250px;
+}
 .step7-media img{
   width:100%;display:block;object-fit:contain;background:#FFFFFF;
   border-radius:8px;border:1px solid var(--border-color);cursor:zoom-in;
@@ -284,6 +290,7 @@ body{
   .z-text h4{font-size:17px;}
   .howto-strip{grid-template-columns:repeat(1,1fr);gap:12px;margin-bottom:38px;}
   .step7-media{flex-direction:column;}
+  .tesla-canvas-wrap{display:block;} /* Fix canvas xẹp về 0px trên iPhone 7 / Safari cũ */
 }
 
 
