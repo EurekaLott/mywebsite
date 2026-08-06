@@ -11,422 +11,127 @@
 <title>EurekaLott | Community</title>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+:root {
+  --bg-main: #F8F9FA;
+  --bg-card: #FFFFFF;
+  --header-bg: #232F3E;
+  --text-main: #0F1111;
+  --text-muted: #565959;
+  --accent-yellow: #FFD814;
+  --accent-orange: #FA8900;
+  --link-color: #007185;
+  --border-color: #D5D9D9;
+  --brand-red: #C7511F;
 }
 
+*{margin:0;padding:0;box-sizing:border-box;}
+
 body{
-
-    background:
-    linear-gradient(
-        180deg,
-        #0a2e73 0%,
-        #133f92 100%
-    );
-
-    min-height:100vh;
-
-    font-family:
-        "Segoe UI",
-        Arial,
-        sans-serif;
-
-    color:white;
-
-    overflow-x:hidden;
+  background:var(--bg-main);
+  min-height:100vh;
+  font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+  color:var(--text-main);
+  overflow-x:hidden;
+  line-height:1.6;
 }
 
 /* HEADER */
-
-.header{
-    padding:40px 50px;
-}
+.header{padding:32px 50px 24px;background:var(--header-bg);}
 
 /* LOGO */
-
-.brand{
-
-    display:flex;
-
-    align-items:center;
-
-    line-height:1;
-}
-
-.eureka{
-
-    font-size:72px;
-
-    font-weight:900;
-
-    color:white;
-
-    font-style:italic;
-
-    letter-spacing:-2px;
-}
-
-.lott{
-
-    font-size:72px;
-
-    font-weight:900;
-
-    color:#ff3b30;
-
-    font-style:italic;
-
-    letter-spacing:-2px;
-}
-
-.brand-sub{
-
-    margin-top:14px;
-
-    color:#cfe0ff;
-
-    font-size:22px;
-
-    letter-spacing:3px;
-}
+.brand{display:flex;align-items:center;line-height:1;}
+.eureka{font-size:56px;font-weight:800;color:white;font-style:italic;letter-spacing:-2px;}
+.lott{font-size:56px;font-weight:800;color:var(--accent-yellow);font-style:italic;letter-spacing:-2px;}
+.brand-sub{margin-top:12px;color:#B8C2D0;font-size:17px;letter-spacing:2px;}
 
 /* NAV */
-
-.nav{
-
-    margin-top:35px;
-
-    display:flex;
-
-    flex-wrap:wrap;
-
-    gap:14px;
-}
-
+.nav{margin-top:28px;display:flex;flex-wrap:wrap;gap:12px;}
 .nav a{
-
-    text-decoration:none;
-
-    background:white;
-
-    color:#0a2e73;
-
-    padding:14px 22px;
-
-    border-radius:12px;
-
-    font-size:17px;
-
-    font-weight:700;
-
-    transition:.25s;
+  text-decoration:none;background:#FFFFFF;color:var(--header-bg);
+  padding:12px 20px;border-radius:8px;font-size:15px;font-weight:600;
+  transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.15);
 }
+.nav a:hover{background:#F2F4F8;}
+.nav .active{background:var(--accent-yellow);border:1px solid #FCD200;}
 
-.nav a:hover{
-
-    transform:translateY(-3px);
-}
-
-.nav .active{
-
-    background:#ffd700;
-}
 /* MAIN CONTAINER */
-
-.container{
-
-    max-width:1200px;
-
-    margin:40px auto;
-
-    padding:0 40px;
-}
+.container{max-width:1200px;margin:40px auto;padding:0 40px;}
 
 /* COMMUNITY CARD */
-
 .community-card{
-
-    background:#071528;
-
-    border-radius:18px;
-
-    padding:35px;
-
-    box-shadow:
-        0 12px 35px rgba(0,0,0,.35);
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:12px;
+  padding:32px;
+  box-shadow:0 4px 12px rgba(0,0,0,.05);
 }
 
-.community-card h1{
-
-    color:#ffd700;
-
-    font-size:34px;
-
-    margin-bottom:12px;
-}
-
-.community-card p{
-
-    color:#cfe0ff;
-
-    margin-bottom:30px;
-
-    font-size:18px;
-}
+.community-card h1{color:var(--header-bg);font-size:32px;font-weight:700;margin-bottom:12px;}
+.community-card p{color:var(--text-muted);margin-bottom:30px;font-size:17px;}
 
 /* CATEGORY BUTTONS */
-
-.categories{
-
-    display:flex;
-
-    flex-wrap:wrap;
-
-    gap:12px;
-
-    margin-bottom:35px;
-}
-
+.categories{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:32px;}
 .category{
-
-    background:white;
-
-    color:#0a2e73;
-
-    padding:12px 18px;
-
-    border-radius:10px;
-
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.25s;
+  background:#F2F4F8;color:var(--header-bg);
+  padding:11px 18px;border-radius:8px;font-weight:600;
+  cursor:pointer;transition:.2s;border:1px solid var(--border-color);
 }
-
-.category:hover{
-
-    transform:translateY(-3px);
-}
-
-.category.active{
-
-    background:#ffd700;
-}
+.category:hover{background:#E9ECEF;}
+.category.active{background:var(--accent-yellow);border-color:#FCD200;color:var(--text-main);}
 
 /* FORM */
-
-.form-group{
-
-    margin-bottom:18px;
-}
-
-.form-group label{
-
-    display:block;
-
-    margin-bottom:8px;
-
-    font-weight:700;
-
-    color:#cfe0ff;
-}
-
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;margin-bottom:8px;font-weight:600;color:var(--text-main);}
 .form-group input,
 .form-group textarea{
-
-    width:100%;
-
-    padding:14px;
-
-    border:none;
-
-    border-radius:10px;
-
-    font-size:16px;
-
-    outline:none;
+  width:100%;padding:12px 14px;border:1px solid var(--border-color);
+  border-radius:8px;font-size:15px;outline:none;font-family:inherit;
+  color:var(--text-main);background:#FFFFFF;
 }
-
-.form-group textarea{
-
-    min-height:140px;
-
-    resize:vertical;
-}
+.form-group input:focus,
+.form-group textarea:focus{border-color:var(--link-color);}
+.form-group textarea{min-height:140px;resize:vertical;}
 
 .post-btn{
-
-    background:#ff3b30;
-
-    color:white;
-
-    border:none;
-
-    padding:15px 28px;
-
-    border-radius:12px;
-
-    font-size:17px;
-
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.25s;
+  background:var(--accent-yellow);color:var(--text-main);
+  border:1px solid #FCD200;padding:13px 26px;border-radius:8px;
+  font-size:16px;font-weight:700;cursor:pointer;transition:.2s;
 }
+.post-btn:hover{background:#F7CA00;}
 
-.post-btn:hover{
-
-    transform:translateY(-2px);
-}
-  /* COMMENTS */
-
-.comments{
-
-    margin-top:45px;
-}
-
-.comments h2{
-
-    color:#ffd700;
-
-    margin-bottom:25px;
-
-    font-size:28px;
-}
+/* COMMENTS */
+.comments{margin-top:40px;}
+.comments h2{color:var(--header-bg);margin-bottom:22px;font-size:24px;font-weight:700;}
 
 .comment{
-
-    background:#0d2240;
-
-    border-radius:14px;
-
-    padding:20px;
-
-    margin-bottom:18px;
-
-    border-left:5px solid #ffd700;
+  background:var(--bg-card);
+  border:1px solid var(--border-color);
+  border-radius:10px;
+  padding:20px;
+  margin-bottom:16px;
+  border-left:4px solid var(--accent-orange);
+  box-shadow:0 2px 6px rgba(0,0,0,.04);
 }
-
-.comment-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    flex-wrap:wrap;
-
-    margin-bottom:10px;
-}
-
-.comment-name{
-
-    font-weight:800;
-
-    color:#ffffff;
-
-    font-size:18px;
-}
-
-.comment-country{
-
-    color:#cfe0ff;
-
-    font-size:14px;
-}
-
-.comment-time{
-
-    color:#9bb7ff;
-
-    font-size:13px;
-}
-
-.comment-message{
-
-    color:#ffffff;
-
-    line-height:1.7;
-
-    font-size:16px;
-}
+.comment-header{display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;}
+.comment-name{font-weight:700;color:var(--text-main);font-size:17px;}
+.comment-country{color:var(--text-muted);font-size:14px;}
+.comment-time{color:var(--text-muted);font-size:13px;}
+.comment-message{color:var(--text-main);line-height:1.7;font-size:15px;}
 
 /* FOOTER */
-
-.footer{
-
-    margin-top:80px;
-
-    padding:35px;
-
-    text-align:center;
-
-    color:#d7e4ff;
-}
+.footer{margin-top:70px;padding:32px;text-align:center;color:var(--text-muted);font-size:14px;border-top:1px solid var(--border-color);}
 
 /* MOBILE */
-
 @media(max-width:768px){
-
-    .header{
-
-        padding:25px;
-    }
-
-    .eureka,
-    .lott{
-
-        font-size:46px;
-    }
-
-    .brand-sub{
-
-        font-size:15px;
-
-        letter-spacing:2px;
-    }
-
-    .nav{
-
-        gap:10px;
-    }
-
-    .nav a{
-
-        font-size:14px;
-
-        padding:10px 16px;
-    }
-
-    .container{
-
-        padding:0 20px;
-    }
-
-    .community-card{
-
-        padding:22px;
-    }
-
-    .community-card h1{
-
-        font-size:28px;
-    }
-
-    .categories{
-
-        flex-direction:column;
-    }
-
-    .post-btn{
-
-        width:100%;
-    }
-
+  .header{padding:22px 25px;}
+  .eureka,.lott{font-size:38px;}
+  .brand-sub{font-size:13px;letter-spacing:1.5px;}
+  .nav a{font-size:14px;padding:10px 16px;}
+  .container{padding:0 20px;}
+  .community-card{padding:22px;}
+  .community-card h1{font-size:26px;}
+  .categories{flex-direction:column;}
+  .post-btn{width:100%;}
 }
 
 </style>
@@ -702,7 +407,7 @@ async function loadComments(){
         if(data.length===0){
 
             commentsList.innerHTML=`
-                <p style="color:#cfe0ff;">
+                <p style="color:#565959;">
                     No comments yet.
                     Be the first researcher to share your ideas.
                 </p>
@@ -761,7 +466,7 @@ async function loadComments(){
     catch(err){
 
         commentsList.innerHTML=`
-            <p style="color:#ff8080;">
+            <p style="color:#C7511F;">
                 Cannot connect to Community API.<br>
                 ${err.message}
             </p>
