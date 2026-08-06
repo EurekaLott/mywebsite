@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="google-site-verification" content="XoJw0sEmrXjVNynxjNkjwhFsmtI21Qwjqc32rhZqIJI" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>EurekaLott | Where Dreams Begin</title>
+<!-- ⚔️ Powerball/Mega Millions/Lotto Texas/Vietlott (Power655/645/535/Bingo18)
+     giờ LIVE 100% qua /api/us-live, /api/us-copy24, /api/vietlott-live,
+     /api/vietlott-copy24 trong worker.js (y hệt Keno) — không còn load
+     file tĩnh draws-data.js/megamillions-data.js/lottotexas-data.js/
+     vietlott-data.js ở đây nữa. draws-data.js vẫn còn tồn tại trong repo
+     (không xoá) vì verify.js/archive.js (Prediction Center) vẫn cần nó,
+     nhưng chỉ dùng phía Node/pipeline, không load ở trang web nữa. -->
+<style>
+/* ========================================================
+   EUREKALOTT DESIGN SYSTEM - PROFESSIONAL LIGHT THEME
+   Phong cách: Amazon / Bloomberg / Wall Street
+   ======================================================== */
+:root {
+  --bg-main: #F8F9FA;
+  --bg-card: #FFFFFF;
+  --header-bg: #232F3E;
+  --text-main: #0F1111;
+  --text-muted: #565959;
+  --accent-yellow: #FFD814;
+  --accent-orange: #FA8900;
+  --link-color: #007185;
+  --border-color: #D5D9D9;
+  --brand-red: #C7511F;
+  --success-green: #067D62;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  background:var(--bg-main);
+  min-height:100vh;
+  font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+  overflow-x:hidden;
+  color:var(--text-main);
+  line-height:1.6;
+}
+
+.header{padding:32px 50px 24px;background:var(--header-bg);}
+.brand{display:flex;align-items:center;line-height:1;}
+.eureka{font-size:56px;font-weight:800;color:#fff;font-style:italic;letter-spacing:-2px;}
+.lott{font-size:56px;font-weight:800;color:var(--accent-yellow);font-style:italic;letter-spacing:-2px;}
+.brand-sub{margin-top:12px;color:#B8C2D0;font-size:17px;letter-spacing:2px;}
+
+/* NAV — Wall Street style: flat text links on a shared navy strip, no button boxes */
+.nav{
+  margin-top:22px;display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid rgba(255,255,255,.12);padding-top:2px;gap:4px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;
+}
+.nav::-webkit-scrollbar{height:6px;}
+.nav::-webkit-scrollbar-track{background:var(--header-bg);}
+.nav::-webkit-scrollbar-thumb{background-color:#565959;border-radius:4px;}
+.nav-links,.nav-lang{display:flex;flex-wrap:nowrap;align-items:center;flex-shrink:0;}
+.nav a{
+  text-decoration:none;color:#FFFFFF;
+  font-size:14px;font-weight:500;
+  padding:12px 14px;margin:0;
+  border:1px solid transparent;border-radius:2px;
+  cursor:pointer;transition:.15s;white-space:nowrap;flex-shrink:0;
+}
+.nav a:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);}
+.nav .active{font-weight:700;color:var(--accent-yellow);}
+
+/* DROPDOWN */
+.dropdown{position:relative;flex-shrink:0;}
+.btn-results{
+  background:transparent;color:#FFFFFF;padding:12px 14px;margin:0;
+  font-size:14px;font-weight:500;cursor:pointer;border:1px solid transparent;border-radius:2px;
+  transition:.15s;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;
+}
+.btn-results:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);}
+.btn-results.open{color:var(--accent-yellow);font-weight:700;}
+.arrow{font-size:11px;transition:transform .2s;}
+.btn-results.open .arrow{transform:rotate(180deg);}
+
+.dropdown-menu{
+  display:none;position:fixed;
+  background:#FFFFFF;border-radius:0 8px 8px 8px;border:1px solid var(--border-color);
+  box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:230px;z-index:100;overflow:hidden;
+}
+.dropdown-menu.open{display:block;}
+.dd-item{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 20px;color:var(--text-main);font-weight:600;font-size:14px;
+  cursor:pointer;transition:.15s;border-bottom:1px solid var(--border-color);
+}
+.dd-item:last-child{border-bottom:none;}
+.dd-item:hover{background:#F2F4F8;}
+.dd-item.disabled{color:#999;cursor:default;}
+.dd-item.disabled:hover{background:#FFFFFF;}
+.coming{font-size:11px;font-weight:600;background:#eee;color:#888;padding:2px 7px;border-radius:20px;margin-left:auto;}
+
+/* RESULT PANEL */
+.result-panel{
+  margin:0 50px 30px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;
+  padding:28px 32px;box-shadow:0 4px 12px rgba(0,0,0,.05);
+  display:none;animation:fadeIn .25s ease;
+}
+.result-panel.open{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+.result-panel h3{color:var(--header-bg);font-size:22px;font-weight:700;margin-bottom:18px;}
+
+/* LATEST DRAW — balls */
+.latest-section{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border-color);}
+.latest-label{font-size:13px;color:var(--text-muted);margin-bottom:6px;letter-spacing:1px;font-weight:600;}
+.latest-date{font-size:16px;color:var(--accent-orange);margin-bottom:14px;font-weight:700;}
+.balls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.ball{
+  width:50px;height:50px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:800;
+  background:#FFFFFF;color:var(--text-main);border:3px solid var(--border-color);
+}
+.ball.pb{background:var(--brand-red);color:white;border-color:#a8420f;}
+.ball.spin{background:#F2F4F8;color:var(--link-color);border-color:var(--link-color);font-size:20px;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.latest-source{font-size:12px;color:var(--text-muted);margin-top:6px;}
+
+.result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.btn-sm{padding:9px 18px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:.2s;}
+.btn-sm.refresh{background:var(--accent-yellow);color:var(--text-main);border:1px solid #FCD200;}
+.btn-sm.refresh:hover{background:#F7CA00;}
+.btn-sm.manual{background:transparent;color:var(--link-color);border:1px solid var(--link-color);}
+.btn-sm.manual:hover{background:#e6f4f6;}
+.result-error{color:#C7511F;font-size:13px;margin-top:8px;display:none;}
+
+/* RECENT 12 TABLE */
+.recent-section h4{color:var(--text-main);font-size:15px;font-weight:700;margin-bottom:14px;letter-spacing:.5px;}
+.recent-table{width:100%;border-collapse:collapse;}
+.recent-table th{
+  background:#F2F4F8;color:var(--text-muted);padding:10px 12px;
+  font-size:12px;text-align:left;border-bottom:1px solid var(--border-color);
+  text-transform:uppercase;font-weight:600;
+}
+.recent-table td{
+  padding:10px 12px;font-size:14px;font-weight:600;
+  border-bottom:1px solid var(--border-color);
+  color:var(--text-main);
+}
+.recent-table tr:hover td{background:#FAFBFC;}
+.recent-table td:first-child{
+  color:var(--text-muted);opacity:1;font-weight:600;font-size:13px;
+  user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;
+}
+
+.pb-num{color:var(--brand-red);font-weight:800;}
+
+/* VIETLOTT SUBMENU (accordion trượt xuống bên trong dropdown View Results) */
+.dd-parent{display:flex;justify-content:space-between;align-items:center;}
+.arrow.small{font-size:11px;transition:transform .2s;}
+.arrow.small.rotated{transform:rotate(180deg);}
+.dd-submenu{
+  max-height:0;overflow:hidden;transition:max-height .28s ease;
+  background:#F8F9FA;
+}
+.dd-submenu.open{max-height:260px;}
+.dd-item.sub{padding-left:34px;font-size:13.5px;}
+
+/* DATA MODE TABS (Raw / Sorted) */
+.data-mode-tabs{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.mode-tab{
+  background:transparent;border:1px solid var(--border-color);color:var(--text-muted);
+  padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.mode-tab:hover{background:#F2F4F8;}
+.mode-tab.active{background:var(--accent-yellow);color:var(--text-main);border-color:#FCD200;}
+.mode-note{font-size:11.5px;color:var(--text-muted);margin-bottom:14px;}
+.recent-note{font-size:12px;color:var(--text-muted);font-weight:400;margin:-8px 0 14px;}
+
+/* COPY BUTTONS */
+.btn-copy-row{
+  background:transparent;border:1px solid var(--border-color);color:var(--link-color);
+  padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;
+  cursor:pointer;transition:.2s;
+}
+.btn-copy-row:hover{background:#e6f4f6;}
+.btn-copy-row.copied{background:var(--success-green);color:#fff;border-color:var(--success-green);}
+.btn-sm.copy24{background:var(--success-green);color:#fff;}
+.btn-sm.copy24:hover{background:#055c48;}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--header-bg);color:var(--accent-yellow);padding:13px 24px;border-radius:8px;
+  font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);
+  opacity:0;pointer-events:none;transition:.25s;z-index:999;
+  max-width:90vw;text-align:center;border:1px solid rgba(255,216,20,.35);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* LED BOARD */
+.led-wrap{margin:40px 50px;background:var(--header-bg);overflow:hidden;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);}
+.led-track{display:flex;width:max-content;animation:ticker 38s linear infinite;}
+.led-item{white-space:nowrap;padding:18px 120px 18px 0;font-size:22px;font-weight:700;color:var(--accent-yellow);}
+@keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* HOW TO PLAY — 7-image strip + instructions spec (below banner) */
+.howto-wrap{margin:40px 50px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:36px 40px;box-shadow:0 4px 12px rgba(0,0,0,.05);}
+.howto-title{color:var(--header-bg);font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:.3px;}
+.howto-intro{color:var(--text-muted);font-size:14.5px;margin-bottom:36px;max-width:720px;line-height:1.7;}
+
+.z-row{display:flex;align-items:center;gap:40px;margin-bottom:56px;}
+.z-row.reverse{flex-direction:row-reverse;}
+.z-row:last-of-type{margin-bottom:32px;}
+.z-text{flex:1 1 0;min-width:0;}
+.z-step{display:inline-block;background:var(--accent-yellow);color:var(--text-main);font-size:12px;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:4px;margin-bottom:12px;}
+.z-text h4{color:var(--header-bg);font-size:19px;font-weight:700;margin-bottom:10px;line-height:1.4;}
+.z-text p{color:var(--text-main);font-size:14.5px;line-height:1.7;margin:0;}
+.z-text p b{color:var(--accent-orange);}
+.z-image{flex:1 1 0;min-width:0;}
+.z-image a{display:block;}
+.z-image img{
+  width:100%;display:block;object-fit:contain;background:#F2F4F8;
+  border-radius:8px;border:1px solid var(--border-color);cursor:zoom-in;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+.z-row.final .z-image img{background:#FFFFFF;}
+
+.howto-spec{border-top:1px solid var(--border-color);padding-top:24px;}
+.howto-spec h3{color:var(--header-bg);font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:.3px;}
+.howto-spec p{color:var(--text-main);font-size:15px;line-height:1.7;margin-bottom:10px;}
+.howto-spec ul{margin:10px 0 14px 22px;color:var(--text-main);font-size:15px;line-height:1.8;}
+.howto-spec b{color:var(--accent-orange);}
+
+.footer{margin-top:80px;padding:40px;text-align:center;color:var(--text-muted);border-top:1px solid var(--border-color);font-size:14px;}
+
+
+@media(max-width:768px){
+  .header{padding:22px 25px;}
+  .eureka,.lott{font-size:38px;}
+  .brand-sub{font-size:13px;letter-spacing:1.5px;}
+  .nav a,.btn-results{font-size:13px;padding:9px 10px;}
+  .result-panel{margin:0 25px 20px;padding:20px;}
+  .ball{width:42px;height:42px;font-size:15px;}
+  .led-wrap{margin:30px 25px;}
+  .led-item{font-size:16px;}
+  .howto-wrap{margin:30px 25px;padding:22px 20px;}
+  .howto-title{font-size:18px;}
+  .z-row,.z-row.reverse{flex-direction:column;gap:14px;margin-bottom:38px;}
+  .z-text h4{font-size:17px;}
+  .howto-spec h3{font-size:17px;}
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <span class="eureka">Eureka</span><span class="lott">Lott</span>
+  </div>
+  <div class="brand-sub">Where Dreams Begin</div>
+
+  <div class="nav">
+    <div class="nav-links">
+    <a class="active" href="index.html">🏠 Home</a>
+
+    <div class="dropdown">
+      <button class="btn-results" id="btnResults" onclick="toggleDropdown()">
+        🌍 View Results <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropdownMenu">
+        <div class="dd-item" onclick="selectLottery('powerball')">🎱 Powerball USA</div>
+        <div class="dd-item" onclick="selectLottery('megamillions')">🎲 Mega Millions</div>
+        <div class="dd-item" onclick="selectLottery('lottotexas')">🤠 Lotto Texas</div>
+        <div class="dd-item disabled">🇪🇺 EuroMillions <span class="coming">Soon</span></div>
+        <div class="dd-item disabled">🇦🇺 Oz Lotto <span class="coming">Soon</span></div>
+
+        <div class="dd-item dd-parent" id="vietlottParent" onclick="toggleVietlottSub(event)">
+          🇻🇳 Vietlott <span class="arrow small" id="vietlottArrow">▾</span>
+        </div>
+        <div class="dd-submenu" id="vietlottSubmenu">
+          <div class="dd-item sub" onclick="selectLottery('vietlott_power655')">🎯 Power 6/55</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_power645')">🎯 Mega 6/45</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_power535')">🎯 Power 5/35</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_keno')">🔢 Keno</div>
+          <div class="dd-item sub" onclick="selectLottery('vietlott_bingo18')">🎰 Bingo18</div>
+        </div>
+      </div>
+    </div>
+<div class="dropdown">
+
+  <button class="btn-results" id="btnNeural" onclick="toggleNeural()">
+    🧠 Neural Networks for Jackpot Games <span class="arrow">▾</span>
+  </button>
+
+  <!-- ⚔️ MENU NEURAL NETWORKS — DUY NHẤT phần cần sửa khi thêm thuật
+       toán mới. Mỗi dòng chỉ là 1 link tĩnh sang trang HTML riêng biệt
+       (tự chứa toàn bộ logic/CSS/JS của nó) — KHÔNG có JS logic nào ở
+       đây cả nên không thể "làm hỏng" bất cứ thứ gì khác khi thêm dòng
+       mới. Muốn thêm Powerball 7: copy đúng 1 khối <div class="dd-item">
+       bên dưới, đổi số + tên file, dán vào, xong — không sửa gì khác. -->
+  <div class="dropdown-menu" id="neuralMenu">
+
+    <div class="dd-item disabled">
+      🎱 Powerball 1
+      <span class="coming">Soon</span>
+    </div>
+
+    <div class="dd-item disabled">
+      🎱 Powerball 2
+      <span class="coming">Soon</span>
+    </div>
+
+    <div class="dd-item disabled">
+      🎱 Powerball 3
+      <span class="coming">Soon</span>
+    </div>
+
+    <div class="dd-item disabled">
+      🎱 Powerball 4
+      <span class="coming">Soon</span>
+    </div>
+
+    <div class="dd-item"
+         onclick="window.location.href='EurekaLott-5.html'">
+      🎱 Powerball 5
+    </div>
+
+    <div class="dd-item"
+         onclick="window.location.href='EurekaLott-6.html'">
+      🎱 Powerball 6
+    </div>
+
+    <div class="dd-item disabled">
+      🎱 Powerball 7
+      <span class="coming">Soon</span>
+    </div>
+
+    <div class="dd-item"
+         onclick="window.location.href='EurekaLott-8.html'">
+      🎱 Powerball 8
+    </div>
+
+    <div class="dd-item"
+         onclick="window.location.href='EurekaLott-9.html'">
+      🎱 Powerball 9
+    </div>
+
+    <div class="dd-item"
+         onclick="window.location.href='EurekaLott-10.html'">
+      🎱 Powerball 10
+    </div>
+
+    <div class="dd-item"
+         onclick="window.location.href='EurekaLott-11.html'">
+      🎱 Powerball 11
+    </div>
+
+  </div>
+
+</div>
+    <div class="dropdown">
+
+  <button class="btn-results" id="btnPrediction" onclick="togglePrediction()">
+    🔮 Prediction Center <span class="arrow">▾</span>
+  </button>
+
+  <div class="dropdown-menu" id="predictionMenu">
+
+  <div class="dd-item"
+     onclick="window.location.href='prediction.html?game=vietlott655'">
+  🇻🇳 Vietlott 6/55
+</div>
+
+    <div class="dd-item"
+       onclick="window.location.href='prediction.html?game=powerballusa'">
+      🇺🇸 Powerball USA
+    </div>
+
+    <div class="dd-item disabled">
+      🇺🇸 Mega Millions
+      <span class="coming">Coming Soon</span>
+    </div>
+
+    <div class="dd-item disabled">
+      🇪🇺 EuroMillions
+      <span class="coming">Coming Soon</span>
+    </div>
+
+  </div>
+
+</div>
+    <a href="community.html">💬 Community</a>
+
+    <a href="https://www.facebook.com/groups/1243032744487699" target="_blank">📘 Facebook</a>
+    </div>
+    <div class="nav-lang">
+    <a onclick="setLang('en')">🇺🇸 English</a>
+    <a onclick="setLang('vi')">🇻🇳 Tiếng Việt</a>
+    </div>
+  </div>
+</div>
+
+<div id="bruce-banner"></div>
+
+<!-- ⚔️ RESULT PANEL — CỐ Ý đặt NGAY SAU banner, TRƯỚC howto-wrap (7 ảnh
+     hướng dẫn) và mọi nội dung khác của trang chủ. Trước đây panel này
+     nằm ở cuối trang (sau howto-wrap), nên dù selectLottery() có gọi
+     panel.scrollIntoView() thì khách vẫn phải nhìn animation cuộn qua
+     một quãng dài. Panel càng nằm dưới banner, quãng cuộn càng ngắn —
+     và sẽ CÀNG NGẮN theo thời gian kể cả khi trang chủ có thêm ảnh/nội
+     dung mới bên dưới, vì panel không còn phụ thuộc vị trí howto-wrap
+     nữa. KHÔNG di chuyển khối này xuống dưới howto-wrap lần nữa. -->
+<div class="result-panel" id="resultPanel">
+  <h3 id="resultTitle">🎱 Powerball USA</h3>
+
+  <!-- Latest draw with balls -->
+  <div class="latest-section">
+    <div class="latest-label">LATEST DRAW</div>
+    <div class="latest-date" id="latestDate">—</div>
+    <div class="balls" id="latestBalls"><div class="ball spin">↻</div></div>
+    <div class="latest-source" id="latestSource"></div>
+    <div class="result-actions">
+      <button class="btn-sm refresh" id="refreshBtn" onclick="handleRefreshClick()">🔄 Refresh</button>
+      <button class="btn-sm copy24" id="copy24Btn" onclick="copy24UsLotteryDraws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
+      <button class="btn-sm copy24" id="copy24VietlottBtn" style="display:none;" onclick="copy24VietlottDraws()">📋 Copy 24 Draws (Auto • 3-Checkpoint)</button>
+    </div>
+    <div class="result-error" id="resultError"></div>
+  </div>
+
+  <!-- Recent draws table -->
+  <div class="recent-section">
+    <h4 id="recentTitle">📋 RECENT 30 DRAWS</h4>
+    <div class="recent-note" id="recentNote">(not counting the latest draw already shown above)</div>
+
+    <div class="data-mode-tabs" id="dataModeTabs">
+      <button class="mode-tab active" data-mode="raw" onclick="setDataMode('raw')">🔀 Raw (ball-drop order)</button>
+      <button class="mode-tab" data-mode="sorted" onclick="setDataMode('sorted')">🔢 Sorted (ascending)</button>
+    </div>
+    <div class="mode-note" id="modeNote">Sorted is calculated instantly from the same official Texas Lottery source — just arranged low→high for easier reading. Both the 📋 row buttons and "Copy 24 Draws" copy exactly what's shown in the current tab (Raw or Sorted). ⚠️ For the Neural Networks page, always copy from the <b>Raw</b> tab — it needs the real ball-drop order to work correctly.</div>
+
+    <table class="recent-table">
+      <thead>
+        <tr id="recentTableHead">
+          <th>Date</th>
+          <th>White Balls</th>
+          <th>PB</th>
+          <th>Copy</th>
+        </tr>
+      </thead>
+      <tbody id="recentBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ⚔️ HOW TO PLAY — 7-image guide strip + written instructions.
+     Static content only, no JS logic here (per PROJECT_ARCHITECTURE.md
+     rule: banner must never modify unrelated sections). To update for
+     a future draw date, just edit the text inside .howto-spec below. -->
+<div class="howto-wrap">
+  <h3 class="howto-title">HOW IT WORKS — Từ lúc bấm nút, đến lúc trùng khớp kết quả thật</h3>
+  <p class="howto-intro">7 bước dưới đây là ảnh chụp màn hình thật, theo đúng thứ tự, từ lần chạy hệ thống cho kỳ quay Thứ Bảy, 1/8/2026 — không dàn dựng.</p>
+
+  <div class="z-row">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 1</span>
+      <h4>Bấm Auto Run, theo dõi chỉ số Epoch</h4>
+      <p>Chọn chương trình (ví dụ EurekaLott Powerball 5), MAX_NUM = 69, rồi bấm <b>⚡ Powerball USA — Auto Run</b>. Hệ thống bắt đầu huấn luyện mạng neural ngay trên trình duyệt. Khách hàng chỉ cần theo dõi đúng 1 con số: chỉ báo <b>epoch</b> — khi nào nó chạy tới <b>12/12</b>, quá trình training coi như hoàn tất.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-1.png" target="_blank"><img src="images/howto-1.png" alt="Bước 1 - Bấm Auto Run và theo dõi epoch"></a></div>
+  </div>
+
+  <div class="z-row reverse">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 2</span>
+      <h4>Đọc biểu đồ Loss Chart</h4>
+      <p>Bên phải màn hình là <b>Loss Chart</b>: đường xanh (Smoothed) càng giảm dần theo từng epoch, đường đỏ (Reference) giữ ổn định phía trên — đây là dấu hiệu mô hình đang học đúng hướng. Sau khi chạy xong 12 epoch, dòng <b>FINAL PREDICTION</b> phía dưới chốt ra con số đầu tiên: <b>05</b>.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-2.png" target="_blank"><img src="images/howto-2.png" alt="Bước 2 - Loss Chart và dự đoán số 05"></a></div>
+  </div>
+
+  <div class="z-row">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 3</span>
+      <h4>Chương trình thứ hai xác nhận lại</h4>
+      <p>Chạy tiếp một chương trình EurekaLott khác — lần này dùng thuật toán <b>Vô Chí Thiên</b> (kết hợp RNN 6.4% + Transformer 93.6%). Dù mô hình và dữ liệu huấn luyện khác nhau, kết quả vẫn khoanh tròn đúng số <b>05</b> — hai hệ thống độc lập cùng đồng thuận trên một con số.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-3.png" target="_blank"><img src="images/howto-3.png" alt="Bước 3 - Chương trình thứ hai cũng ra số 05"></a></div>
+  </div>
+
+  <div class="z-row reverse">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 4</span>
+      <h4>Thêm hai con số mới: 17 và 50</h4>
+      <p>Sang chương trình kế tiếp, hai mũi tên đỏ trong ảnh chỉ thẳng vào hai vị trí dự đoán quan trọng: <b>17</b> và <b>50</b>. Mỗi chương trình EurekaLott chỉ tập trung "chắc tay" vào một vài con số thay vì đoán bừa cả dãy — đó là lý do khách hàng nên chạy nhiều chương trình rồi gộp lại.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-4.png" target="_blank"><img src="images/howto-4.png" alt="Bước 4 - Hai số 17 và 50 được khoanh vùng"></a></div>
+  </div>
+
+  <div class="z-row">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 5</span>
+      <h4>Con số thứ tư: 27</h4>
+      <p>Một chương trình khác huấn luyện xong với chỉ số lỗi WF-CV MAE rất thấp (0.1222), cho ra thêm số <b>27</b> — mũi tên đỏ trong ảnh khoanh đúng vị trí này trong dòng dự đoán cuối cùng.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-5.png" target="_blank"><img src="images/howto-5.png" alt="Bước 5 - Số 27 được xác định"></a></div>
+  </div>
+
+  <div class="z-row reverse">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 6</span>
+      <h4>Con số cuối cùng: 48</h4>
+      <p>Chương trình cuối dùng kiến trúc <b>Transformer 64 chiều kết hợp EBM (Energy-Based Model)</b>, nhận dữ liệu Texas Lottery dán trực tiếp vào ô nhập liệu. Kết quả: số <b>48</b> — mũi tên đỏ khoanh chính xác vị trí này. Đến đây, 5 chương trình đã cho ra đủ 5 con số: 05, 17, 27, 48, 50.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-6.png" target="_blank"><img src="images/howto-6.png" alt="Bước 6 - Số 48 được xác định bằng Transformer + EBM"></a></div>
+  </div>
+
+  <div class="z-row final">
+    <div class="z-text">
+      <span class="z-step">BƯỚC 7 — ĐỐI CHIẾU KẾT QUẢ THẬT</span>
+      <h4>Kết quả xổ số Powerball chính thức — Thứ Bảy, 1/8/2026</h4>
+      <p>Dãy số quay thưởng thật: <b>6 – 17 – 27 – 48 – 50</b>, Powerball <b>5</b>. Các mũi tên đỏ trong ảnh xác nhận: <b>17, 27, 48, 50</b> và <b>5</b> — chính là những con số mà các chương trình EurekaLott ở 6 bước phía trên đã tính ra <i>trước khi</i> kỳ quay số này diễn ra.</p>
+    </div>
+    <div class="z-image"><a href="images/howto-7.png" target="_blank"><img src="images/howto-7.png" alt="Bước 7 - Kết quả Powerball thật ngày 1/8/2026 khớp với dự đoán"></a></div>
+  </div>
+
+  <div class="howto-spec">
+    <p>Đây chính là nguyên tắc <b>'4 chọn 1'</b>: kết hợp nhiều chương trình EurekaLott để chọn ra 6 số vé số của bạn dễ hơn rất nhiều so với đoán mò 6 trong tổng số 69. Nó đặc biệt hữu ích khi nhiều chương trình EurekaLott khác nhau cùng cho ra đúng một con số — như số 05 ở Bước 2 và 3 — đó chính là tín hiệu đáng tin cậy nhất để khách hàng đưa vào lựa chọn cuối cùng.</p>
+  </div>
+</div>
+
+<div class="footer">EurekaLott © 2026 • Where Dreams Begin</div>
+
+<!-- ⚔️ CHỈ 1 DÒNG DUY NHẤT — toàn bộ logic nằm trong js/main.js và các
+     module nó import. KHÔNG còn <script> nội tuyến nào ở đây nữa, nên
+     lần sau thêm/sửa tính năng sẽ không còn nguy cơ "sửa nhầm 1 biến là
+     hỏng cả View Result" — mỗi module giờ độc lập hoàn toàn. -->
+<script type="module" src="main.js"></script>
+<script src="bruce-banner.js"></script>
+
+</body>
+</html>
