@@ -6,28 +6,30 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
 <style>
-  :root { --bg: #07131a; --card: #0f2330; --muted: #8fb2c1; --accent: #ff2a6d; --ok: #3ad29f; }
-  body { margin:0; font-family:Inter,system-ui,sans-serif; color:#e8f6ff; background:var(--bg); }
-  header { padding:12px 18px; background:#071e29; border-bottom:1px solid #123; }
+  :root { --bg-main:#F8F9FA; --bg-card:#FFFFFF; --header-bg:#232F3E; --text-main:#0F1111; --text-muted:#565959; --accent-yellow:#FFD814; --accent-orange:#FA8900; --link-color:#007185; --border-color:#D5D9D9; --ok:#067D62; --danger:#C7511F; }
+  body { margin:0; font-family:'Inter','Helvetica Neue',Arial,sans-serif; color:var(--text-main); background:var(--bg-main); line-height:1.6; }
+  header { padding:16px 18px; background:var(--header-bg); box-shadow:0 2px 4px rgba(0,0,0,.1); }
+  header h1 { color:#fff; }
   h1 { margin:0; font-size:16px; }
   main { padding:14px; display:grid; grid-template-columns:420px 1fr; gap:14px; }
-  .card { background:var(--card); border:1px solid #123545; border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
-  label { font-size:12px; color:var(--muted); font-weight:700; }
-  input, button, textarea, select { width:100%; padding:8px 10px; margin:6px 0; border-radius:8px; border:1px solid #204454; background:#0c1e29; color:#e8f6ff; font-size:13px; }
+  .card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
+  label { font-size:12px; color:var(--text-muted); font-weight:700; }
+  input, button, textarea, select { width:100%; padding:9px 10px; margin:6px 0; border-radius:8px; border:1px solid var(--border-color); background:#FFFFFF; color:var(--text-main); font-size:13px; font-family:inherit; }
   textarea { min-height:160px; font-family:monospace; }
-  button { cursor:pointer; background:var(--accent); color:#062430; font-weight:800; border:0; }
+  button { cursor:pointer; background:var(--accent-yellow); color:var(--text-main); font-weight:700; border:1px solid #FCD200; }
+  button:hover { background:#F7CA00; }
   button:active { transform:translateY(1px); }
   button:disabled { opacity:0.5; cursor:not-allowed; }
-  #status { font-size:12px; color:#aee6ff; margin-top:6px; white-space:pre-line; }
-  pre { background:#06151d; padding:10px; border-radius:8px; border:1px solid #10394b; min-height:80px; overflow:auto; white-space:pre-wrap; }
-  canvas { background:#06151d; border:1px solid #10394b; border-radius:8px; width:100% !important; }
+  #status { font-size:12px; color:var(--text-muted); margin-top:6px; white-space:pre-line; }
+  pre { background:#F2F4F8; color:var(--text-main); padding:10px; border-radius:8px; border:1px solid var(--border-color); min-height:80px; overflow:auto; white-space:pre-wrap; }
+  canvas { background:#FFFFFF; border:1px solid var(--border-color); border-radius:8px; width:100% !important; }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  #finalPrediction { margin-top:20px; padding:20px; background:linear-gradient(135deg,#0a2a3f,#071e29); border:2px solid #ff2a6d; border-radius:12px; text-align:center; box-shadow:0 8px 25px rgba(255,42,109,0.25); }
-  #finalNumbers { font-size:32px; letter-spacing:6px; font-family:monospace; color:#ffd700; font-weight:bold; min-height:48px; }
+  #finalPrediction { margin-top:20px; padding:20px; background:var(--bg-card); border:2px solid var(--accent-orange); border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,.05); }
+  #finalNumbers { font-size:32px; letter-spacing:6px; font-family:monospace; color:var(--accent-orange); font-weight:bold; min-height:48px; }
   @keyframes pulse { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.04);opacity:0.92} 100%{transform:scale(1);opacity:1} }
   #finalNumbers.ready { animation:pulse 2s infinite; }
   .nav{margin:14px 18px 0;display:flex;flex-wrap:wrap;gap:10px;}
-  .nav a{text-decoration:none;background:white;color:#0a2e73;padding:8px 16px;border-radius:10px;font-weight:700;font-size:13px;}
+  .nav a{text-decoration:none;background:#FFFFFF;color:var(--header-bg);padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;border:1px solid var(--border-color);box-shadow:0 2px 5px rgba(0,0,0,.08);}
 </style>
 </head>
 <body>
@@ -47,7 +49,7 @@
      MAX_NUM mặc định sai, dẫn tới kết quả lỗi rồi đánh giá oan
      chất lượng hệ thống.
      ═══════════════════════════════════════════════════════════ -->
-<div style="display:flex; flex-direction:column; align-items:center; padding:16px 18px 8px; background:#030a16;">
+<div style="display:flex; flex-direction:column; align-items:center; padding:16px 18px 8px; background:var(--bg-main);">
   <!-- ⚔️ Canvas thu nhỏ: giữ nguyên toán học vẽ hoạt hình gốc (800x600),
        chỉ bọc trong khung max-width để hiển thị nhỏ gọn hơn hẳn, không
        chiếm hết màn hình như bản cũ. -->
@@ -55,21 +57,21 @@
     <canvas id="networkCanvas" width="800" height="600" style="width:100% !important; height:auto; background:radial-gradient(circle,#081b33 0%,#020710 100%); box-shadow:0 0 20px rgba(0,0,0,0.8); border-radius:4px;"></canvas>
   </div>
 
-  <div style="width:100%; max-width:780px; box-sizing:border-box; padding:18px; border-radius:6px; margin-top:14px; background:#0a1f2e; border:1px solid #ff2a6d;">
+  <div style="width:100%; max-width:780px; box-sizing:border-box; padding:18px; border-radius:6px; margin-top:14px; background:var(--bg-card); border:1px solid var(--border-color); box-shadow:0 4px 12px rgba(0,0,0,.05);">
 
     <!-- ⚔️ Notice tài trợ — đặt ngay đầu khối hướng dẫn -->
-    <div style="background:#071826; border:1px solid #2a6b8f; border-radius:6px; padding:12px 14px; margin-bottom:16px;">
-      <label style="color:#5ec9ff; font-weight:bold; font-size:14px; display:block; margin-bottom:6px;">📢 Notice from EurekaLott</label>
-      <div style="font-size:13px; line-height:1.6; color:#c8e6ff;">
+    <div style="background:#F0F7FA; border:1px solid #007185; border-radius:6px; padding:12px 14px; margin-bottom:16px;">
+      <label style="color:#007185; font-weight:bold; font-size:14px; display:block; margin-bottom:6px;">📢 Notice from EurekaLott</label>
+      <div style="font-size:13px; line-height:1.6; color:#0F1111;">
         EurekaLott is currently operating on a completely free platform. As a result, this free service queues users on a first-come, first-served basis, which may cause processing to be a bit slow. You can start the program, go do other things, and come back later to retrieve your results to buy your lottery tickets without waiting anxiously.<br><br>
         Temporarily, we had to reduce the original design configuration to its lowest level to avoid timeouts on the free server, so the output might not fully match our initial design. Once we secure funding to rent a dedicated domain, EurekaLott will provide a much better, faster experience.
       </div>
     </div>
 
-    <label style="color:#ffd700; font-weight:bold; font-size:16px; display:block;">📜 CORE SYSTEM RULES &amp; VORTEX MATH PRINCIPLES</label>
-    <div style="font-size:13.5px; line-height:1.6; color:#a8d4ff; margin-top:10px;">
+    <label style="color:#232F3E; font-weight:bold; font-size:16px; display:block;">📜 CORE SYSTEM RULES &amp; VORTEX MATH PRINCIPLES</label>
+    <div style="font-size:13.5px; line-height:1.6; color:#0F1111; margin-top:10px;">
       <strong>• MAX_NUM</strong><br>
-      Adjust this according to your specific lottery type (e.g., <strong style="color:#fff;">Mega Millions 70, Powerball 69, Vietlott 55</strong>).<br><br>
+      Adjust this according to your specific lottery type (e.g., <strong style="color:#0F1111;">Mega Millions 70, Powerball 69, Vietlott 55</strong>).<br><br>
 
       <strong>• Vortex Math 369 (Marko Rodin • Nikola Tesla)</strong><br>
       As illustrated on the canvas, the numbers 3, 6, and 9 are commonly presented together, with 9 symbolizing the final point of convergence. However, both the natural number system and modern lottery matrices also include the digit 0.<br>
@@ -94,7 +96,7 @@
       • If they have <strong>not yet appeared</strong> → Today (Monday) is the final time you can use this prediction.<br>
       <em>In short: Previous Monday data → Check Wed &amp; Sat → Final decision on current Monday.</em><br><br>
 
-      <div style="font-style:italic; color:#d1e8ff; margin-top:10px; padding-left:15px; border-left:3px solid #ff2a6d;">
+      <div style="font-style:italic; color:#565959; margin-top:10px; padding-left:15px; border-left:3px solid #FA8900;">
         Germans have a saying: Aller guten Dinge sind drei. ("All good things come in threes.")<br>
         The English say: Good things come in threes.<br>
         The French have a saying: Jamais deux sans trois. ("Never two without three.")<br>
@@ -103,7 +105,7 @@
         <strong>AI Neural Network also designed with 3 checkpoints.</strong>
       </div><br>
 
-      <strong style="color:#ffd700;">• ⚠️ Powerball USA — Auto Run Button (Important)</strong><br>
+      <strong style="color:#C7511F;">• ⚠️ Powerball USA — Auto Run Button (Important)</strong><br>
       The <strong>"⚡ Powerball USA — Auto Run"</strong> button is built <strong>ONLY</strong> for Powerball USA because it automatically fetches the 24 drawings specifically for Powerball. For other types of lotteries, use the manual button below and paste your 24 draws according to the instructions:<br>
       <em>Previous Monday data → Check last week Wed &amp; Sat → Final decision on current Monday</em> (Remember to adjust your MAX_NUM to match).<br><br>
       This Auto button already automatically fetches last week's archive for you (following the 3-Checkpoint rule above). Before you even use it, the system automatically checks the 3 checkpoints for you:<br>
@@ -165,7 +167,7 @@
      ═══════════════════════════════════════════════════════════ -->
 <div style="padding:0 14px 24px;">
   <div id="finalPrediction">
-    <div style="font-size:12px;color:#8fb2c1;margin-bottom:4px;">🌟 FINAL PREDICTION — only pos2 • pos4 • pos5 • pos7 shown</div>
+    <div style="font-size:12px;color:#565959;margin-bottom:4px;">🌟 FINAL PREDICTION — only pos2 • pos4 • pos5 • pos7 shown</div>
     <div id="finalNumbers">— not run yet —</div>
   </div>
 
@@ -176,7 +178,7 @@
       <label style="margin:0;">🎯 Checkpoint Status (Latest • CP1 • CP2)</label>
       <button id="checkCheckpointsBtn" style="width:auto; padding:6px 14px; font-size:12px; margin:0;">🔄 Check Now</button>
     </div>
-    <div id="checkpointStatus" style="font-size:13px; line-height:1.8; background:#06151d; border:1px solid #10394b; border-radius:8px; padding:12px;"></div>
+    <div id="checkpointStatus" style="font-size:13px; line-height:1.8; background:#F2F4F8; border:1px solid #D5D9D9; border-radius:8px; padding:12px;"></div>
   </div>
 </div>
 
@@ -356,26 +358,26 @@ async function checkAndRenderCheckpoints() {
   if (anyHit) {
     const hitList = hitDetails.map(x => `${String(x.num).padStart(2,'0')} (${x.hit.label} ${x.hit.date})`).join(', ');
     bannerHtml = `
-      <div style="background:#3d0a1a; border:2px solid #ff2a6d; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
-        <div style="color:#ff2a6d; font-weight:bold; font-size:18px;">❌ CANCELLED — DO NOT USE THIS PREDICTION</div>
-        <div style="color:#ffb3c6; font-size:12px; margin-top:6px;">Already hit: ${hitList}. Per EurekaLott rule: if ANY number already appeared, the ENTIRE set of 4 is invalid — wait for the next prediction.</div>
+      <div style="background:#FBEAE5; border:2px solid #C7511F; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#C7511F; font-weight:bold; font-size:18px;">❌ CANCELLED — DO NOT USE THIS PREDICTION</div>
+        <div style="color:#8a3517; font-size:12px; margin-top:6px;">Already hit: ${hitList}. Per EurekaLott rule: if ANY number already appeared, the ENTIRE set of 4 is invalid — wait for the next prediction.</div>
       </div>`;
   } else if (cp2) {
     bannerHtml = `
-      <div style="background:#06251a; border:2px solid #3ad29f; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
-        <div style="color:#3ad29f; font-weight:bold; font-size:18px;">✅ CONFIRMED CLEAN — safe through CP2</div>
-        <div style="color:#8fdcc0; font-size:12px; margin-top:6px;">None of the 4 numbers appeared at Latest, CP1, or CP2. This prediction remained valid through its full verification window.</div>
+      <div style="background:#E5F5F0; border:2px solid #067D62; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#067D62; font-weight:bold; font-size:18px;">✅ CONFIRMED CLEAN — safe through CP2</div>
+        <div style="color:#045a46; font-size:12px; margin-top:6px;">None of the 4 numbers appeared at Latest, CP1, or CP2. This prediction remained valid through its full verification window.</div>
       </div>`;
   } else {
     bannerHtml = `
-      <div style="background:#1a2530; border:2px solid #8fb2c1; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
-        <div style="color:#aee6ff; font-weight:bold; font-size:16px;">⏳ Still pending — waiting for CP2 draw</div>
-        <div style="color:#8fb2c1; font-size:12px; margin-top:6px;">No hits so far, but final confirmation requires CP2 (${cp1 ? 'after CP1 ' + dateKey(cp1.date) : 'not yet available'}). Come back after the next draw.</div>
+      <div style="background:#F2F4F8; border:2px solid #D5D9D9; border-radius:8px; padding:12px; margin-top:12px; text-align:center;">
+        <div style="color:#232F3E; font-weight:bold; font-size:16px;">⏳ Still pending — waiting for CP2 draw</div>
+        <div style="color:#565959; font-size:12px; margin-top:6px;">No hits so far, but final confirmation requires CP2 (${cp1 ? 'after CP1 ' + dateKey(cp1.date) : 'not yet available'}). Come back after the next draw.</div>
       </div>`;
   }
 
   qs('checkpointStatus').innerHTML = `
-    <div style="font-size:11px; color:#8fb2c1; margin-bottom:6px; text-align:center;">
+    <div style="font-size:11px; color:#565959; margin-bottom:6px; text-align:center;">
       Reference: Latest ${entry.latestDrawDate}${cp1 ? ` • CP1 ${dateKey(cp1.date)}` : ''}${cp2 ? ` • CP2 ${dateKey(cp2.date)}` : ''}
     </div>
     ${bannerHtml}
