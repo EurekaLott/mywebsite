@@ -54,6 +54,7 @@ body{
   border-top:1px solid rgba(255,255,255,.12);padding-top:2px;gap:4px;
   overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;
   scrollbar-width:thin;scrollbar-color:#565959 var(--header-bg);
+  touch-action:pan-x;
 }
 .nav::-webkit-scrollbar{height:5px;}
 .nav::-webkit-scrollbar-track{background:var(--header-bg);}
@@ -85,7 +86,8 @@ body{
 .dropdown-menu{
   display:none;position:fixed;
   background:#FFFFFF;border-radius:0 8px 8px 8px;border:1px solid var(--border-color);
-  box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:230px;z-index:100;overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:230px;z-index:100;
+  overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
 }
 .dropdown-menu.open{display:block;}
 .dd-item{
@@ -227,11 +229,30 @@ body{
 }
 .z-row.final .z-image img{background:#FFFFFF;}
 
-.howto-spec{border-top:1px solid var(--border-color);padding-top:24px;}
-.howto-spec h3{color:var(--header-bg);font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:.3px;}
-.howto-spec p{color:var(--text-main);font-size:15px;line-height:1.7;margin-bottom:10px;}
-.howto-spec ul{margin:10px 0 14px 22px;color:var(--text-main);font-size:15px;line-height:1.8;}
-.howto-spec b{color:var(--accent-orange);}
+/* STEP 3 media — 2x2 grid of the 4 checkpoint screenshots, no captions */
+.howto-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.strip-item a{display:block;}
+.strip-item img{
+  width:100%;display:block;object-fit:contain;background:#F2F4F8;
+  border-radius:8px;border:1px solid var(--border-color);cursor:zoom-in;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+/* STEP 7 — Tesla 369 canvas next to the real result screenshot */
+.step7-media{display:flex;gap:16px;}
+.step7-media > *{flex:1 1 0;min-width:0;}
+.tesla-canvas-wrap{
+  background:radial-gradient(circle,#081b33 0%,#020710 100%);
+  border-radius:8px;border:1px solid var(--border-color);overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;
+}
+.tesla-canvas-wrap canvas{width:100%;height:auto;display:block;}
+.step7-media img{
+  width:100%;display:block;object-fit:contain;background:#FFFFFF;
+  border-radius:8px;border:1px solid var(--border-color);cursor:zoom-in;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
 
 .footer{margin-top:80px;padding:40px;text-align:center;color:var(--text-muted);border-top:1px solid var(--border-color);font-size:14px;}
 
@@ -249,7 +270,8 @@ body{
   .howto-title{font-size:18px;}
   .z-row,.z-row.reverse{flex-direction:column;gap:14px;margin-bottom:38px;}
   .z-text h4{font-size:17px;}
-  .howto-spec h3{font-size:17px;}
+  .howto-strip{gap:8px;}
+  .step7-media{flex-direction:column;}
 }
 
 
@@ -462,14 +484,18 @@ body{
      rule: banner must never modify unrelated sections). To update for
      a future draw date, just edit the text inside .howto-spec below. -->
 <div class="howto-wrap">
-  <h3 class="howto-title">HOW IT WORKS — From clicking Run to matching the real draw</h3>
-  <p class="howto-intro">The 7 steps below are real screenshots, in order, from an actual run of the system for the Saturday, Aug 1, 2026 drawing — nothing staged.</p>
+  <h3 class="howto-title">HOW IT WORKS — From clicking Auto Run to matching partial numbers of the draw</h3>
+  <p class="howto-intro">The screenshots below are real, in order, from an actual run of the system for the Saturday, Aug 1, 2026 drawing — nothing staged.</p>
 
   <div class="z-row">
     <div class="z-text">
       <span class="z-step">STEP 1</span>
-      <h4>Hit Auto Run, watch the Epoch counter</h4>
-      <p>Pick a program (e.g. EurekaLott Powerball 5), set MAX_NUM = 69, then press <b>⚡ Powerball USA — Auto Run</b>. The system starts training a neural network right in your browser. You only need to watch one number: the <b>epoch</b> counter — once it reaches <b>12/12</b>, training is complete.</p>
+      <ul>
+        <li>Pick a program (e.g., EurekaLott Powerball 5) and press the <b>⚡ Powerball USA — Auto Run</b> button.</li>
+        <li>The system automatically fetches 24 drawings in RAW order from the previous Saturday (July 25, 2026). Alternatively, you can paste 24 drawings yourself using the <b>Other Lottery</b> button if you want to try a sorted order. Some programs work better with Raw, others with Sorted. Experiment and discover what works best.</li>
+        <li>You only need to watch one number: the <b>epoch</b> counter. Once it reaches <b>12/12</b>, training is complete.</li>
+        <li>Feel free to step away and come back later to retrieve your results and buy your tickets without waiting anxiously.</li>
+      </ul>
     </div>
     <div class="z-image"><a href="images/howto-1.png" target="_blank"><img src="images/howto-1.png" alt="Step 1 - Press Auto Run and watch the epoch counter"></a></div>
   </div>
@@ -477,61 +503,168 @@ body{
   <div class="z-row reverse">
     <div class="z-text">
       <span class="z-step">STEP 2</span>
-      <h4>Read the Loss Chart</h4>
-      <p>On the right is the <b>Loss Chart</b>: the green line (Smoothed) keeps dropping with each epoch while the red line (Reference) stays flat above it — a sign the model is converging correctly. After 12 epochs, the <b>FINAL PREDICTION</b> row below locks in the first number: <b>05</b>.</p>
+      <p>The system generates four core prediction numbers representing these two branches.</p>
+      <ul>
+        <li>Left Branch: 69</li>
+        <li>Right Branch: 30</li>
+      </ul>
+      <p>Success does not require all four numbers to appear at once. The model achieves victory as soon as even one number carrying the energy of 369 aligns precisely at the center.</p>
+      <p><b>'4 choose 1' Strategy:</b> combining multiple EurekaLott outputs from Step 2 to Step 6 to pick your 6 ticket numbers is much easier than blindly guessing 6 out of a pool of 69. It is especially helpful when different EurekaLott programs generate the exact same number — such as 05 in Step 2 and Step 3, for example — which plays a crucial role in the customer's selection process.</p>
     </div>
     <div class="z-image"><a href="images/howto-2.png" target="_blank"><img src="images/howto-2.png" alt="Step 2 - Loss Chart and prediction of number 05"></a></div>
   </div>
 
-  <div class="z-row">
+  <div class="z-row reverse">
     <div class="z-text">
       <span class="z-step">STEP 3</span>
-      <h4>A second program confirms it</h4>
-      <p>Run another EurekaLott program — this time using the <b>Vô Chí Thiên</b> algorithm (an RNN 6.4% + Transformer 93.6% blend). Even with a different model and training run, the result circles the very same number: <b>05</b> — two independent systems agreeing on one number.</p>
+      <p>If you click the <b>Auto Run</b> button, the program automatically checks the 3 checkpoints for you. If you use the <b>Other Lottery</b> button, check whether Monday, Wednesday and previous Saturday draws have already come out.</p>
+      <ul>
+        <li>If they have not yet appeared → Today (Saturday) is the final time you can use this prediction.</li>
+      </ul>
+      <p><b>In short:</b> Previous Saturday data → Check Mon, Wed &amp; Previous Sat → Final decision on current Saturday.</p>
+      <p>If the numbers have already come out, and instead of canceling you still decide to use them, that decision is up to you.</p>
     </div>
-    <div class="z-image"><a href="images/howto-3.png" target="_blank"><img src="images/howto-3.png" alt="Step 3 - A second program also lands on number 05"></a></div>
-  </div>
-
-  <div class="z-row reverse">
-    <div class="z-text">
-      <span class="z-step">STEP 4</span>
-      <h4>Two more numbers appear: 17 and 50</h4>
-      <p>Moving to the next program, two red arrows in the screenshot point straight at two key predicted numbers: <b>17</b> and <b>50</b>. Each EurekaLott program focuses on nailing down just a few numbers rather than guessing the whole set — which is exactly why it pays to run several programs and combine the results.</p>
+    <div class="z-image">
+      <div class="howto-strip">
+        <div class="strip-item"><a href="images/howto-3.png" target="_blank"><img src="images/howto-3.png" alt="Step 3 screenshot"></a></div>
+        <div class="strip-item"><a href="images/howto-4.png" target="_blank"><img src="images/howto-4.png" alt="Step 4 screenshot"></a></div>
+        <div class="strip-item"><a href="images/howto-5.png" target="_blank"><img src="images/howto-5.png" alt="Step 5 screenshot"></a></div>
+        <div class="strip-item"><a href="images/howto-6.png" target="_blank"><img src="images/howto-6.png" alt="Step 6 screenshot"></a></div>
+      </div>
     </div>
-    <div class="z-image"><a href="images/howto-4.png" target="_blank"><img src="images/howto-4.png" alt="Step 4 - Numbers 17 and 50 highlighted"></a></div>
-  </div>
-
-  <div class="z-row">
-    <div class="z-text">
-      <span class="z-step">STEP 5</span>
-      <h4>A fourth number: 27</h4>
-      <p>Another program finishes training with a very low WF-CV MAE (0.1222) and adds one more number: <b>27</b> — the red arrow in the screenshot points to it in the final prediction row.</p>
-    </div>
-    <div class="z-image"><a href="images/howto-5.png" target="_blank"><img src="images/howto-5.png" alt="Step 5 - Number 27 identified"></a></div>
-  </div>
-
-  <div class="z-row reverse">
-    <div class="z-text">
-      <span class="z-step">STEP 6</span>
-      <h4>The last number: 48</h4>
-      <p>The final program uses a <b>64-dimensional Transformer combined with an EBM (Energy-Based Model)</b>, fed with Texas Lottery data pasted directly into the input box. Result: number <b>48</b> — the red arrow marks its exact spot. At this point, 5 programs have produced 5 numbers: 05, 17, 27, 48, 50.</p>
-    </div>
-    <div class="z-image"><a href="images/howto-6.png" target="_blank"><img src="images/howto-6.png" alt="Step 6 - Number 48 identified via Transformer + EBM"></a></div>
   </div>
 
   <div class="z-row final">
     <div class="z-text">
-      <span class="z-step">STEP 7 — CHECKED AGAINST THE REAL DRAW</span>
+      <span class="z-step">STEP 7</span>
       <h4>Official Powerball result — Saturday, Aug 1, 2026</h4>
-      <p>The actual winning numbers: <b>6 – 17 – 27 – 48 – 50</b>, Powerball <b>5</b>. The red arrows in the screenshot confirm it: <b>17, 27, 48, 50,</b> and <b>5</b> — exactly the numbers the EurekaLott programs above had already produced <i>before</i> this drawing took place.</p>
+      <p>The actual winning numbers: <b>6 – 17 – 27 – 48 – 50</b>, Powerball <b>5</b>. The red arrows in the screenshot confirm it: <b>17, 27, 48, 50,</b> and <b>5</b> — exactly the partial numbers the EurekaLott programs above had already produced before this drawing took place.</p>
     </div>
-    <div class="z-image"><a href="images/howto-7.png" target="_blank"><img src="images/howto-7.png" alt="Step 7 - Real Powerball result on Aug 1, 2026 matching the predictions"></a></div>
-  </div>
-
-  <div class="howto-spec">
-    <p>This is the <b>'4 choose 1'</b> principle at work: combining several EurekaLott programs to pick your 6 ticket numbers is far easier than blindly guessing 6 out of a pool of 69. It's especially useful when different EurekaLott programs land on the exact same number — like 05 in Steps 2 and 3 — that's the strongest possible signal to include it in your final pick.</p>
+    <div class="z-image step7-media">
+      <div class="tesla-canvas-wrap"><canvas id="tesla369Canvas" width="800" height="600"></canvas></div>
+      <a href="images/howto-7.png" target="_blank"><img src="images/howto-7.png" alt="Step 7 - Real Powerball result on Aug 1, 2026 matching the predictions"></a>
+    </div>
   </div>
 </div>
+
+<script>
+/* ⚔️ Tesla 369 vortex canvas — embedded next to the Step 7 result image.
+   Self-contained IIFE, isolated ids/vars, does not touch any other
+   section per PROJECT_ARCHITECTURE.md rule. */
+(function(){
+  const canvas = document.getElementById('tesla369Canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const nodes = {
+    1: { x: 500, y: 190 },
+    2: { x: 550, y: 280 },
+    3: { x: 540, y: 440, label: "+ 3" },
+    4: { x: 450, y: 510 },
+    5: { x: 350, y: 510 },
+    6: { x: 260, y: 440, label: "+ 6" },
+    7: { x: 250, y: 280 },
+    8: { x: 300, y: 190 }
+  };
+  const centerNode = { x: 400, y: 400, label: "9" };
+
+  const lines = [
+    [nodes[1], nodes[2]],
+    [nodes[4], centerNode],
+    [nodes[5], centerNode],
+    [nodes[7], nodes[8]],
+    [nodes[1], centerNode],
+    [nodes[8], centerNode],
+    [nodes[4], nodes[2]],
+    [nodes[5], nodes[7]]
+  ];
+
+  const particles = [];
+  lines.forEach(line => {
+    for(let i = 0; i < 30; i++){
+      particles.push({
+        start: line[0],
+        end: line[1],
+        progress: Math.random(),
+        speed: 0.002 + Math.random() * 0.003,
+        size: 1 + Math.random() * 3,
+        color: Math.random() > 0.5 ? '#ff7700' : '#ffcc00'
+      });
+    }
+  });
+
+  function setGlow(color, blur){
+    ctx.shadowBlur = blur;
+    ctx.shadowColor = color;
+  }
+
+  function draw(){
+    ctx.fillStyle = 'rgba(3, 10, 22, 0.3)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+      p.progress += p.speed;
+      if(p.progress > 1) p.progress = 0;
+      const currentX = p.start.x + (p.end.x - p.start.x) * p.progress;
+      const currentY = p.start.y + (p.end.y - p.start.y) * p.progress;
+      setGlow(p.color, 8);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(currentX, currentY, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    setGlow('#ffffaa', 35);
+    ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
+    ctx.beginPath();
+    ctx.arc(centerNode.x, centerNode.y, 35, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(centerNode.x, centerNode.y, 14, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    for(let key in nodes){
+      const node = nodes[key];
+      if(node.label){
+        setGlow('#00ffff', 25);
+        ctx.fillStyle = '#00ffff';
+        ctx.font = 'bold 32px Arial';
+        ctx.fillText(node.label, node.x, node.y);
+      } else {
+        setGlow('#77bbff', 10);
+        ctx.fillStyle = '#aaddff';
+        ctx.font = 'bold 24px Arial';
+        let offsetY = 0;
+        if(key == 1 || key == 8) offsetY = -25;
+        if(key == 4 || key == 5) offsetY = 25;
+        if(key == 2) offsetY = -5;
+        if(key == 7) offsetY = -5;
+        ctx.fillText(key, node.x, node.y + offsetY);
+      }
+    }
+
+    setGlow('#ff3333', 15);
+    ctx.fillStyle = '#ff3333';
+    ctx.fillRect(385, 95, 30, 15);
+
+    setGlow('#000000', 0);
+    ctx.fillStyle = '#111111';
+    ctx.font = 'bold 22px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(centerNode.label, centerNode.x, centerNode.y);
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
 
 <div class="footer">EurekaLott © 2026 • Where Dreams Begin</div>
 
