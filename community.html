@@ -45,13 +45,16 @@ body{
 .brand-sub{margin-top:12px;color:#B8C2D0;font-size:17px;letter-spacing:2px;}
 
 /* NAV — Wall Street style: flat text links, no button boxes */
-.nav{margin-top:22px;display:flex;flex-wrap:wrap;align-items:center;border-top:1px solid rgba(255,255,255,.12);padding-top:2px;}
+.nav{margin-top:22px;display:flex;flex-wrap:nowrap;align-items:center;border-top:1px solid rgba(255,255,255,.12);padding-top:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.nav::-webkit-scrollbar{height:6px;}
+.nav::-webkit-scrollbar-track{background:var(--header-bg);}
+.nav::-webkit-scrollbar-thumb{background-color:#565959;border-radius:4px;}
 .nav a{
   text-decoration:none;color:#FFFFFF;
   font-size:14px;font-weight:500;
   padding:12px 14px;
   border:1px solid transparent;border-radius:2px;
-  transition:.15s;white-space:nowrap;
+  transition:.15s;white-space:nowrap;flex-shrink:0;
 }
 .nav a:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);}
 .nav .active{font-weight:700;color:var(--accent-yellow);}
