@@ -276,6 +276,26 @@ Share your research, test results and ideas with the EurekaLott community.
 
     </div>
 
+    <div class="form-group">
+
+        <label>
+
+            Image / Ảnh (tùy chọn, tối đa 3MB)
+
+        </label>
+
+        <input
+            type="file"
+            id="imageInput"
+            accept="image/png, image/jpeg, image/gif, image/webp"
+            style="padding:8px;">
+
+        <div id="previewContainer" style="margin-top:10px;display:none;">
+            <img id="imagePreview" style="max-width:200px;border-radius:8px;border:1px solid var(--border-color);">
+        </div>
+
+    </div>
+
     <button
         type="button"
         class="post-btn"
@@ -388,7 +408,29 @@ I'm testing Mega Millions now.
 const API="https://eurekalott-engine.trongcuong-org.workers.dev";
 let currentCategory="powerball";
 
-const commentsList=document.getElementById("commentsList");      
+const commentsList=document.getElementById("commentsList");
+
+/* Preview ảnh trước khi đăng */
+document.getElementById("imageInput").addEventListener("change",function(e){
+
+    const file=e.target.files[0];
+    const previewContainer=document.getElementById("previewContainer");
+    const imagePreview=document.getElementById("imagePreview");
+
+    if(file){
+
+        imagePreview.src=URL.createObjectURL(file);
+        previewContainer.style.display="block";
+
+    }else{
+
+        previewContainer.style.display="none";
+        imagePreview.src="";
+
+    }
+
+});
+
 async function loadComments(){
 
     commentsList.innerHTML="<p>Loading...</p>";
@@ -424,6 +466,10 @@ async function loadComments(){
 
         data.forEach(c=>{
 
+            const imgHTML=c.imageUrl
+                ? `<div style="margin-top:12px;"><img src="${c.imageUrl}" style="max-width:100%;max-height:400px;border-radius:8px;" loading="lazy"></div>`
+                : "";
+
             commentsList.innerHTML+=`
 
 <div class="comment">
@@ -457,6 +503,7 @@ async function loadComments(){
     <div class="comment-message">
 
         ${c.message}
+        ${imgHTML}
 
     </div>
 
@@ -498,24 +545,19 @@ document
 
     };
 
-});   
+});
 document
 .getElementById("postBtn")
 .onclick=async function(){
 
-    const body={
+    const btn=this;
 
-        category:currentCategory,
+    const name=document.getElementById("name").value.trim();
+    const country=document.getElementById("country").value.trim();
+    const message=document.getElementById("message").value.trim();
+    const imageFile=document.getElementById("imageInput").files[0];
 
-        name:document.getElementById("name").value.trim(),
-
-        country:document.getElementById("country").value.trim(),
-
-        message:document.getElementById("message").value.trim()
-
-    };
-
-    if(!body.name || !body.message){
+    if(!name || !message){
 
         alert("Please enter your name and comment.");
 
@@ -523,29 +565,69 @@ document
 
     }
 
-    const res=await fetch(API+"/comments",{
+    if(imageFile && imageFile.size > 3*1024*1024){
 
-        method:"POST",
-
-        headers:{
-            "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify(body)
-
-    });
-
-    if(!res.ok){
-
-        alert("Unable to post comment.");
+        alert("Image is too large. Please choose an image under 3MB.");
 
         return;
 
     }
 
-    document.getElementById("message").value="";
+    const originalBtnText=btn.innerHTML;
+    btn.innerHTML="⏳ Posting...";
+    btn.disabled=true;
 
-    loadComments();
+    try{
+
+        /* Gửi multipart/form-data thẳng tới Worker của mình — ảnh đi kèm
+           luôn trong 1 request, KHÔNG qua bên thứ 3, KHÔNG lộ API key nào
+           trên trình duyệt. Worker sẽ tự lưu ảnh vào Cloudflare R2. */
+        const formData=new FormData();
+        formData.append("category",currentCategory);
+        formData.append("name",name);
+        formData.append("country",country);
+        formData.append("message",message);
+        if(imageFile){
+
+            formData.append("image",imageFile);
+
+        }
+
+        const res=await fetch(API+"/comments",{
+
+            method:"POST",
+
+            body:formData
+
+        });
+
+        if(!res.ok){
+
+            const err=await res.json().catch(()=>({}));
+            throw new Error(err.error || "Unable to post comment.");
+
+        }
+
+        document.getElementById("message").value="";
+        document.getElementById("imageInput").value="";
+        document.getElementById("previewContainer").style.display="none";
+
+        loadComments();
+
+    }
+
+    catch(err){
+
+        alert(err.message);
+
+    }
+
+    finally{
+
+        btn.innerHTML=originalBtnText;
+        btn.disabled=false;
+
+    }
 
 };
 loadComments();      
