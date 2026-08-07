@@ -290,7 +290,8 @@ body{
   .z-text h4{font-size:17px;}
   .howto-strip{grid-template-columns:repeat(1,1fr);gap:12px;margin-bottom:38px;}
   .step7-media{flex-direction:column;}
-  .tesla-canvas-wrap{display:block;} /* Fix canvas xẹp về 0px trên iPhone 7 / Safari cũ */
+  .step7-media > *{flex:none;width:100%;} /* Hủy flex-basis:0 gây xẹp canvas 0px trên Safari cũ */
+  .tesla-canvas-wrap{display:block;min-height:250px;} /* Fix canvas xẹp về 0px trên iPhone 7 / Safari cũ */
 }
 
 
